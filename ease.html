@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+    <title>Studio3</title>
+	<meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1"/>
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<link rel="apple-touch-icon" href="icon.png" />
+</head>
+
+<body style="margin:0;background: #333">
+	<canvas id="canvas" height="320" width="320"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
+</body>
+<script src="studio-compiled.js"></script>
+<script>
+	
+var stage = new Studio.Stage("canvas",{fullscreen:1});
+
+var r = new Studio.Rect({x:stage.width/2, y:stage.height/2, height:120, width:30, anchorY: .15});
+var rdot = new Studio.Rect({x:0, y:0, height:7, width:7});
+var r1 = new Studio.Rect({x:0, y:90, height:60, width:20, anchorY: .15});
+var r1dot = new Studio.Rect({x:0, y:0, height:3, width:3});
+var rc1 = new Studio.Rect({x:0, y:45, height:40, width:15,  anchorY: .15});
+var rc1dot = new Studio.Rect({x:0, y:0, height:3, width:3, });
+var rc2 = new Studio.Rect({x:0, y:30, height:30, width:11, anchorY: .15});
+var rc2dot = new Studio.Rect({x:0, y:0, height:3, width:3});
+
+
+var bolt_color= new Studio.Color().setFromHex('#000000')
+
+
+r.color.setFromHex("#555")
+r1.color.set(255,0,255,1);
+rc1.color.set(0,255,255,1);
+rc2.color.set(255,255,0,1);
+rdot.color = bolt_color;
+r1dot.color = bolt_color;
+rc1dot.color = bolt_color;
+rc2dot.color = bolt_color;
+
+r.addChild(r1)
+r.addChild(rdot)
+r1.addChild(rc1);
+r1.addChild(r1dot)
+rc1.addChild(rc1dot)
+rc1.addChild(rc2)
+rc2.addChild(rc2dot)
+stage.addChild(r);
+
+r.onEnterFrame = function(){
+	this.rotation++;
+}
+
+var t = stage.createTween(r1,'bounceOut',{rotation:90},3000).loop()
+
+stage.playTween(t);
+
+
+var t2 = stage.createTween(rc1,'elasticOut',{rotation:90},3000).loop()
+
+stage.playTween(t2);
+
+var t3 = stage.createTween(rc2,'backOut',{rotation:90},1500).loop()
+stage.playTween(t3);
+
+
+stage.color.setFromHex('#a3f')
+
+
+stage.ready = true;
+
+Studio.start();
+</script>
+</html>
+

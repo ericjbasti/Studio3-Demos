@@ -1,1 +1,2 @@
-# Studio3-Demos
+Studio3 Demo files
+==================

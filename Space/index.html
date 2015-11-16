@@ -1,0 +1,27 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+    <title>layers</title>
+	<meta name = "viewport" content="width=device-width, user-scalable=0"/>
+</head>
+
+<body style="margin:0">
+	<canvas id="stage" height="600" width="1000" data-auto-pause="true"></canvas>
+	<div class="controls" style="position: fixed; background: rgba(255,255,255,.5);top: 0; left: 0">
+		<input id="zoom" type="range" name="points" min=".1" value = '1' max="560" step='.1'>
+		<input id="speed" type="range" name="speed" min="-1.0" value = '.5' max="4" step='.1'>
+		<select id='focus'>
+			<option value="theSun">Sun</option>
+			<option>mercury</option>
+			<option>venus</option>
+			<option>earth</option>
+			<option>theMoon</option>
+			<option>mars</option>
+			<option>jupitar</option>
+			<option>saturn</option>
+		</select>
+	</div>
+</body>
+<script type="text/javascript" src="../studio-compiled.js"></script>
+<script src="main.js"></script>
+</html>
