@@ -14,16 +14,16 @@
 <script src="studio-compiled.js"></script>
 <script>
 	
-var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/120, fullscreen:0, color: Studio.BLUE})
+var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/60, fullscreen:0, color: Studio.BLUE})
 for (var j = 0; j!=20 ;j++){
 	for (var i = 0; i!=32 ;i++){
 		var yy=new Studio.Rect({x:i*10+5, y: j*12, width: 8, height: 10})
 
 		yy.onEnterFrame= function(){
-			this.y+=2;
+			this.y += 2 * this._world.speed;
 
-			if(this.y>stage.height){
-				this. y = -10;
+			if(this.y>stage.height+10){
+				this.y = -10;
 				this._snapback();
 			}
 		}
