@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+    <title>Studio3</title>
+	<meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1"/>
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<link rel="apple-touch-icon" href="icon.png" />
+</head>
+
+<body style="margin:0;background: #333">
+	<canvas id="canvas" height="320" width="320"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
+</body>
+<script src="studio-compiled.js"></script>
+<script>
+	
+var stage = new Studio.Stage('canvas',{webgl:1, dur:1000/60, fullscreen:1, color: Studio.BLUE})
+
+var MAX = 16000/10;
+gravity = .5;
+for (var i = 0; i!=MAX;i++){
+	var yy=new Studio.Rect({x:stage.width/2 ,y:Math.random()*120,width:5 ,height:5 ,velocityX: 2-(Math.random()*4),velocityY: -13+(Math.random()*3), hit:10});
+	yy.color.set(Math.random()*255,Math.random()*255,Math.random()*255,1)
+
+	yy.onEnterFrame= function(){
+		this.velocityY += gravity
+		this.x+=this.velocityX;
+		this.y+=this.velocityY;
+		if(this.x>stage.width || this.x<0){
+			this.velocityX *=-1
+		}
+		if(this.y>stage.height){
+			this.velocityY*=-.8;
+			this.hit--;
+			this.y = stage.height-1;
+		}
+		if(!this.hit){
+			this.y = 0;
+			this.x = stage.width/2;
+			this.hit = 10;
+			this.velocityY = (Math.random()*3);
+			this._snapback();
+		}
+	}
+	stage.addChild(yy);
+	yy._snapback();
+}
+
+Studio.start();
+
+</script>
+
+
+</html>
+

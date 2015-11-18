@@ -29,6 +29,7 @@ var Star = function (attr){
 	this.image = Sun_image;
 	this.height = 109*earths;
 	this.color = 'yellow';
+	this._world = new Studio.DisplayProperty();
 	if(attr){
 		this.apply(attr);
 	}
@@ -43,7 +44,7 @@ Star.prototype.init = function(){
 }
 
 Star.prototype.onEnterFrame = function (){
-	this.rotation+= this._speed;
+	this.rotation+= this._world.speed;
 }
 
 
@@ -52,6 +53,7 @@ var Planet = function(attr){
 	this.color = 'green';
 	this.orbit_speed = 2
 	this.inheritRotation = false;
+	this._world = new Studio.DisplayProperty();
 	if(attr){
 		this.apply(attr);
 	}
@@ -61,7 +63,7 @@ var Planet = function(attr){
 Studio.buildAs(Planet,Star);
 
 Planet.prototype.onEnterFrame = function (){
-	this.rotation+= this._speed *this.orbit_speed;
+	this.rotation+= this._world.speed *this.orbit_speed;
 }
 
 var Moon = function(attr){
@@ -69,6 +71,7 @@ var Moon = function(attr){
 	this.color = '#999';
 	this.y = 2
 	this.orbit_speed = 2
+	this._world = new Studio.DisplayProperty();
 	if(attr){
 		this.apply(attr);
 	}
@@ -95,13 +98,14 @@ stage.addChild(theSun);
 
 var sun_layer = new Studio.Sprite({height:theSun.height, width: theSun.width, image: Sun_image_2});
 sun_layer.onEnterFrame = function(){
-	this.rotation+=this._speed *1.2;
+	// this.rotation+=this._world.speed;
+	console.log(this.rotation)
 }
 theSun.addChild(sun_layer)
 
 var sun_layer2 = new Studio.Sprite({height:theSun.height, width: theSun.width, image: Sun_image_3});
 sun_layer2.onEnterFrame = function(){
-	this.rotation+=this._speed *1.5;
+	this.rotation+= .01;
 }
 theSun.addChild(sun_layer2)
 
@@ -135,12 +139,12 @@ var uranus = new Planet({color:'red', y: theSun.radius + AU*19.2, orbit_speed : 
 
 var neptune = new Planet({color:'red', y: theSun.radius + AU*30.05, orbit_speed : .182, height: earths * 3.88});
 
-stage.camera.track(earth);
+stage.camera.track(theSun);
 
 
 theSun.addChildren(mercury, venus, earth, mars, jupitar, saturn, uranus, neptune);
 theSun.speed = .25;
-stage.camera.scaleX= stage.camera.scaleY = 80;
+stage.camera.scaleX= stage.camera.scaleY = 10;
 
 Studio.start();
 
