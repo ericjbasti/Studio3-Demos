@@ -98,16 +98,15 @@ stage.addChild(theSun);
 
 var sun_layer = new Studio.Sprite({height:theSun.height, width: theSun.width, image: Sun_image_2});
 sun_layer.onEnterFrame = function(){
-	// this.rotation+=this._world.speed;
-	console.log(this.rotation)
+	this.rotation+= .5 * this._world.speed;;
 }
 theSun.addChild(sun_layer)
 
 var sun_layer2 = new Studio.Sprite({height:theSun.height, width: theSun.width, image: Sun_image_3});
 sun_layer2.onEnterFrame = function(){
-	this.rotation+= .01;
+	this.rotation+= .8 * this._world.speed;
 }
-theSun.addChild(sun_layer2)
+sun_layer.addChild(sun_layer2)
 
 var mercury = new Planet({image:mercury_img, y: theSun.radius + AU*.387, orbit_speed : 1.607, height: earths * .383});
 
