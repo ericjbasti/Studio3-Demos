@@ -1,11 +1,11 @@
 var stage = new Studio.Stage("stage",{fullscreen: 1, dur:1000/10})
-stage.color.setFromHex("#109").alpha(.1).build()
+stage.color.setFromHex("#000").alpha(.1).build()
 
 var AU = 92.960 // ~distance of Earth from Sun in millions of miles 92,956,050 miles  scale = 
 var earths = .79176; // if we use the actual scale, you can't really see anything.
 				// radius = 3,958.8 miles
 				// diam = 7917.6 miles
-				// it reall should be 0.0079176
+				// it really should be 0.0079176
 				// Stupid space is big.
 
 Studio.buildAs = function(a,b){
