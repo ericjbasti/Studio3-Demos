@@ -19,14 +19,9 @@ var stage = new Studio.Stage('canvas',{webgl:1, dur:1000/60, fullscreen:0, color
 var MAX = 16000/1;
 gravity = .5;
 
-Studio.new = function(what){
-	return Object.create(Studio[what].prototype);
-}
-
 
 var BOXdrop = function(attr){
-	this.color = Studio.new('Color');
-	this._world =  Studio.new('DisplayProperty');
+	this.color = new Studio.Color();
 	if(attr){
 		this.apply(attr);
 	}
@@ -51,7 +46,7 @@ BOXdrop.prototype.onEnterFrame = function(){
 		this._snapback();
 	}
 	if(this.y>stage.height){
-		this.velocityY*=-.88;
+		this.velocityY*=-.8;
 		this.hit--;
 		this.y = stage.height-1;
 	}
@@ -61,6 +56,7 @@ BOXdrop.prototype.onEnterFrame = function(){
 for (var i = 0; i!=MAX;i++){
 	var yy=new BOXdrop({x:stage.width/2 ,y:Math.random()*120,width:3 ,height:3 ,velocityX: 2-(Math.random()*4),velocityY: -10+(Math.random()*6), hit:10});
 	stage.addChild(yy);
+	yy._snapback();
 }
 
 Studio.start();
