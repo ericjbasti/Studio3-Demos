@@ -16,67 +16,116 @@
 	
 var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/60, fullscreen:1})
 stage.color.setFromHex("#FFCC00bb")
-var butterflyWing = new Studio.Image('assets/butterfly-wing.png');
-var butterflyWingRight = new Studio.Image('assets/butterfly-wing-right.png');
-var butterflyBody = new Studio.Image('assets/butterfly-body.png');
+var butter_sheet = new Studio.Image('assets/butterfly.png');
 
-var Butterfly = function(attr){
-	this.image = butterflyBody;
-	this.width = 20;
-	this.height = 90;
+var BlueMorpho = function(attr){
+	this.image = butter_sheet;
+	this.width = 22;
+	this.height = 85;
 	this.y = 200
-	
+	this.rect = {x:250, y:0, height: 85, width: 22};
 	this.scaleY = this.scaleX = .5 + (Math.random()*.15)
 	if(attr){
 		this.apply(attr);
 	}
-	this.leftWing = new Studio.ImageSlice({rect:{x:0, y:0, height: 200, width: 126}, image: butterflyWing, anchorX: 1, height: 200, width: 126, x: -5, y: -15});
-	this.rightWing = new Studio.ImageSlice({rect:{x:0, y:0, height: 200, width: 126}, image: butterflyWingRight, anchorX: 0, height: 200, width: 126, x:5, y: -15});
+	this.leftWing = new Studio.ImageSlice({rect:{x:0, y:0, height: 194, width: 122}, image: butter_sheet, anchorX: 1, height: 194, width: 122, x: -5, y: -15});
+	this.rightWing = new Studio.ImageSlice({rect:{x:122, y:0, height: 194, width: 122}, image: butter_sheet, anchorX: 0, height: 194, width: 122, x:5, y: -15});
 	this.addChild(this.leftWing)
 	this.addChild(this.rightWing)
-	var count = Math.random()*22;
+	this.init();
+}
+Studio.extends(BlueMorpho, Studio.ImageSlice)
+
+BlueMorpho.prototype.init = function(){
+	this.count = Math.random()*22;
 	this.speed = .7+ Math.random()
-	this.boundsCheck = function(){
-		if(this.x< -100){
-			this.x = stage.width+100;
-			this.rotation = 0;
-		}
-		if(this.y< -100){
-			this.y = stage.height+100;
-			this.speed = .7+ Math.random()
-			this.rotation = 0;
-		}
-	}
-	this.onEnterFrame = function(){
-		var a = Math.cos(count);
-		this.leftWing.scaleX = .66 - (a * .65);
-		this.rightWing.scaleX = .66 - (a * .65);
-		this.leftWing.scaleY = 1 + (a * .1);
-		this.rightWing.scaleY = 1 + (a * .1);
-		count+= .3 * this._world.speed;
-		this.rotation += a;
-		this.x += .5 -Math.random() * 2 * this._world.speed;
-		this.y += .5 -Math.random() * 2 * this._world.speed;
-		if(count > 12){
-			count= 0;
-			this.speed = .7+ Math.random();
-		}
-		this.boundsCheck();
-	}
 }
 
-Butterfly.prototype = new Studio.Sprite();
-Butterfly.constructor = Butterfly;
+BlueMorpho.prototype.boundsCheck = function(){
+	if(this.x< -100){
+		this.x = stage.width+100;
+		this.rotation = 0;
+	}
+	if(this.y< -100){
+		this.y = stage.height+100;
+		this.speed = .7+ Math.random()
+		this.rotation = 0;
+	}
+}
+BlueMorpho.prototype.onEnterFrame = function(){
+	var a = Math.cos(this.count);
+	this.leftWing.scaleX = .66 - (a * .65);
+	this.rightWing.scaleX = .66 - (a * .65);
+	this.leftWing.scaleY = 1 + (a * .1);
+	this.rightWing.scaleY = 1 + (a * .1);
+	this.count+= .3 * this._world.speed;
+	this.rotation += a;
+	this.x += .5 -Math.random() * 2 * this._world.speed;
+	this.y += .5 -Math.random() * 2 * this._world.speed;
+	
+	this.boundsCheck();
+}
 
 
-for (var i = 0; i != 30 ; i++){
-	var a = new Butterfly({x: Math.random() * stage.width, y: Math.random() * stage.height});
+var Monarch = function(attr){
+	this.image = butter_sheet;
+	this.width = 18;
+	this.height = 66;
+	this.y = 200
+	this.rect = {x:250, y:0, height: 85, width: 22};
+	this.scaleY = this.scaleX = .4 + (Math.random()*.15)
+	if(attr){
+		this.apply(attr);
+	}
+	this.leftWing = new Studio.ImageSlice({rect:{x:246, y:96, height: 159, width: 114}, image: butter_sheet, anchorX: 1, height: 194, width: 122, x: -3, y: -15});
+	this.rightWing = new Studio.ImageSlice({rect:{x:246+114, y:96, height: 159, width: 114}, image: butter_sheet, anchorX: 0, height: 194, width: 122, x:3, y: -15});
+	this.addChild(this.leftWing)
+	this.addChild(this.rightWing)
+	this.init();
+}
+
+Studio.extends(Monarch, Studio.ImageSlice)
+
+Monarch.prototype.init = function(){
+	this.count = Math.random()*22;
+	this.speed = .7+ Math.random()
+}
+
+Monarch.prototype.boundsCheck = function(){
+	if(this.x< -100){
+		this.x = stage.width+100;
+		this.rotation = 0;
+	}
+	if(this.y< -100){
+		this.y = stage.height+100;
+		this.speed = .7+ Math.random()
+		this.rotation = 0;
+	}
+}
+Monarch.prototype.onEnterFrame = function(){
+	var a = Math.cos(this.count);
+	this.leftWing.scaleX = .66 - (a * .65);
+	this.rightWing.scaleX = .66 - (a * .65);
+	this.leftWing.scaleY = 1 + (a * .1);
+	this.rightWing.scaleY = 1 + (a * .1);
+	this.count+= .3 * this._world.speed;
+	this.rotation += a;
+	this.x += .5 -Math.random() * 2 * this._world.speed;
+	this.y += .5 -Math.random() * 2 * this._world.speed;
+	
+	this.boundsCheck();
+}
+
+for (var i = 0; i != 15 ; i++){
+	var a = new BlueMorpho({x: Math.random() * stage.width, y: Math.random() * stage.height});
 	stage.addChild(a);
+	// stage.addChild(b);
 }
-stage.onEnterFrame = function(){
-	this.ctx.fillStyle="#000"
-	this.ctx.fillText(Studio.delta.toFixed(0), 8, 16)
+for (var i = 0; i != 33 ; i++){
+	var b = new Monarch({x: Math.random() * stage.width, y: Math.random() * stage.height});
+	stage.addChild(b);
 }
+
 Studio.start();
 
 </script>
