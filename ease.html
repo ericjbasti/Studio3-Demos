@@ -9,65 +9,37 @@
 </head>
 
 <body style="margin:0;background: #333">
-	<canvas id="canvas" height="320" width="320"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
+	<canvas id="canvas" height="600" width="800"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
 </body>
 <script src="studio-compiled.js"></script>
 <script>
 	
-var stage = new Studio.Stage("canvas",{fullscreen:1});
-
-var r = new Studio.Rect({x:stage.width/2, y:stage.height/2, height:120, width:30, anchorY: .15});
-var rdot = new Studio.Rect({x:0, y:0, height:7, width:7});
-var r1 = new Studio.Rect({x:0, y:90, height:60, width:20, anchorY: .15});
-var r1dot = new Studio.Rect({x:0, y:0, height:3, width:3});
-var rc1 = new Studio.Rect({x:0, y:45, height:40, width:15,  anchorY: .15});
-var rc1dot = new Studio.Rect({x:0, y:0, height:3, width:3, });
-var rc2 = new Studio.Rect({x:0, y:30, height:30, width:11, anchorY: .15});
-var rc2dot = new Studio.Rect({x:0, y:0, height:3, width:3});
-
-
-var bolt_color= new Studio.Color().setFromHex('#000000')
-
-
-r.color.setFromHex("#555")
-r1.color.set(255,0,255,1);
-rc1.color.set(0,255,255,1);
-rc2.color.set(255,255,0,1);
-rdot.color = bolt_color;
-r1dot.color = bolt_color;
-rc1dot.color = bolt_color;
-rc2dot.color = bolt_color;
-
-r.addChild(r1)
-r.addChild(rdot)
-r1.addChild(rc1);
-r1.addChild(r1dot)
-rc1.addChild(rc1dot)
-rc1.addChild(rc2)
-rc2.addChild(rc2dot)
-stage.addChild(r);
-
-r.onEnterFrame = function(){
-	this.rotation++;
-}
-
-var t = stage.createTween(r1,'bounceOut',{rotation:90},3000).loop()
-
-stage.playTween(t);
-
-
-var t2 = stage.createTween(rc1,'elasticOut',{rotation:90},3000).loop()
-
-stage.playTween(t2);
-
-var t3 = stage.createTween(rc2,'backOut',{rotation:90},1500).loop()
-stage.playTween(t3);
-
-
+var stage = new Studio.Stage("canvas",{webgl:0});
 stage.color.setFromHex('#a3f')
 
+var easeBox = function(type,y){
+	this.x = 100;
+	this.y = y;
+	this.width = 20;
+	this.height = 20;
+	this.color.setFromHex('#00FF00');
 
-stage.ready = true;
+	stage.addChild(this);
+	stage.addTween(this, type , {x: 700}, 5000).loop();
+}
+Studio.extends(easeBox, Studio.Rect);
+
+
+stage.addChild(new easeBox('linear', 20))
+stage.addChild(new easeBox('quadIn', 60))
+stage.addChild(new easeBox('quadOut', 100))
+stage.addChild(new easeBox('quadInOut', 140))
+stage.addChild(new easeBox('snap', 180))
+stage.addChild(new easeBox('backOut', 220))
+stage.addChild(new easeBox('bounceOut', 260))
+stage.addChild(new easeBox('elasticOut', 300))
+stage.addChild(new easeBox('chillInOut', 340))
+
 
 Studio.start();
 </script>

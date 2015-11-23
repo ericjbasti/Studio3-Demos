@@ -78,6 +78,22 @@ stage.playTween(t3);
 
 
 stage.color.setFromHex('#222')
+stage.enableTouchEvents();
+stage.addButton(shoulder);
+stage.addButton(rc2);
+shoulder.onHoverStart = function(){
+	this.color.setFromHex('#FF7F00')
+}
+shoulder.onHoverEnd = function(){
+	this.color.setFromHex('#000')
+}
+
+rc2.onHoverStart = function(){
+	this.color.setFromHex('#FF7F00')
+}
+rc2.onHoverEnd = function(){
+	this.color.setFromHex('#000')
+}
 
 stage.ready = true;
 
