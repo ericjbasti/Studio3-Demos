@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+    <title>Studio3</title>
+	<meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1"/>
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<link rel="apple-touch-icon" href="icon.png" />
+</head>
+
+<body style="margin:0;background: #333">
+	<canvas id="canvas" height="400" width="600"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
+</body>
+<script src="studio-compiled.js"></script>
+<script>
+	
+var stage = new Studio.Stage("canvas",{fullscreen:0});
+
+Studio.UIButton = function(attr, stage){
+	this.hovered = false;
+	this.text = 'Button';
+	if (attr) {
+		this.apply(attr);
+	}
+	this.back = new Studio.Rect({height: this.height, width: this.width});
+	this.back.color.setFromHex("#FF00FF")
+	this.front = new Studio.Rect({height: this.height-4, width: this.width-4});
+	this.front.color.set(0,0,0,.8);
+	this.textBox = new Studio.TextBox(this.width-16, this.height-10, stage).apply({
+		x: 0 , 
+		y: 0 , 
+		font: '12px Arial', 
+		kerning: 0.9, 
+		lineHeight: 12*1.4 | 0 , 
+		vertical_align: Studio.MIDDLE, 
+		horizontal_align: Studio.CENTER
+	})
+	this.front.color.set(0,0,0,.8);
+	this.textBox.setText(this.text).finish();
+	this.addChildren(this.back,this.front,this.textBox);
+
+}
+Studio.UIButton.prototype = new Studio.DisplayObject();
+Studio.UIButton.prototype.constructor = Studio.UIButton;
+
+Studio.UIButton.prototype.onTap = Studio.UIButton.prototype.onHoverStart = function(a){
+	if(this.hover){
+		this.hover(a);
+	}
+}
+Studio.UIButton.prototype.onTapOutside = Studio.UIButton.prototype.onHoverEnd = function(a){
+	if(this.reset){
+		this.reset(a);
+	}
+}
+
+Studio.UIButton.prototype.onRelease = function(a){
+	if(this.action){
+		this.action(a);
+	}
+	if(this.reset){
+		this.reset(a);
+	}
+}
+
+var button = new Studio.UIButton({x:400,y:150, height: 24, width: 60},stage);
+button.hover = function(a){
+	this.back.color.setFromHex("#FF0080")
+	this.textBox.setColor('#FFFF66').finish()
+}
+button.reset = function(a){
+	this.back.color.setFromHex("#FF00FF")
+	this.textBox.setColor('#FFFFFF').finish()
+}
+
+button.action = function(a){
+	console.log('nice click!')
+}
+
+var button2 = new Studio.UIButton({x: 160, y: 200, height: 380, width: 300, text:"Lorem ipsum dolor\n\nsit amet, consectetur adipiscing elit. Quisque feugiat eleifend malesuada. Proin bibendum nunc et imperdiet viverra. Suspendisse lectus quam, tempus nec consequat tristique, pharetra a leo. Vestibulum cursus est libero, sit amet maximus erat faucibus tempor. Vestibulum at mauris ut felis eleifend finibus eget a nunc. Duis efficitur maximus leo, vel porta urna hendrerit ac.\n\n Praesent convallis tempus risus id fringilla. Aliquam id est sit amet ex tincidunt luctus ac nec nisi. Vestibulum sed libero vel enim scelerisque ornare vitae sed orci. Maecenas tincidunt turpis nibh, vitae tristique nulla commodo a. Nulla in mi in ipsum facilisis eleifend eu lobortis nunc. Aenean rhoncus, lorem a dictum consectetur, augue orci ornare lorem, sed tristique sapien orci eget lorem. Nulla ullamcorper sem vel risus commodo, iaculis dapibus arcu molestie."}, stage)
+
+
+
+stage.enableTouchEvents();
+
+stage.addChild(button);
+stage.addChild(button2)
+stage.addButton(button);
+stage.ready = true;
+Studio.start();
+</script>
+</html>
+
