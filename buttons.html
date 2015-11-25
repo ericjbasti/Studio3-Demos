@@ -12,6 +12,7 @@
 	<canvas id="canvas" height="400" width="600"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
 </body>
 <script src="studio-compiled.js"></script>
+<script src="stats.js"></script>
 <style>
 	canvas{image-rendering: -webkit-optimize-contrast;}
 
@@ -33,8 +34,8 @@ Studio.UIButton = function(attr, stage){
 	this.textBox = new Studio.TextBox(this.width-10, this.height, stage).apply({
 		x: 0 , 
 		y: 0 , 
-		font: '16px Break',
-		lineHeight: 16 | 0 , 
+		font: '16px BigBreak',
+		lineHeight: 14 | 0 , 
 		vertical_align: Studio.MIDDLE, 
 		horizontal_align: 0.5,
 		shadowColor: '#FF0080'
@@ -71,10 +72,12 @@ var button = new Studio.UIButton({x:400,y:150, height: 24, width: 60},stage);
 button.hover = function(a){
 	this.back.color.setFromHex("#FF0080")
 	this.textBox.setColor('#FFFF66').finish()
+	this.scaleX = this.scaleY = 1.2;
 }
 button.reset = function(a){
 	this.back.color.setFromHex("#FF00FF")
 	this.textBox.setColor('#FFFFFF').finish()
+	this.scaleX = this.scaleY = 1;
 }
 
 button.action = function(a){
@@ -90,6 +93,17 @@ stage.enableTouchEvents();
 stage.addChild(button);
 stage.addChild(button2)
 stage.addButton(button);
+
+
+
+stage.addEffect(STATS,{
+	external: false, 
+	height: 50,
+	width: stage.width,
+	position: 0,
+	clear_mode:'cover'}
+);
+
 stage.ready = true;
 Studio.start();
 </script>

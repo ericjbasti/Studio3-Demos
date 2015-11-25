@@ -12,6 +12,7 @@
 	<canvas id="canvas" height="320" width="320"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
 </body>
 <script src="studio-compiled.js"></script>
+<script src="stats.js"></script>
 <script>
 	
 var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/60, fullscreen:1})
@@ -116,15 +117,23 @@ Monarch.prototype.onEnterFrame = function(){
 	this.boundsCheck();
 }
 
-for (var i = 0; i != 15 ; i++){
+for (var i = 0; i != 100 ; i++){
 	var a = new BlueMorpho({x: Math.random() * stage.width, y: Math.random() * stage.height});
 	stage.addChild(a);
 	// stage.addChild(b);
 }
-for (var i = 0; i != 33 ; i++){
+for (var i = 0; i != 60 ; i++){
 	var b = new Monarch({x: Math.random() * stage.width, y: Math.random() * stage.height});
 	stage.addChild(b);
 }
+
+stage.addEffect(STATS,{
+	external: false, 
+	height: 50,
+	width: stage.width,
+	position: 0,
+	clear_mode:'cover'}
+);
 
 Studio.start();
 
