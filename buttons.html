@@ -43,7 +43,8 @@ Studio.UIButton = function(attr, stage){
 	this.front.color.set(0,0,0,.8);
 	this.textBox.setText(this.text).finish();
 	this.addChildren(this.back,this.front,this.textBox);
-
+	this.hoverIn_tween = stage.createTween(this, 'quadInOut', {scaleX: 1.2, scaleY: 1.2, rotation: 10}, 300).loop();
+	this.hoverOut_tween = stage.createTween(this, 'quadOut', {scaleX: 1, scaleY: 1, rotation: 0}, 300);
 }
 Studio.UIButton.prototype = new Studio.DisplayObject();
 Studio.UIButton.prototype.constructor = Studio.UIButton;
@@ -70,14 +71,16 @@ Studio.UIButton.prototype.onRelease = function(a){
 
 var button = new Studio.UIButton({x:400,y:150, height: 24, width: 60},stage);
 button.hover = function(a){
+	stage.stopTween(this.hoverOut_tween)
+	stage.playTween(this.hoverIn_tween)
 	this.back.color.setFromHex("#FF0080")
 	this.textBox.setColor('#FFFF66').finish()
-	this.scaleX = this.scaleY = 1.2;
 }
 button.reset = function(a){
+	stage.stopTween(this.hoverIn_tween);
+	stage.playTween(this.hoverOut_tween)
 	this.back.color.setFromHex("#FF00FF")
 	this.textBox.setColor('#FFFFFF').finish()
-	this.scaleX = this.scaleY = 1;
 }
 
 button.action = function(a){
@@ -91,10 +94,10 @@ var button2 = new Studio.UIButton({x: 160, y: 200, height: 350, width: 300, text
 stage.enableTouchEvents();
 
 stage.addChild(button);
+
 stage.addChild(button2)
+
 stage.addButton(button);
-
-
 
 stage.addEffect(STATS,{
 	external: false, 

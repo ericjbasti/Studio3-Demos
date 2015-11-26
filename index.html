@@ -17,7 +17,7 @@
 	
 var stage = new Studio.Stage('canvas',{webgl:1, dur:1000/60, fullscreen:1, color: Studio.BLUE})
 
-var MAX = 16000/1;
+var MAX = 16000/1 | 0 ;
 gravity = .4;
 
 
@@ -65,7 +65,7 @@ stage.addEffect(STATS,{
 	height: 50,
 	width: stage.width,
 	position: 0,
-	clear_mode:'cover'}
+	clear_mode:'erase'}
 );
 
 Studio.start();
