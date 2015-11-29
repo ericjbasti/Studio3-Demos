@@ -6,27 +6,48 @@
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-status-bar-style" content="black">
 	<link rel="apple-touch-icon" href="icon.png" />
+	<link rel="stylesheet" href="assets/debug.css" />
 </head>
-
 <body style="margin:0;background: #333">
-	<canvas id="canvas" height="320" width="320"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
+	<canvas id="canvas" height="320" width="320"  style="cursor:pointer;display: block;outline:1px solid #BBFF00;"></canvas>
+	<div class="debug_controls">
+		<label>Target FPS (fixed step)
+			<input id="targetFrameRate" type="range" value="16.66" max="100" min="1">
+		</label>
+		<!-- <input type = 'text'> -->
+	</div>
 </body>
 <script src="studio-compiled.js"></script>
 <script>
 	
-var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/60, fullscreen:0, color: Studio.BLUE})
+var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/100, fullscreen:0, color: Studio.BLUE})
+
+var fps_range = document.getElementById("targetFrameRate");
+stage.onEnterFrame = function(){
+	this.dur = parseFloat(fps_range.value)
+}
+
+
+
+var block = function(){
+	this.width = 8;
+	this.height = 10;
+}
+Studio.extends(block,Studio.Rect);
+
+block.prototype.onEnterFrame = function(){
+	this.y += 2 * this._world.speed;
+
+	if(this.y>stage.height+10){
+		this.y -= (stage.height + 20);
+		this._snapback();
+	}
+}
+
+
 for (var j = 0; j!=20 ;j++){
 	for (var i = 0; i!=32 ;i++){
-		var yy=new Studio.Rect({x:i*10+5, y: j*12, width: 8, height: 10})
-
-		yy.onEnterFrame= function(){
-			this.y += 2 * this._world.speed;
-
-			if(this.y>stage.height+10){
-				this.y = -10;
-				this._snapback();
-			}
-		}
+		var yy=new block().apply({x:i*10+5, y: j*12});
 		stage.addChild(yy);
 		yy._snapback();
 	}
