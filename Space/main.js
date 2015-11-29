@@ -1,5 +1,5 @@
 var stage = new Studio.Stage("stage",{fullscreen: 1, dur:1000/10})
-stage.color.setFromHex("#000").alpha(.1).build()
+stage.color.setFromHex("#000").alpha(.18).build()
 
 var AU = 92.960 // ~distance of Earth from Sun in millions of miles 92,956,050 miles  scale = 
 var earths = .79176; // if we use the actual scale, you can't really see anything.
@@ -20,10 +20,16 @@ var Sun_image_2 = new Studio.Image('imgs/sun_layer_x1.png');
 var Sun_image_3 = new Studio.Image('imgs/sun_layer2_x1.png');
 
 var mercury_img = new Studio.Image('imgs/mercury.png');
-
+var venus_img = new Studio.Image('imgs/venus.png');
 var earth_img = new Studio.Image('imgs/earth.png');
 var moon_img = new Studio.Image('imgs/moon.png');
-
+var mars_img = new Studio.Image('imgs/mars.png');
+var asteroid_img = new Studio.Image('imgs/asteroid.png');
+var jupiter_img = new Studio.Image('imgs/jupiter.png');
+var saturn_img = new Studio.Image('imgs/saturn.png');
+var saturn_rings_img = new Studio.Image('imgs/saturn_rings.png');
+var neptune_img = new Studio.Image('imgs/neptune.png');
+var uranus_img = new Studio.Image('imgs/uranus.png');
 
 var Star = function (attr){
 	this.image = Sun_image;
@@ -54,6 +60,7 @@ var Planet = function(attr){
 	this.orbit_speed = 2
 	this.inheritRotation = false;
 	this._world = new Studio.DisplayProperty();
+	this.orbit = Math.random()*3600;
 	if(attr){
 		this.apply(attr);
 	}
@@ -92,6 +99,20 @@ Planet.prototype.addMoon = function(y,diamater,speed){
 
 
 
+var Asteroid = function(){
+	this.height = (Math.random() * earths/8)+earths/16;
+	this.width = this.height*.75;
+	this.y = theSun.radius + AU * ((Math.random())+2.2);
+	this.orbit = Math.random()*3600;
+	this.orbit_speed = (Math.random()+1);
+	this.image = asteroid_img;
+}
+Studio.extends(Asteroid, Planet)
+
+
+
+
+
 var theSun = new Star({color:'#FF9900'});
 
 stage.addChild(theSun);
@@ -110,7 +131,7 @@ sun_layer.addChild(sun_layer2)
 
 var mercury = new Planet({image:mercury_img, y: theSun.radius + AU*.387, orbit_speed : 1.607, height: earths * .383});
 
-var venus = new Planet({color:'red', y: theSun.radius + AU*.723, orbit_speed : -1.174 , height: earths * .949});
+var venus = new Planet({image: venus_img, y: theSun.radius + AU*.723, orbit_speed : -1.174 , height: earths * .949});
 
 var earth = new Planet({image:earth_img, y: theSun.radius + AU*1, orbit_speed : 1.045 , height: earths});
 
@@ -122,28 +143,33 @@ var earth = new Planet({image:earth_img, y: theSun.radius + AU*1, orbit_speed : 
 	// so hard to wrap our heads around.
 	//var theMoon = earth.addMoon( earth.radius + (AU * .00257) , earths * .2524, 2).apply({image:moon_img});
 	var theMoon = earth.addMoon( earth.radius + (earths * 15) , earths * .2524, 2).apply({image:moon_img});
-var mars = new Planet({color:'red', y: theSun.radius + AU*1.52, orbit_speed : .802 , height: earths * .532});
+var mars = new Planet({image: mars_img, y: theSun.radius + AU*1.52, orbit_speed : .802 , height: earths * .532});
 
 
+for (var i = 0 ; i != 7000; i++){
+	theSun.addChild(new Asteroid())
+}
+var asteroids = new Asteroid();
+theSun.addChild(asteroids)
 
 
+var jupiter = new Planet({image: jupiter_img, y: theSun.radius + AU*5.2, orbit_speed : .434, height: earths * 11.21});
 
+var saturn = new Planet({image: saturn_img, y: theSun.radius + AU*9.58, orbit_speed : .323, height: earths * 9.45});
+var saturn_rings = new Studio.Sprite({image: saturn_rings_img, height: earths * 20, width: earths * 20});
 
+saturn.addChild(saturn_rings);
 
-var jupitar = new Planet({color:'red', y: theSun.radius + AU*5.2, orbit_speed : .434, height: earths * 11.21});
+var uranus = new Planet({image: uranus_img, y: theSun.radius + AU*19.2, orbit_speed : .228, height: earths * 4.01});
 
-var saturn = new Planet({color:'red', y: theSun.radius + AU*9.58, orbit_speed : .323, height: earths * 9.45});
-
-var uranus = new Planet({color:'red', y: theSun.radius + AU*19.2, orbit_speed : .228, height: earths * 4.01});
-
-var neptune = new Planet({color:'red', y: theSun.radius + AU*30.05, orbit_speed : .182, height: earths * 3.88});
+var neptune = new Planet({image: neptune_img, y: theSun.radius + AU*30.05, orbit_speed : .182, height: earths * 3.88});
 
 stage.camera.track(theSun);
 
 
-theSun.addChildren(mercury, venus, earth, mars, jupitar, saturn, uranus, neptune);
+theSun.addChildren(mercury, venus, earth, mars, jupiter, saturn, uranus, neptune);
 theSun.speed = .25;
-stage.camera.scaleX= stage.camera.scaleY = 10;
+stage.camera.scaleX= stage.camera.scaleY = 1.5;
 
 Studio.start();
 

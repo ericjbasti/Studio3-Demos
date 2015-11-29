@@ -3,6 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" >
     <title>layers</title>
 	<meta name = "viewport" content="width=device-width, user-scalable=0"/>
+	<link rel="stylesheet" href="../assets/debug.css" />
 </head>
 
 <body style="margin:0">
@@ -10,19 +11,28 @@
 	<style>
 	input{width: 100%;}
 	</style>
-	<div class="controls" style="position: fixed; background: rgba(255,255,255,.5);top: 0; left: 0; width: 100%">
-		<input id="zoom" type="range" name="points" min=".1" value = '1' max="560" step='.1'>
-		<input id="speed" type="range" name="speed" min="-1.0" value = '.5' max="4" step='.1'>
-		<select id='focus'>
-			<option value="theSun">Sun</option>
-			<option>mercury</option>
-			<option>venus</option>
-			<option>earth</option>
-			<option>theMoon</option>
-			<option>mars</option>
-			<option>jupitar</option>
-			<option>saturn</option>
-		</select>
+	<div class="debug_controls">
+		<label>Zoom Level
+			<input id="zoom" type="range" name="points" min=".1" value = '1' max="560" step='.1'>
+		</label>
+		<label>Speed
+			<input id="speed" type="range" name="speed" min="-1.0" value = '.5' max="4" step='.1'>
+		</label>
+		<label>Focus on:
+			<select id='focus'>
+				<option value="theSun">Sun</option>
+				<option value="mercury">Mercury</option>
+				<option value="venus">Venus</option>
+				<option value="earth">Earth</option>
+				<option value="theMoon">The Moon</option>
+				<option value="mars">Mars</option>
+				<option value="asteroids">Asteroid Belt</option>
+				<option value="jupiter">Jupiter</option>
+				<option value="saturn">Saturn</option>
+				<option value="neptune">Neptune</option>
+				<option value="uranus">Uranus</option>
+			</select>
+		</label>
 	</div>
 </body>
 <script type="text/javascript" src="../studio-compiled.js"></script>
