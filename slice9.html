@@ -1,0 +1,121 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+    <title>Studio3</title>
+	<meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1"/>
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<link rel="apple-touch-icon" href="icon.png" />
+	<link rel="stylesheet" href="assets/debug.css" />
+</head>
+<body style="margin:0;background: #333">
+	<canvas id="canvas" height="320" width="320"  style="cursor:pointer;display: block;outline:1px solid #BBFF00;"></canvas>
+	<div class="debug_controls">
+		<label>Target FPS (fixed step)
+			<input id="targetFrameRate" type="range" value="16.66" max="100" min="1">
+		</label>
+		<!-- <input type = 'text'> -->
+	</div>
+</body>
+<script src="studio-compiled.js"></script>
+<script>
+	
+var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/100, fullscreen:0, color: Studio.BLUE})
+
+var fps_range = document.getElementById("targetFrameRate");
+stage.onEnterFrame = function(){
+	this.dur = parseFloat(fps_range.value)
+}
+
+Studio.Slice9 = function(attr) {
+	this.image = null;
+	this.color = new Studio.Color(1, 1, 1, 1);
+	this.rect = {x: 0, y: 0, height: 32, width: 32};
+	this.innerRect = {x:8, y:8, width:18, height: 18};
+	this._boundingBox = new Studio.Box();
+	if (attr) {
+		this.apply(attr);
+	}
+};
+
+Studio.extends(Studio.Slice9, Studio.Sprite);
+
+
+Studio.Slice9.prototype.draw = function(ctx) {
+	if (!this.image) {
+		return;
+	}
+	if (!this.image.ready) {
+		return;
+	}
+	this.setAlpha(ctx);
+	var a_width = this.innerRect.x-this.rect.x;
+	var a_height = this.innerRect.y-this.rect.y;
+	var c_width = this.rect.width - this.innerRect.width - a_width;
+	var c_height = a_height;
+	var b_width = this.width-(c_width+a_width);
+	var b_height = a_height;
+
+	var g_width = a_width;
+	var g_height = this.rect.height - this.innerRect.height -a_height;
+
+	var d_width = a_width;
+	var d_height = this.height - (g_height+a_height);
+
+	var e_width = b_width;
+	var e_height = d_height;
+
+	var f_width = c_width;
+	var f_height = d_height;
+
+	var x = this._dx ;
+	var y = this._dy ;
+
+	ctx.strokeRect(x,y,a_width,a_height); // A
+	ctx.strokeRect(x+a_width,y,b_width,b_height); // B
+	ctx.strokeRect(x+a_width+b_width,y,c_width,c_height); //C
+	ctx.strokeRect(x,y+a_height,d_width,d_height); //D
+	ctx.strokeRect(x+a_width,y+a_height,e_width,e_height); //E
+	ctx.strokeRect(x+a_width+b_width,y+a_height,f_width,f_height); //F
+	ctx.strokeRect(x,y+a_height+d_height,g_width,g_height); //G
+	ctx.strokeRect(x+a_width,y+a_height+d_height,b_width,g_height); //H
+	ctx.strokeRect(x+a_width+b_width,y+a_height+d_height,f_width,g_height); //I
+
+	ctx.drawImage(this.image.image, this.rect.x, this.rect.y, this.innerRect.x, this.innerRect.y,x,y,a_width,a_height);
+
+	ctx.drawImage(this.image.image, this.innerRect.x, this.rect.y, b_width, b_height, x+a_width,y,b_width,b_height);
+
+	ctx.drawImage(this.image.image, this.innerRect.x+this.innerRect.width, this.rect.y, c_width, c_height, x+a_width+b_width,y,c_width,c_height);
+
+	ctx.drawImage(this.image.image, this.rect.x, this.innerRect.y, a_width, d_height, x,y+a_height,d_width,d_height);
+
+	ctx.drawImage(this.image.image, this.innerRect.x, this.innerRect.y, b_width, d_height, x+a_width,y+a_height,e_width,e_height);
+
+	ctx.drawImage(this.image.image, this.innerRect.x+this.innerRect.width, this.innerRect.y, c_width, d_height, x+a_width+b_width,y+a_height,f_width,f_height);
+
+	ctx.drawImage(this.image.image, this.rect.x, this.innerRect.y+this.innerRect.height, a_width, g_height, x,y+a_height+d_height,g_width,g_height);
+
+	ctx.drawImage(this.image.image, this.innerRect.x, this.innerRect.y+this.innerRect.height, b_width, g_height, x+a_width,y+a_height+d_height,b_width,g_height);
+
+	ctx.drawImage(this.image.image, this.innerRect.x+this.innerRect.width, this.innerRect.y+this.innerRect.height, c_width, g_height, x+a_width+b_width,y+a_height+d_height,f_width,g_height);
+
+	//ctx.drawImage(this.image.image, this.rect.x, this.rect.y, this.innerRect.x, this.innerRect.y, this._dx - (this._world.width * this.anchorX), this._dy - (this._world.height * this.anchorY), this.innerRect.x-this.rect.x,this.innerRect.y-this.rect.y);
+	//ctx.drawImage(this.image.image, this.innerRect.x, this.rect.y, this.innerRect.width, this.innerRect.y, this._dx - (this._world.width * this.anchorX), this._dy - (this._world.height * this.anchorY), this.innerRect.x-this.rect.x,this.innerRect.y-this.rect.y);
+	//ctx.drawImage(this.image.image, this.rect.x, this.rect.y, this.rect.width, this.rect.height, this._dx - (this._world.width * this.anchorX), this._dy - (this._world.height * this.anchorY), this._world.width, this._world.height);
+};
+
+
+var temp = new Studio.Image('assets/paused.png')
+
+var slice9 = new Studio.Slice9({image:temp, rect: {x:0,y:0,height:520, width: 480}, innerRect: {x:36, y:36, width: 408, height: 446}, height: 100, width: 100, x: 100, y: 100})
+
+stage.addChild(slice9)
+
+
+Studio.start();
+
+</script>
+
+
+</html>
+
