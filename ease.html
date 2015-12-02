@@ -27,7 +27,7 @@ var easeBox = function(type,y){
 	stage.addChild(this);
 	stage.addTween(this, type , {x: 700}, 5000).loop();
 }
-Studio.extends(easeBox, Studio.Rect);
+Studio.extend(easeBox, Studio.Rect);
 
 
 stage.addChild(new easeBox('linear', 20))

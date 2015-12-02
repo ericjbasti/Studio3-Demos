@@ -1,16 +1,17 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml" >
-    <title>Studio3</title>
-	<meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1"/>
-	<meta name="apple-mobile-web-app-capable" content="yes" />
-	<meta name="apple-mobile-web-app-status-bar-style" content="black">
-	<link rel="apple-touch-icon" href="icon.png" />
-	<link rel="stylesheet" href="assets/debug.css" />
-</head>
+	<head>
+	    <title>Studio3</title>
+		<meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1"/>
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<link rel="apple-touch-icon" href="icon.png" />
+		<link rel="stylesheet" href="assets/debug.css" />
+	</head>
 <body style="margin:0;background: #333">
 	<canvas id="canvas" height="320" width="320"  style="cursor:pointer;display: block;outline:1px solid #BBFF00;"></canvas>
-	<div class="debug_controls">
+	<div class="debug_controls" id="dd">
 		<label>Target FPS (fixed step)
 			<input id="targetFrameRate" type="range" value="16.66" max="100" min="1">
 		</label>
@@ -20,11 +21,12 @@
 <script src="studio-compiled.js"></script>
 <script>
 	
-var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/100, fullscreen:0, color: Studio.BLUE})
+var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/30, fullscreen:0, color: Studio.BLUE})
 
 var fps_range = document.getElementById("targetFrameRate");
+var dd = document.getElementById('dd');
 stage.onEnterFrame = function(){
-	this.dur = parseFloat(fps_range.value)
+	dd.innerHTML = Studio.delta;
 }
 
 
@@ -33,7 +35,7 @@ var block = function(){
 	this.width = 8;
 	this.height = 10;
 }
-Studio.extends(block,Studio.Rect);
+Studio.extention(block,Studio.Rect);
 
 block.prototype.onEnterFrame = function(){
 	this.y += 2 * this._world.speed;
@@ -45,8 +47,8 @@ block.prototype.onEnterFrame = function(){
 }
 
 
-for (var j = 0; j!=20 ;j++){
-	for (var i = 0; i!=32 ;i++){
+for (var j = 0; j!=1 ;j++){
+	for (var i = 0; i!=3 ;i++){
 		var yy=new block().apply({x:i*10+5, y: j*12});
 		stage.addChild(yy);
 		yy._snapback();

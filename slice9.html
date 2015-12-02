@@ -14,104 +14,145 @@
 		<label>Target FPS (fixed step)
 			<input id="targetFrameRate" type="range" value="16.66" max="100" min="1">
 		</label>
+		<label>Resolution
+			<input id="resolution" type="range" value="1" max="2" min=".25" step=".25">
+		</label>
+		<label>Snap Pixels: <input id="snap" type="checkbox"></label>
+		<label>Full Screen: <input id="fullscreen" type="checkbox"></label>
 		<!-- <input type = 'text'> -->
 	</div>
 </body>
 <script src="studio-compiled.js"></script>
 <script>
 	
-var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/100, fullscreen:0, color: Studio.BLUE})
+var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/10, fullscreen:0, color: Studio.BLUE})
 
 var fps_range = document.getElementById("targetFrameRate");
+var resolution = document.getElementById("resolution");
+var snap = document.getElementById("snap");
+var fullscreen = document.getElementById("fullscreen");
 stage.onEnterFrame = function(){
-	this.dur = parseFloat(fps_range.value)
+	this.dur = parseFloat(fps_range.value);
+	var res = parseFloat(resolution.value);
+	if( res != this.resolution){
+		this.resolution = res;
+		this.setPixelRatio();
+	}
+	stage.snap = snap.checked;
+	if(fullscreen.checked != this.fullscreen){
+		this.fullscreen = fullscreen.checked;
+		this._sizeCanvas(this.fullscreen);
+	}
 }
 
 Studio.Slice9 = function(attr) {
-	this.image = null;
+	this.borders = null;
 	this.color = new Studio.Color(1, 1, 1, 1);
 	this.rect = {x: 0, y: 0, height: 32, width: 32};
 	this.innerRect = {x:8, y:8, width:18, height: 18};
 	this._boundingBox = new Studio.Box();
+	this.resolution = 1;
 	if (attr) {
 		this.apply(attr);
 	}
+	this.cache = new Studio.Cache(this.width*this.resolution, this.height*this.resolution,1)
 };
 
-Studio.extends(Studio.Slice9, Studio.Sprite);
+Studio.extend(Studio.Slice9, Studio.Sprite);
 
+Studio.Slice9.prototype._drawStreched = function(ctx){
+	var a_w = this.innerRect.x - this.rect.x;
+	var a_h = this.innerRect.y - this.rect.y;
+	var c_w = this.rect.width - this.innerRect.width - a_w;
+	var b_w = this.width*this.resolution - ( c_w + a_w );
+	var g_h = this.rect.height - this.innerRect.height -a_h;
+	var d_h = this.height*this.resolution - ( g_h + a_h );
+
+	ctx.drawImage(this.borders.image, this.rect.x, this.rect.y, this.innerRect.x, this.innerRect.y, 0, 0, a_w, a_h);
+	ctx.drawImage(this.borders.image, this.innerRect.x, this.rect.y, this.innerRect.width, a_h, a_w, 0, b_w, a_h);
+	ctx.drawImage(this.borders.image, this.innerRect.x + this.innerRect.width, this.rect.y, c_w, a_h, a_w + b_w, 0, c_w, a_h);
+
+	ctx.drawImage(this.borders.image, this.rect.x, this.innerRect.y, a_w, this.innerRect.height, 0, a_h, a_w, d_h);
+	ctx.drawImage(this.borders.image, this.innerRect.x, this.innerRect.y, this.innerRect.width, this.innerRect.height, a_w, a_h, b_w, d_h);
+	ctx.drawImage(this.borders.image, this.innerRect.x + this.innerRect.width, this.innerRect.y, c_w, this.innerRect.height,  a_w + b_w, a_h, c_w, d_h);
+
+	ctx.drawImage(this.borders.image, this.rect.x, this.innerRect.y + this.innerRect.height, a_w, g_h, 0, a_h + d_h, a_w, g_h);
+	ctx.drawImage(this.borders.image, this.innerRect.x, this.innerRect.y + this.innerRect.height, this.innerRect.width, g_h, a_w, a_h + d_h, b_w, g_h);
+	ctx.drawImage(this.borders.image, this.innerRect.x + this.innerRect.width, this.innerRect.y + this.innerRect.height, c_w, g_h, a_w + b_w , a_h + d_h, c_w, g_h);
+}
+Studio.Slice9.prototype.updateCache = function(){
+	this._drawStreched(this.cache.buffer);
+	this.cache.ready = true;
+}
+
+
+
+// Studio.Slice9.prototype.draw = function(ctx) {
+// 	if (!this.borders) {
+// 		return;
+// 	}
+// 	if (!this.borders.ready) {
+// 		return;
+// 	}
+// 	this.setAlpha(ctx);
+// 	ctx.drawImage(this.cache.image, this.innerRect.x + this.innerRect.width, this.innerRect.y + this.innerRect.height, c_w, g_h, a_w + b_w , a_h + d_h, c_w, g_h);
+// 	// this._drawStreched(this.cache.buffer, 0,0);
+// };
+
+Studio.Slice9.prototype.drawAngled = function(ctx) {
+	ctx.save();
+	this.prepAngled(ctx);
+	ctx.drawImage(this.cache.image, 0, 0, this.cache.image.width, this.cache.image.height, -(this.width * this.anchorX), -(this.height * this.anchorY), this.width, this.height);
+	ctx.restore();
+};
 
 Studio.Slice9.prototype.draw = function(ctx) {
-	if (!this.image) {
+	if (!this.borders) {
 		return;
 	}
-	if (!this.image.ready) {
+	if (!this.cache.ready) {
+		this.updateCache();
 		return;
 	}
 	this.setAlpha(ctx);
-	var a_width = this.innerRect.x-this.rect.x;
-	var a_height = this.innerRect.y-this.rect.y;
-	var c_width = this.rect.width - this.innerRect.width - a_width;
-	var c_height = a_height;
-	var b_width = this.width-(c_width+a_width);
-	var b_height = a_height;
-
-	var g_width = a_width;
-	var g_height = this.rect.height - this.innerRect.height -a_height;
-
-	var d_width = a_width;
-	var d_height = this.height - (g_height+a_height);
-
-	var e_width = b_width;
-	var e_height = d_height;
-
-	var f_width = c_width;
-	var f_height = d_height;
-
-	var x = this._dx ;
-	var y = this._dy ;
-
-	ctx.strokeRect(x,y,a_width,a_height); // A
-	ctx.strokeRect(x+a_width,y,b_width,b_height); // B
-	ctx.strokeRect(x+a_width+b_width,y,c_width,c_height); //C
-	ctx.strokeRect(x,y+a_height,d_width,d_height); //D
-	ctx.strokeRect(x+a_width,y+a_height,e_width,e_height); //E
-	ctx.strokeRect(x+a_width+b_width,y+a_height,f_width,f_height); //F
-	ctx.strokeRect(x,y+a_height+d_height,g_width,g_height); //G
-	ctx.strokeRect(x+a_width,y+a_height+d_height,b_width,g_height); //H
-	ctx.strokeRect(x+a_width+b_width,y+a_height+d_height,f_width,g_height); //I
-
-	ctx.drawImage(this.image.image, this.rect.x, this.rect.y, this.innerRect.x, this.innerRect.y,x,y,a_width,a_height);
-
-	ctx.drawImage(this.image.image, this.innerRect.x, this.rect.y, b_width, b_height, x+a_width,y,b_width,b_height);
-
-	ctx.drawImage(this.image.image, this.innerRect.x+this.innerRect.width, this.rect.y, c_width, c_height, x+a_width+b_width,y,c_width,c_height);
-
-	ctx.drawImage(this.image.image, this.rect.x, this.innerRect.y, a_width, d_height, x,y+a_height,d_width,d_height);
-
-	ctx.drawImage(this.image.image, this.innerRect.x, this.innerRect.y, b_width, d_height, x+a_width,y+a_height,e_width,e_height);
-
-	ctx.drawImage(this.image.image, this.innerRect.x+this.innerRect.width, this.innerRect.y, c_width, d_height, x+a_width+b_width,y+a_height,f_width,f_height);
-
-	ctx.drawImage(this.image.image, this.rect.x, this.innerRect.y+this.innerRect.height, a_width, g_height, x,y+a_height+d_height,g_width,g_height);
-
-	ctx.drawImage(this.image.image, this.innerRect.x, this.innerRect.y+this.innerRect.height, b_width, g_height, x+a_width,y+a_height+d_height,b_width,g_height);
-
-	ctx.drawImage(this.image.image, this.innerRect.x+this.innerRect.width, this.innerRect.y+this.innerRect.height, c_width, g_height, x+a_width+b_width,y+a_height+d_height,f_width,g_height);
-
-	//ctx.drawImage(this.image.image, this.rect.x, this.rect.y, this.innerRect.x, this.innerRect.y, this._dx - (this._world.width * this.anchorX), this._dy - (this._world.height * this.anchorY), this.innerRect.x-this.rect.x,this.innerRect.y-this.rect.y);
-	//ctx.drawImage(this.image.image, this.innerRect.x, this.rect.y, this.innerRect.width, this.innerRect.y, this._dx - (this._world.width * this.anchorX), this._dy - (this._world.height * this.anchorY), this.innerRect.x-this.rect.x,this.innerRect.y-this.rect.y);
-	//ctx.drawImage(this.image.image, this.rect.x, this.rect.y, this.rect.width, this.rect.height, this._dx - (this._world.width * this.anchorX), this._dy - (this._world.height * this.anchorY), this._world.width, this._world.height);
+	if (this.angle) {
+		this.drawAngled(ctx);
+	} else {
+		ctx.drawImage(this.cache.image, 0, 0, this.cache.image.width, this.cache.image.height, this._dx - (this._world.width * this.anchorX), this._dy - (this._world.height * this.anchorY), this._world.width, this._world.height);
+	}
 };
 
 
 var temp = new Studio.Image('assets/paused.png')
 
-var slice9 = new Studio.Slice9({image:temp, rect: {x:0,y:0,height:520, width: 480}, innerRect: {x:36, y:36, width: 408, height: 446}, height: 100, width: 100, x: 100, y: 100})
+var slice9_2 = new Studio.Slice9({borders:temp, rect: {x:0,y:0,height:520, width: 480}, innerRect: {x:36, y:36, width: 408, height: 446}, height: 300, width: 137, x: 80, y: 160})
+
+var cc = new Studio.Cache(51,51,2);
+
+cc.buffer.fillStyle="rgba(200,0,20,.5)";
+cc.buffer.fillRect(10,10,40,40);
+cc.buffer.lineWidth = 1
+cc.buffer.strokeRect(1,1,40,40);
+cc.buffer.fillStyle="rgba(0,0,200,.5)";
+cc.buffer.fillRect(1,1,40,40);
+cc.buffer.strokeRect(10,10,40,40);
+
+var cc_border = new Studio.Slice9({borders:cc, rect: {x:0,y:0,height:51*2, width: 51*2}, innerRect: {x:11*2, y:11*2, width: 20*2, height: 20*2}, height: 100, width: 100, x: 100, y: 100, resolution:2})
+var slice9 = new Studio.Slice9({borders:temp, rect: {x:0,y:0,height:520, width: 480}, innerRect: {x:36, y:36, width: 408, height: 446}, height: 200, width: 200, x: 200, y: 200, resolution:2})
 
 stage.addChild(slice9)
+stage.addChild(slice9_2)
+stage.addChild(cc_border)
 
+slice9._snapback();
+slice9_2._snapback();
+cc_border._snapback();
 
+var tt = stage.createTween(slice9,'linear',{y:360},4000,null, function(){this._snapback();}).loop().reflect(false);
+slice9.onEnterFrame = function(){
+	// this.rotation++;
+}
+stage.playTween(tt);
 Studio.start();
 
 </script>

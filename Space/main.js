@@ -107,7 +107,7 @@ var Asteroid = function(){
 	this.orbit_speed = (Math.random()+1);
 	this.image = asteroid_img;
 }
-Studio.extends(Asteroid, Planet)
+Studio.extend(Asteroid, Planet)
 
 
 

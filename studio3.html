@@ -15,7 +15,7 @@
 <script src="stats.js"></script>
 <script>
 	
-var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/60, fullscreen:1})
+var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/60, fullscreen:1, resolution: 1})
 stage.color.setFromHex("#FFCC00bb")
 var butter_sheet = new Studio.Image('assets/butterfly.png');
 
@@ -35,7 +35,7 @@ var BlueMorpho = function(attr){
 	this.addChild(this.rightWing)
 	this.init();
 }
-Studio.extends(BlueMorpho, Studio.ImageSlice)
+Studio.extend(BlueMorpho, Studio.ImageSlice)
 
 BlueMorpho.prototype.init = function(){
 	this.count = Math.random()*22;
@@ -85,7 +85,7 @@ var Monarch = function(attr){
 	this.init();
 }
 
-Studio.extends(Monarch, Studio.ImageSlice)
+Studio.extend(Monarch, Studio.ImageSlice)
 
 Monarch.prototype.init = function(){
 	this.count = Math.random()*22;
@@ -134,6 +134,50 @@ stage.addEffect(STATS,{
 	position: 0,
 	clear_mode:'cover'}
 );
+
+var BillBW = new Studio.Plugin({
+	options: {
+
+	},
+	init: function(a) { // lets build out a canvas for the stats
+		// this.cache = new Studio.Cache(a.width,a.height,a.resolution);
+
+		this.oldpixel = 1;
+		this.newpixel = 1;
+		this.qerror = 1;
+	},
+	action: function(a) {
+		var pixels = a.ctx.getImageData(0,0,a.width,a.height);
+		var pixeldata = pixels;
+		var width = a.canvas.width;
+		var length = pixeldata.data.length;
+		for (var i=0; i < length; i+=4) {
+			this.oldpixel = pixeldata.data[i];
+
+			this.newpixel = parseInt((this.oldpixel / 255)) * 255 ;
+
+			pixeldata.data[i] = pixeldata.data[i+1] = pixeldata.data[i+2] = this.newpixel;
+
+			this.qerror = (this.oldpixel - this.newpixel) * .15;
+
+			if((i % width === 0) && (i+4 % width === 0) && (i+8 % width === 0)){
+
+			}else{
+				pixeldata.data[i+5] = pixeldata.data[i+6] = pixeldata.data[i+4]+= this.qerror ;
+				pixeldata.data[i+9] = pixeldata.data[i+10] = pixeldata.data[i+8]+= this.qerror;
+				pixeldata.data[i+5+width] = pixeldata.data[i+6+width] = pixeldata.data[i+4+width] += this.qerror;
+				pixeldata.data[i+1+width] = pixeldata.data[i+2+width] = pixeldata.data[i+width] += this.qerror;
+				pixeldata.data[i+width-3] = pixeldata.data[i+width-2] = pixeldata.data[i+width-4] += this.qerror;
+				pixeldata.data[i+width*2] = pixeldata.data[i+(width*2)] = pixeldata.data[i+(width*2)] += this.qerror;
+			}
+		}
+		a.ctx.putImageData(pixeldata,0,0);
+	}
+})
+
+stage.addEffect(BillBW);
+
+
 
 Studio.start();
 

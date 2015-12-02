@@ -1,9 +1,9 @@
 .debug_controls{
 	position: fixed;
-	top: 0.5em;
-	left: 0.5em;
+	top: 0.25em;
+	left: 0.25em;
 	width: 100%;
-	max-width: 400px;
+	max-width: 300px;
 	background: rgba(90,0,30,.8);
 	box-shadow: .25em .25em 0 rgba(0,0,0,.4);
 	padding: 10px;
@@ -28,6 +28,9 @@
 	color: #fff;
 	font-family: Courier;
 }
+.debug_controls input[type='checkbox']{
+	width: auto;
+}
 .debug_controls input:focus, .debug_controls input:hover{
 	color: #FFFF00;
 	border-color: #FFFF00;
@@ -36,6 +39,10 @@
 canvas{
 	margin: 0 auto;
 }
+
+
+
+
 @media screen and (max-width: 700px){
 	canvas{margin-top: 68px}
 	.debug_controls{

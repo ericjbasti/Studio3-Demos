@@ -19,7 +19,7 @@
 </style>
 <script>
 	
-var stage = new Studio.Stage("canvas",{fullscreen:0});
+var stage = new Studio.Stage("canvas",{fullscreen:0, resolution: 2});
 
 Studio.UIButton = function(attr, stage){
 	this.hovered = false;
@@ -43,7 +43,7 @@ Studio.UIButton = function(attr, stage){
 	this.front.color.set(0,0,0,.8);
 	this.textBox.setText(this.text).finish();
 	this.addChildren(this.back,this.front,this.textBox);
-	this.hoverIn_tween = stage.createTween(this, 'quadInOut', {scaleX: 1.2, scaleY: 1.2, rotation: 10}, 300).loop();
+	this.hoverIn_tween = stage.createTween(this, 'quadInOut', {scaleX: 1.2, scaleY: 1.2, rotation: 10}, 300).loop().reflect(true);
 	this.hoverOut_tween = stage.createTween(this, 'quadOut', {scaleX: 1, scaleY: 1, rotation: 0}, 300);
 }
 Studio.UIButton.prototype = new Studio.DisplayObject();
