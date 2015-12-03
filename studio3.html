@@ -9,14 +9,14 @@
 </head>
 
 <body style="margin:0;background: #333">
-	<canvas id="canvas" height="320" width="320"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
+	<canvas id="canvas" height="380" width="512"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
 </body>
 <script src="studio-compiled.js"></script>
 <script src="stats.js"></script>
 <script>
 	
 var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/60, fullscreen:1, resolution: 1})
-stage.color.setFromHex("#FFCC00bb")
+stage.color.setFromHex("#555")
 var butter_sheet = new Studio.Image('assets/butterfly.png');
 
 var BlueMorpho = function(attr){
@@ -117,25 +117,17 @@ Monarch.prototype.onEnterFrame = function(){
 	this.boundsCheck();
 }
 
-for (var i = 0; i != 100 ; i++){
+for (var i = 0; i != 10 ; i++){
 	var a = new BlueMorpho({x: Math.random() * stage.width, y: Math.random() * stage.height});
 	stage.addChild(a);
 	// stage.addChild(b);
 }
-for (var i = 0; i != 60 ; i++){
+for (var i = 0; i != 10 ; i++){
 	var b = new Monarch({x: Math.random() * stage.width, y: Math.random() * stage.height});
 	stage.addChild(b);
 }
 
-stage.addEffect(STATS,{
-	external: false, 
-	height: 50,
-	width: stage.width,
-	position: 0,
-	clear_mode:'cover'}
-);
-
-var BillBW = new Studio.Plugin({
+var BillAtkinsonDither_BW = new Studio.Plugin({
 	options: {
 
 	},
@@ -147,37 +139,163 @@ var BillBW = new Studio.Plugin({
 		this.qerror = 1;
 	},
 	action: function(a) {
-		var pixels = a.ctx.getImageData(0,0,a.width,a.height);
-		var pixeldata = pixels;
-		var width = a.canvas.width;
-		var length = pixeldata.data.length;
+		var pixels = a.ctx.getImageData(0,0,a.canvas.width,a.canvas.height);
+		var pixeldata = pixels.data;
+		var width = parseInt(a.canvas.width*4)
+		var length = pixeldata.length;
+
 		for (var i=0; i < length; i+=4) {
-			this.oldpixel = pixeldata.data[i];
+			this.oldpixel = pixeldata[i];
 
-			this.newpixel = parseInt((this.oldpixel / 255)) * 255 ;
+			this.newpixel = this.oldpixel >> 7;
+			this.newpixel *= 255;
 
-			pixeldata.data[i] = pixeldata.data[i+1] = pixeldata.data[i+2] = this.newpixel;
+			pixeldata[i] = pixeldata[i+1] = pixeldata[i+2] = this.newpixel;
 
 			this.qerror = (this.oldpixel - this.newpixel) * .15;
 
 			if((i % width === 0) && (i+4 % width === 0) && (i+8 % width === 0)){
 
 			}else{
-				pixeldata.data[i+5] = pixeldata.data[i+6] = pixeldata.data[i+4]+= this.qerror ;
-				pixeldata.data[i+9] = pixeldata.data[i+10] = pixeldata.data[i+8]+= this.qerror;
-				pixeldata.data[i+5+width] = pixeldata.data[i+6+width] = pixeldata.data[i+4+width] += this.qerror;
-				pixeldata.data[i+1+width] = pixeldata.data[i+2+width] = pixeldata.data[i+width] += this.qerror;
-				pixeldata.data[i+width-3] = pixeldata.data[i+width-2] = pixeldata.data[i+width-4] += this.qerror;
-				pixeldata.data[i+width*2] = pixeldata.data[i+(width*2)] = pixeldata.data[i+(width*2)] += this.qerror;
+				pixeldata[i+5] = pixeldata[i+6] = pixeldata[i+4]+= this.qerror;
+				pixeldata[i+9] = pixeldata[i+10] = pixeldata[i+8]+= this.qerror;
+				pixeldata[i+5+width] = pixeldata[i+6+width] = pixeldata[i+4+width] += this.qerror;
+				pixeldata[i+1+width] = pixeldata[i+2+width] = pixeldata[i+width] += this.qerror;
+				pixeldata[i+width-3] = pixeldata[i+width-2] = pixeldata[i+width-4] += this.qerror;
+				pixeldata[i+width*2] = pixeldata[i+(width*2)] = pixeldata[i+(width*2)] += this.qerror;
 			}
 		}
-		a.ctx.putImageData(pixeldata,0,0);
+		a.ctx.putImageData(pixels,0,0);
 	}
 })
 
-stage.addEffect(BillBW);
+var OldTV = new Studio.Plugin({
+	options: {
+
+	},
+	init: function(a) { // lets build out a canvas for the stats
+		// this.cache = new Studio.Cache(a.width,a.height,a.resolution);
+		this.oldpixel = 1;
+		this.newpixel = 1;
+		this.qerror = 1;
+	},
+	action: function(a) {
+		var pixels = a.ctx.getImageData(0,0,a.canvas.width,a.canvas.height);
+		var pixeldata = pixels.data;
+		var width = a.canvas.width*4;
+		var length = pixeldata.length;
+
+		for (var i=0; i < length; i++) {
+			this.oldpixel = pixeldata[i];
+
+			this.newpixel = this.oldpixel >> 7;
+			this.newpixel *= 255;
+
+			pixeldata[i] = this.newpixel;
+
+			this.qerror = (this.oldpixel - this.newpixel) * .25;
+
+			if((i % width === 0) && (i+4 % width === 0) && (i+8 % width === 0)){
+
+			}else{
+				pixeldata[i+4]+= this.qerror;
+				pixeldata[i+8]+= this.qerror;
+				pixeldata[i+width] += this.qerror;
+			}
+		}
+		a.ctx.putImageData(pixels,0,0);
+	}
+})
 
 
+var Posterize = new Studio.Plugin({
+	options: {
+
+	},
+	init: function(a) { // lets build out a canvas for the stats
+		// this.cache = new Studio.Cache(a.width,a.height,a.resolution);
+		this.oldpixel = 1;
+		this.newpixel = 1;
+		this.qerror = 1;
+	},
+	action: function(a) {
+		var pixels = a.ctx.getImageData(0,0,a.canvas.width,a.canvas.height);
+		var pixeldata = pixels.data;
+		var width = a.canvas.width*4;
+		var length = pixeldata.length;
+
+		for (var i=0; i < length; i++) {
+			this.oldpixel = pixeldata[i];
+
+			this.newpixel = this.oldpixel >> 7;
+			this.newpixel *= 255;
+
+			pixeldata[i] = this.newpixel;
+
+
+		}
+		a.ctx.putImageData(pixels,0,0);
+	}
+})
+
+
+var Replicator = new Studio.Plugin({
+	options: {
+		x: 3,
+		y: 3,
+	},
+	init: function(a) {
+		this.cache = new Studio.Cache();
+	},
+	action: function(a) {
+		var width = a.canvas.width/this.options.x;
+		var height = a.canvas.height/this.options.y;
+		this.cache.image.width = width;
+		this.cache.image.height = height;
+		this.cache.buffer.drawImage(a.canvas,0,0, width, height);
+		for(var i = 0; i!= this.options.x; i++){
+			for(var j = 0; j!= this.options.y; j++){
+				a.ctx.drawImage(this.cache.image, i * width , j * height, width ,height)
+			}
+		}
+	}
+})
+
+var Bloom = new Studio.Plugin({
+	options: {
+	},
+	init: function(a) {
+		this.height = a.canvas.height/2;
+		this.width = a.canvas.width/2;
+		this.cache = new Studio.Cache(this.width,this.height);
+		// this.cache.buffer.strokeStyle = '#fff';
+		// this.cache.buffer.strokeRect( 10, 10, this.width-20, this.height-20);
+		// this.cache.buffer.strokeRect( 15, 15, this.width-30, this.height-30);
+		// this.cache.buffer.fillStyle = "rgba(200,0,0,.5)";
+		// this.cache.buffer.fillRect( 25, this.height-25-this.height/4, this.width/4, this.height/4);
+		this.cache.buffer.globalAlpha = .25
+	},
+	action: function(a) {
+		this.cache.buffer.globalCompositeOperation = "source-over"
+		this.cache.buffer.fillStyle="rgba(0,0,0,.15)";
+		this.cache.buffer.fillRect( 0,0,this.width, this.height);
+		this.cache.buffer.globalCompositeOperation = "lighten"
+		this.cache.buffer.drawImage(a.canvas,0,0, this.width, this.height)
+		a.ctx.globalCompositeOperation = 'lighten';
+		a.ctx.drawImage(this.cache.image, 0, 0, a.canvas.width, a.canvas.height)
+		a.ctx.globalCompositeOperation = 'source-over';
+	}
+})
+stage.addEffect(Bloom);
+// stage.addEffect(Replicator,{x:3,y:3});
+stage.addEffect(STATS,{
+	external: false, 
+	height: 50,
+	width: stage.width,
+	position: 0,
+	clear_mode:'cover'}
+);
+// stage.addEffect(Replicator);
 
 Studio.start();
 
