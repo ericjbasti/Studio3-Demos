@@ -16,7 +16,7 @@
 <script>
 	
 var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/60, fullscreen:1, resolution: 1})
-stage.color.setFromHex("#555")
+stage.color.setFromHex("#333")
 var butter_sheet = new Studio.Image('assets/butterfly.png');
 
 var BlueMorpho = function(attr){
@@ -117,12 +117,12 @@ Monarch.prototype.onEnterFrame = function(){
 	this.boundsCheck();
 }
 
-for (var i = 0; i != 10 ; i++){
+for (var i = 0; i != 30 ; i++){
 	var a = new BlueMorpho({x: Math.random() * stage.width, y: Math.random() * stage.height});
 	stage.addChild(a);
 	// stage.addChild(b);
 }
-for (var i = 0; i != 10 ; i++){
+for (var i = 0; i != 55 ; i++){
 	var b = new Monarch({x: Math.random() * stage.width, y: Math.random() * stage.height});
 	stage.addChild(b);
 }
@@ -265,8 +265,8 @@ var Bloom = new Studio.Plugin({
 	options: {
 	},
 	init: function(a) {
-		this.height = a.canvas.height/2;
-		this.width = a.canvas.width/2;
+		this.height = (a.canvas.height/2)*a.resolution;
+		this.width = (a.canvas.width/2)*a.resolution;
 		this.cache = new Studio.Cache(this.width,this.height);
 		// this.cache.buffer.strokeStyle = '#fff';
 		// this.cache.buffer.strokeRect( 10, 10, this.width-20, this.height-20);
@@ -286,7 +286,50 @@ var Bloom = new Studio.Plugin({
 		a.ctx.globalCompositeOperation = 'source-over';
 	}
 })
-stage.addEffect(Bloom);
+
+var Cursor = new Studio.Plugin({
+	options: {
+	},
+	init: function(a) {
+		this.cursor = new Studio.Image('assets/cursor.png');
+		a.canvas.style.cursor = 'none';
+	},
+	action: function(a) {
+		a.ctx.drawImage(this.cursor.image, a.mouse.x-8, a.mouse.y-8, 48, 48)
+	}
+})
+
+
+var Red = new Studio.Plugin({
+	options: {
+	},
+	init: function(a) {
+		
+	},
+	action: function(a) {
+		var myGetImageData = a.ctx.getImageData(0,0,a.canvas.width, a.canvas.height);
+		var buffer = myGetImageData.data.buffer;
+		var sourceBuffer8 = new Uint8Array(buffer);
+		var sourceBuffer32 = new Uint32Array(buffer);
+		var length = sourceBuffer32.length;
+		for (var i = 0 ; i!=length; i++){
+			var temp = myGetImageData.data[i*4+1];
+			sourceBuffer32[i]= (255 << 24) |
+                (255-temp << 16) | 
+                (temp <<  8) |
+                 255-temp
+		}
+		myGetImageData.data.set(sourceBuffer8);
+		a.ctx.putImageData(myGetImageData, 0, 0);
+	}
+})
+
+
+stage.addEffect(Red);
+
+
+// stage.addEffect(Cursor);
+// stage.addEffect(Bloom);
 // stage.addEffect(Replicator,{x:3,y:3});
 stage.addEffect(STATS,{
 	external: false, 
@@ -296,7 +339,7 @@ stage.addEffect(STATS,{
 	clear_mode:'cover'}
 );
 // stage.addEffect(Replicator);
-
+// stage.enableTouchEvents();
 Studio.start();
 
 </script>

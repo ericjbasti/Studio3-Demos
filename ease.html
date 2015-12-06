@@ -9,37 +9,56 @@
 </head>
 
 <body style="margin:0;background: #333">
-	<canvas id="canvas" height="600" width="800"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
+	<canvas id="canvas" height="600" width="800"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #111;"></canvas>
 </body>
 <script src="studio-compiled.js"></script>
 <script>
 	
 var stage = new Studio.Stage("canvas",{webgl:0});
-stage.color.setFromHex('#a3f')
+stage.color.setFromHex('#222')
 
-var easeBox = function(type,y){
-	this.x = 100;
-	this.y = y;
-	this.width = 20;
-	this.height = 20;
-	this.color.setFromHex('#00FF00');
+// var easeBox = function(type,y){
+// 	this.x = 100;
+// 	this.y = y;
+// 	this.width = 20;
+// 	this.height = 20;
+// 	this.color.setFromHex('#00FF00');
 
-	stage.addChild(this);
-	stage.addTween(this, type , {x: 700}, 5000).loop();
-}
-Studio.extend(easeBox, Studio.Rect);
+// 	stage.addChild(this);
+// 	stage.addTween(this, type , {x: 700}, 5000).to(type,{y:100}, 5000);
+// }
+// Studio.extend(easeBox, Studio.Rect);
 
 
-stage.addChild(new easeBox('linear', 20))
-stage.addChild(new easeBox('quadIn', 60))
-stage.addChild(new easeBox('quadOut', 100))
-stage.addChild(new easeBox('quadInOut', 140))
-stage.addChild(new easeBox('snap', 180))
-stage.addChild(new easeBox('backOut', 220))
-stage.addChild(new easeBox('bounceOut', 260))
-stage.addChild(new easeBox('elasticOut', 300))
-stage.addChild(new easeBox('chillInOut', 340))
+// stage.addChild(new easeBox('linear', 20))
+// stage.addChild(new easeBox('quadIn', 60))
+// stage.addChild(new easeBox('quadOut', 100))
+// stage.addChild(new easeBox('quadInOut', 140))
+// stage.addChild(new easeBox('snap', 180))
+// stage.addChild(new easeBox('backOut', 220))
+// stage.addChild(new easeBox('bounceOut', 260))
+// stage.addChild(new easeBox('elasticOut', 300))
+// stage.addChild(new easeBox('chillInOut', 340))
 
+var rect = new Studio.Rect({x:20,y:20, width:15, height: 15})
+rect.color = new Studio.Color(155,0,250,1)
+
+stage.addChild(rect);
+
+
+// First we need to create a tween object that can be reused.
+// By making it a variable we can refrence it in multiple ways.
+var TweenChain = stage.createTween(rect,'linear',{x:500}, 4000);
+
+// Now we can start building a chain.
+
+TweenChain.then("bounceOut",{y:100}, 1000).then("quadOut",{x: 20},1000);
+
+TweenChain.next.next.then("chillInOut",{y: 20},1000);
+
+TweenChain.last().completeLoop(TweenChain);
+
+stage.playTween(TweenChain);
 
 Studio.start();
 </script>

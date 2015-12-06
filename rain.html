@@ -1,0 +1,103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+    <title>Studio3</title>
+	<meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1"/>
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<link rel="apple-touch-icon" href="icon.png" />
+	<link rel="stylesheet" href="assets/debug.css" />
+</head>
+
+<body style="margin:0;background: #333">
+	<canvas id="canvas" height="600" width="600"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
+	<div class="debug_controls">
+		<label>Type : 
+			<select onchange="updateWeather(this.value);">
+				<option value = 'Downpour'>Rain</option>
+				<option value = 'Snow'>Snow</option>
+			</select>
+		</label>
+	</div>
+</body>
+<script src="studio-compiled.js"></script>
+<script src="stats.js"></script>
+<script>
+
+
+
+var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/60, resolution: 1})
+var sky = new Studio.Image('assets/darksky.jpg')
+
+stage.image = sky;
+var MAX = 700;
+
+
+var BOXdrop = function(attr){
+	if(attr){
+		this.apply(attr);
+	}
+}
+
+Studio.extend(BOXdrop, Studio.Rect)
+
+var rainColor = new Studio.Color();
+rainColor.setFromHex("#0A4E4Aaa");
+
+BOXdrop.prototype.color = rainColor;
+BOXdrop.prototype.width = 1;
+BOXdrop.prototype.height = 10;
+
+var Downpour = function(){
+	this.x+=this.velocityX;
+	this.y+=this.velocityY;
+	if(this.y>stage.height){
+		this.y = -10;
+	}
+	if(this.x<0){
+		this.x = stage.width;
+	}
+}
+
+var Snow= function(){
+	this.x+=this.velocityX * 2;
+	this.y+=this.velocityY/4;
+	// this.rotation++;
+	if(this.y>stage.height){
+		this.y = stage.height-this.height/2;
+		this.velocityY = 0;
+		this.velocityX = 0;
+	}
+	if(this.x<0){
+		this.x = stage.width;
+	}
+}
+
+BOXdrop.prototype.onEnterFrame = Downpour;
+
+for (var i = 0; i!=MAX;i++){
+	var yy=new BOXdrop({x:Math.random() * stage.width ,y: - Math.random() * stage.height/2,velocityX: -2+(Math.random()*1),velocityY: 10+(Math.random()*6), hit:10});
+	stage.addChild(yy);
+	yy._snapback();
+}
+var updateWeather = function(value){
+	switch (value){
+		case "Snow": BOXdrop.prototype.width = BOXdrop.prototype.hieght = 6; BOXdrop.prototype.onEnterFrame = Snow; break;
+		case "Downpour" : BOXdrop.prototype.width = 1; BOXdrop.prototype.hieght = 10; BOXdrop.prototype.onEnterFrame = Downpour; break;
+	}
+}
+// stage.addEffect(STATS,{
+// 	external: true, 
+// 	height: 50,
+// 	width: stage.width,
+// 	position: 0,
+// 	clear_mode:'erase'}
+// );
+
+Studio.start();
+
+</script>
+
+
+</html>
+

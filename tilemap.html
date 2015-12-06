@@ -1,0 +1,102 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+	<head>
+	    <title>Studio3</title>
+		<meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1"/>
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<link rel="apple-touch-icon" href="icon.png" />
+		<link rel="stylesheet" href="assets/debug.css" />
+	</head>
+<body style="margin:0;background: #333">
+	<canvas id="canvas" height="480" width="480"  style="cursor:pointer;display: block;outline:1px solid #BBFF00;"></canvas>
+</body>
+<script src="studio-compiled.js"></script>
+<script>
+	
+var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/30, fullscreen:0, color: Studio.BLUE})
+
+Studio.load = function(path, type, callback){
+	var request = new XMLHttpRequest();
+
+	request.onload = function() {
+		var data = null;
+		if ((request.status >= 200 && request.status < 400) || request.status == 0) {
+			console.log('%cStudio loaded file : '+path, Studio.statStyle);
+			if(type.toLowerCase() == "json"){
+				data = JSON.parse(request.responseText);
+			}
+			if(callback){
+				callback(data)
+			}
+		} else {
+			this.onerror();
+		}
+	};
+
+	request.onerror = function() {
+		console.log('%cStudio failed to load file : '+path, Studio.errorStyle);
+	};
+	request.open('GET', path, true);
+	request.send();
+}
+
+Studio.TileMap = function(data, set){
+	this.cache = new Studio.Cache();
+}
+
+Studio.TileMap.prototype = {
+	constructor: Studio.TileMap,
+	build: function(data,set,sx,sy,mx,my){
+		var map = data.layers[0];
+		var buffer = this.cache.buffer;
+		var width = set.tileWidth;
+		var height = set.tileHeight;
+		var mX = mx || map.width-sx;
+		var mY = my || map.height-sy;
+		for(var y = 0; y !=mY; y++ ){
+			for(var x = 0; x!= mX; x++){
+				var i = (map.data[((y+sy)*map.width)+(x+sx)])-1;
+				var _y = i/set.across | 0;
+				var _x = i - (_y * set.across) ;
+
+				// buffer.strokeRect(x*width,y*height,width,height);
+				// buffer.drawImage(set.set.image,x*set.tileWidth,y*set.tileHeight)
+				buffer.drawImage(set.set.image, _x*set.tileWidth, _y*set.tileHeight, set.tileWidth, set.tileHeight, x*set.tileWidth, y*set.tileHeight, set.tileWidth, set.tileHeight)
+			}
+		}
+	},
+};
+
+
+
+Studio.TileSet = function( path, width, height){
+	this.tileWidth = width || 32;
+	this.tileHeight = height || 32;
+	this.across = 1;
+	this.set = new Studio.Image( path, this, this.onLoadComplete);
+}
+
+Studio.TileSet.prototype = {
+	constructor: Studio.TileSet,
+	onLoadComplete: function(data){
+		data.across = data.set.width/data.tileWidth;
+	}
+};
+
+var buildMap = function(a){
+	tole.build(a,grass,0,0)
+}
+
+
+var grass = new Studio.TileSet('assets/tiles_packed.png', 16, 16);
+Studio.load('assets/simplemap.json','json', buildMap)
+
+var tole = new Studio.TileMap();
+var sss = new Studio.Sprite({image:tole.cache});
+stage.addChild(sss);
+Studio.start();
+
+</script>
+</html>
