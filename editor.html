@@ -8,72 +8,52 @@
 	<link rel="apple-touch-icon" href="icon.png" />
 </head>
 
+<style>
+	#editor{
+		background: #eee;
+		font-family: Courier;
+		padding: .5em .8em;
+		font-size: 11px;
+	}
+	#editor fieldset{
+		border: 1px solid #ccc;
+		margin-bottom: 1em
+	}
+	#editor label{
+		color: #333;
+	}
+	#editor input{
+		margin-right: 1em;
+		border: 1px solid #ddd;
+		background: none;
+	}
+	#editor input:focus{
+		border: 1px solid #d0f;
+		background: #fff;
+		outline: none;
+	}
+	#editor input[type='number']{
+		width: 5em;
+	}
+	#editor fieldset div {
+		display: none;
+	}
+	#editor input:checked + legend ~ div{
+		display: block;
+	}
+
+</style>
+
+
 <body style="margin:0;background: #333">
 	<canvas id="canvas" height="400" width="400"  style="cursor:pointer;display: block;outline:1px solid #111;"></canvas>
+	<div id="editor"></div>
 </body>
 <script src="studio-compiled.js"></script>
 <script>
 	
 var stage = new Studio.Stage("canvas",{webgl:0});
 stage.color.setFromHex('#222')
-
-// var shoulder = new Studio.Rect({x:stage.width/2, y:stage.height/2, height:100, width:50, anchorY: .10});
-// var r = new Studio.Rect({x:0, y:80, height:120, width:30, anchorY: .15});
-// var rdot = new Studio.Rect({x:0, y:0, height:9, width:9});
-// var r1 = new Studio.Rect({x:0, y:90, height:60, width:20, anchorY: .15});
-// var r1dot = new Studio.Rect({x:0, y:0, height:7, width:7});
-// var rc1 = new Studio.Rect({x:0, y:45, height:40, width:15,  anchorY: .15});
-// var rc1dot = new Studio.Rect({x:0, y:0, height:5, width:5, });
-// var rc2 = new Studio.Rect({x:0, y:30, height:30, width:11, anchorY: .15});
-// var rc2dot = new Studio.Rect({x:0, y:0, height:3, width:3});
-
-// var spin = function(){
-// 	this.rotation+=5;
-// }
-
-// rc1dot.onEnterFrame = r1dot.onEnterFrame = rdot.onEnterFrame = spin
-
-
-
-// var bolt_color= new Studio.Color().setFromHex('#000000')
-
-
-// r.color.setFromHex("#555")
-// r1.color.set(255,0,255,1);
-// rc1.color.set(0,255,255,1);
-// rc2.color.set(255,255,0,1);
-// rdot.color = bolt_color;
-// r1dot.color = r.color;
-// rc1dot.color = r1.color;
-// rc2dot.color = rc1.color;
-
-// shoulder.addChild(r);
-// r.addChild(r1)
-// r.addChild(rdot)
-// r1.addChild(rc1);
-// r1.addChild(r1dot)
-// rc1.addChild(rc1dot)
-// rc1.addChild(rc2)
-// rc2.addChild(rc2dot)
-// stage.addChild(shoulder);
-
-// shoulder.alpha = .75
-// stage.color.setFromHex('#222')
-
-// shoulder.onHoverStart = function(){
-// 	this.color.setFromHex('#FF7F00')
-// }
-// shoulder.onHoverEnd = function(){
-// 	this.color.setFromHex('#000')
-// }
-
-// rc2.onHoverStart = function(){
-// 	this.color.setFromHex('#FF7F00')
-// }
-// rc2.onHoverEnd = function(){
-// 	this.color.setFromHex('#000')
-// }
-
 
 var getType = function(who){
 	var type = "null"
@@ -114,15 +94,53 @@ var buildSceneGraph = function(graph){
 	return temp;
 }
 
-var buildFromSceneGraph = function(graph){
-	var temp = new Studio[graph.type];
+var buildNumberAttribute = function(label, item){
+	var x = document.createElement('label');
+	x.innerHTML = label + ": "
+	var x_input = document.createElement('input');
+	x_input.setAttribute('type','number');
+	x_input.value = item[label];
+	x.appendChild(x_input);
+	x_input.oninput = function(){
+		item[label] = parseFloat(this.value);
+	}
+	return x;
+}
 
+
+var buildRectEditor = function(item){
+	var rect = document.createElement('div')
+	var fieldset = document.createElement('fieldset');
+	var legend = document.createElement('legend');
+	legend.innerHTML = 'Studio.Rect : '+count;
+	count++;
+	var toggle = document.createElement('input');
+	toggle.setAttribute('type','checkbox');
+	fieldset.appendChild(toggle);
+	rect.appendChild(fieldset);
+	fieldset.appendChild(legend);
+	var holder = document.createElement('div');
+	fieldset.appendChild(holder);
+	holder.appendChild(buildNumberAttribute('x',item));
+	holder.appendChild(buildNumberAttribute('y',item));
+	holder.appendChild(buildNumberAttribute('height',item));
+	holder.appendChild(buildNumberAttribute('width',item));
+	holder.appendChild(buildNumberAttribute('anchorX',item));
+	holder.appendChild(buildNumberAttribute('anchorY',item));
+	holder.appendChild(buildNumberAttribute('rotation',item));
+	document.getElementById("editor").appendChild(rect);
+
+}
+var count = 0;
+
+var buildFromSceneGraph = function(graph, editor){
+	var temp = new Studio[graph.type];
 	for (item in graph){
 		switch (item){
 			case 'color' : temp.color.style = (graph.color); break;
 			case 'children' : 
 				for(var i = 0; i !=graph.children.length; i++){
-					temp.addChild(buildFromSceneGraph(graph.children[i]));
+					temp.addChild(buildFromSceneGraph(graph.children[i], editor));
 				}; break;
 			break;
 			case 'hasChildren': break;
@@ -134,24 +152,23 @@ var buildFromSceneGraph = function(graph){
 			}
 		}
 	}
+	if(editor) buildRectEditor(temp)
 	return temp;
 }
 
 
-// var SCENE = {"color":"rgba(1,0,0,1)","height":50,"width":100,"y":100,"x":100,"children":[{"color":"rgba(255,85,0,1)","rotation":40,"height":50,"width":30,"y":100,"x":100,"type":"Rect"}],"hasChildren":1,"type":"Rect"};
-// var ARM = {"color":"rgba(1,0,0,1)","anchorY":0.1,"width":50,"height":100,"y":200,"x":200,"children":[{"color":"rgba(85,85,85,1)","anchorY":0.15,"width":30,"height":120,"y":80,"x":0,"children":[{"color":"rgba(255,0,255,1)","anchorY":0.15,"width":20,"height":60,"y":90,"x":0,"children":[{"color":"rgba(0,255,255,1)","anchorY":0.15,"width":15,"height":40,"y":45,"x":0,"children":[{"color":"rgba(255,0,255,1)","width":5,"height":5,"y":0,"x":0,"type":"Rect"},{"color":"rgba(255,255,0,1)","anchorY":0.15,"width":11,"height":30,"y":30,"x":0,"children":[{"color":"rgba(0,255,255,1)","width":3,"height":3,"y":0,"x":0,"type":"Rect"}],"hasChildren":1,"type":"Rect"}],"hasChildren":2,"type":"Rect"},{"color":"rgba(85,85,85,1)","width":7,"height":7,"y":0,"x":0,"type":"Rect"}],"hasChildren":2,"type":"Rect"},{"color":"rgba(0,0,0,1)","width":9,"height":9,"y":0,"x":0,"type":"Rect"}],"hasChildren":2,"type":"Rect"}],"hasChildren":1,"alpha":0.75,"type":"Rect"};
 
 
-var ARM = {"color":"rgba(1,0,0,1)","anchorY":0.1,"width":50,"height":100,"y":200,"x":200,"children":[{"color":"rgba(85,85,85,1)","anchorY":0.15,"width":30,"height":120,"y":80,"x":0,"children":[{"color":"rgba(255,0,255,1)","anchorY":0.15,"width":20,"height":60,"y":90,"x":0,"children":[{"color":"rgba(0,255,255,1)","anchorY":0.15,"width":15,"height":40,"y":45,"x":0,"children":[{"color":"rgba(255,0,255,1)","width":5,"height":5,"y":0,"x":0,"onEnterFrame":"function (){\n\tthis.rotation+=5;\n}","type":"Rect"},{"color":"rgba(255,255,0,1)","anchorY":0.15,"width":11,"height":30,"y":30,"x":0,"children":[{"color":"rgba(0,255,255,1)","width":3,"height":3,"y":0,"x":0,"type":"Rect"}],"hasChildren":1,"onHoverStart":"function (){\n\tthis.color.setFromHex('#FF7F00')\n}","onHoverEnd":"function (){\n\tthis.color.setFromHex('#000')\n}","type":"Rect"}],"hasChildren":2,"type":"Rect"},{"color":"rgba(85,85,85,1)","width":7,"height":7,"y":0,"x":0,"onEnterFrame":"function (){\n\tthis.rotation+=5;\n}","type":"Rect"}],"hasChildren":2,"type":"Rect"},{"color":"rgba(0,0,0,1)","width":9,"height":9,"y":0,"x":0,"onEnterFrame":"function (){\n\tthis.rotation+=5;\n}","type":"Rect"}],"hasChildren":2,"type":"Rect"}],"hasChildren":1,"alpha":0.75,"onHoverStart":"function (){\n\tthis.color.setFromHex('#FF7F00')\n}","onHoverEnd":"function (){\n\tthis.color.setFromHex('#000')\n}","type":"Rect"};
+var ARM = {"color":"rgba(1,0,0,1)","anchorY":0.1,"width":50,"height":100,"y":50,"x":200,"children":[{"color":"rgba(85,85,85,1)","anchorY":0.15,"width":30,"height":120,"y":80,"x":0,"children":[{"color":"rgba(255,0,255,1)","anchorY":0.15,"width":20,"height":60,"y":90,"x":0,"children":[{"color":"rgba(0,255,255,1)","anchorY":0.15,"width":15,"height":40,"y":45,"x":0,"children":[{"color":"rgba(255,0,255,1)","width":5,"height":5,"y":0,"x":0,"onEnterFrame":"function (){\n\tthis.rotation+=5;\n}","type":"Rect"},{"color":"rgba(255,255,0,1)","anchorY":0.15,"width":11,"height":30,"y":30,"x":0,"children":[{"color":"rgba(0,255,255,1)","width":3,"height":3,"y":0,"x":0,"type":"Rect"}],"hasChildren":1,"onHoverStart":"function (){\n\tthis.color.setFromHex('#FF7F00')\n}","onHoverEnd":"function (){\n\tthis.color.setFromHex('#000')\n}","type":"Rect"}],"hasChildren":2,"type":"Rect"},{"color":"rgba(85,85,85,1)","width":7,"height":7,"y":0,"x":0,"onEnterFrame":"function (){\n\tthis.rotation+=5;\n}","type":"Rect"}],"hasChildren":2,"type":"Rect"},{"color":"rgba(0,0,0,1)","width":9,"height":9,"y":0,"x":0,"onEnterFrame":"function (){\n\tthis.rotation+=5;\n}","type":"Rect"}],"hasChildren":2,"type":"Rect"}],"hasChildren":1,"alpha":0.75,"onHoverStart":"function (){\n\tthis.color.setFromHex('#FF7F00')\n}","onHoverEnd":"function (){\n\tthis.color.setFromHex('#000')\n}","type":"Rect"};
 
 
 // console.log(JSON.stringify(buildSceneGraph(shoulder)));
 
 
-stage.addChild(buildFromSceneGraph(ARM));
-
+stage.addChild(buildFromSceneGraph(ARM, true));
 
 Studio.start();
+// Studio.active = false
 </script>
 </html>
 
