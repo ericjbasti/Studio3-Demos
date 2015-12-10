@@ -6,48 +6,11 @@
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-status-bar-style" content="black">
 	<link rel="apple-touch-icon" href="icon.png" />
+	<link rel="stylesheet" href="assets/debug.css" />
+	<link rel="stylesheet" href="assets/editor.css" />
 </head>
-
-<style>
-	#editor{
-		background: #eee;
-		font-family: Courier;
-		padding: .5em .8em;
-		font-size: 11px;
-	}
-	#editor fieldset{
-		border: 1px solid #ccc;
-		margin-bottom: 1em
-	}
-	#editor label{
-		color: #333;
-	}
-	#editor input{
-		margin-right: 1em;
-		border: 1px solid #ddd;
-		background: none;
-	}
-	#editor input:focus{
-		border: 1px solid #d0f;
-		background: #fff;
-		outline: none;
-	}
-	#editor input[type='number']{
-		width: 5em;
-	}
-	#editor fieldset div {
-		display: none;
-	}
-	#editor input:checked + legend ~ div{
-		display: block;
-	}
-
-</style>
-
-
 <body style="margin:0;background: #333">
-	<canvas id="canvas" height="400" width="400"  style="cursor:pointer;display: block;outline:1px solid #111;"></canvas>
-	<div id="editor"></div>
+	<canvas id="canvas" height="400" width="400"  style="cursor:pointer;"></canvas>
 </body>
 <script src="studio-compiled.js"></script>
 <script>
@@ -55,7 +18,7 @@
 var stage = new Studio.Stage("canvas",{webgl:0});
 stage.color.setFromHex('#222')
 
-var getType = function(who){
+var getType = function(who) {
 	var type = "null"
 	switch (who.constructor){
 		case Studio.Stage: 			type = "Stage"; break;
@@ -67,7 +30,7 @@ var getType = function(who){
 	return type;
 }
 
-var buildSceneGraph = function(graph){
+var buildSceneGraph = function(graph) {
 	var temp = {}
 
 	for (item in graph){
@@ -76,8 +39,17 @@ var buildSceneGraph = function(graph){
 				case 'parent' : break;
 				case 'slice' : break;
 				case '_world' : break;
+				case '_dx' : break;
+				case '_dy' : break;
+				case '__x' : break;
+				case '__y' : break;
+				case '_visible' : break;
+				case 'angle' : break;
+				case '_dAngle' : break;
+				case '_boundingBox' : break;
+				case 'image' : temp[item] = graph[item].path; break;
 				case 'color' : temp[item] = graph[item].style; break;
-				case 'children' : temp.children = []; 
+				case 'children' : temp.children = [];
 					for(var i = 0; i !=graph.children.length; i++){
 						temp.children.push(buildSceneGraph(graph.children[i]));
 					}; break;
@@ -94,7 +66,7 @@ var buildSceneGraph = function(graph){
 	return temp;
 }
 
-var buildNumberAttribute = function(label, item){
+var buildNumberAttribute = function(label, item) {
 	var x = document.createElement('label');
 	x.innerHTML = label + ": "
 	var x_input = document.createElement('input');
@@ -106,14 +78,80 @@ var buildNumberAttribute = function(label, item){
 	}
 	return x;
 }
+var buildTextAttribute = function(label, item) {
+	var x = document.createElement('label');
+	x.innerHTML = label + ": "
+	var x_input = document.createElement('textarea');
+	if(item[label]){
+		var temp = item[label]+'';
+		temp = temp.split('{');
+		temp[0]='';
+		temp = temp.join('');
+		temp = temp.substring(0, temp.length - 1);
+		x_input.value = temp.trim();
+	}
+	x.appendChild(x_input); 
+	x_input.onchange = function(){
+		item[label] = eval('(function (){'+this.value+'})');
+	}
+	return x;
+}
 
+var buildStringAttribute = function(label, item) {
+	var x = document.createElement('label');
+	x.innerHTML = label + ": "
+	var x_input = document.createElement('input');
+	if(label=='image'){
+		x_input.value = item[label].path;
+		x.appendChild(x_input); 
+		x_input.onchange = function(){
+			if(!Studio.assets[this.value]){
+				var image = new Studio.Image(this.value);
+				item.image = image;
+			}else{
+				item.image = Studio.assets[this.value];
+			}
+		}
+	}else{
+		x_input.value = item[label];
+		x.appendChild(x_input); 
+		x_input.onchange = function(){
+			item[label] = this.value;
+		}
+	}
+	return x;
+}
 
-var buildRectEditor = function(item){
-	var rect = document.createElement('div')
+var buildGroupHolder = function(name, items){
+	var group = document.createElement('fieldset');
+	var legend = document.createElement('legend');
+	legend.innerHTML="group";
+	group.appendChild(legend);
+}
+
+var buildAttributeGroup = function(attr, item, type){
+	var group = document.createElement('div');
+	for(var i = 0; i!= attr.length; i++){
+		switch (type){
+			case 'function': group.appendChild(buildTextAttribute(attr[i],item)); break;
+			case 'string': group.appendChild(buildStringAttribute(attr[i],item)); break;
+			case 'number' : group.appendChild(buildNumberAttribute(attr[i],item)); break;
+			default : group.appendChild(buildNumberAttribute(attr[i],item));
+		}
+	}
+	return group;
+}
+
+var buildColorEditor = function(item){
+	// return buildAttributeGroup(['r','g','b','a'],item.color,'number')
+	return buildAttributeGroup(['style'],item,'string')
+}
+
+var buildRectEditor = function(item) {
+	var rect = document.createElement('div');
 	var fieldset = document.createElement('fieldset');
 	var legend = document.createElement('legend');
-	legend.innerHTML = 'Studio.Rect : '+count;
-	count++;
+	legend.innerHTML = 'Rect&nbsp;';
 	var toggle = document.createElement('input');
 	toggle.setAttribute('type','checkbox');
 	fieldset.appendChild(toggle);
@@ -121,26 +159,111 @@ var buildRectEditor = function(item){
 	fieldset.appendChild(legend);
 	var holder = document.createElement('div');
 	fieldset.appendChild(holder);
-	holder.appendChild(buildNumberAttribute('x',item));
-	holder.appendChild(buildNumberAttribute('y',item));
-	holder.appendChild(buildNumberAttribute('height',item));
-	holder.appendChild(buildNumberAttribute('width',item));
-	holder.appendChild(buildNumberAttribute('anchorX',item));
-	holder.appendChild(buildNumberAttribute('anchorY',item));
-	holder.appendChild(buildNumberAttribute('rotation',item));
-	document.getElementById("editor").appendChild(rect);
+	holder.appendChild(buildColorEditor(item.color));
+	holder.appendChild(buildAttributeGroup(['x','y'], item));
+	holder.appendChild(buildAttributeGroup(['height','width'], item));
+	holder.appendChild(buildAttributeGroup(['anchorX','anchorY'], item));
+	holder.appendChild(buildAttributeGroup(['rotation'], item));
+	holder.appendChild(buildAttributeGroup(['onEnterFrame', 'onExitFrame'], item, 'function'));
+	
+	var children = document.createElement('ul');
+	children.setAttribute('class','children');
+	
+	for(var i = 0; i != item.hasChildren; i++){
+		var child = document.createElement('li');
+		child.appendChild(buildRectEditor(item.children[i]));
+		children.appendChild(child);
+	}
 
+	fieldset.appendChild(children);
+
+	return rect;
 }
-var count = 0;
 
-var buildFromSceneGraph = function(graph, editor){
+
+var buildImageSliceEditor = function(item) {
+	var rect = document.createElement('div');
+	var fieldset = document.createElement('fieldset');
+	var legend = document.createElement('legend');
+	legend.innerHTML = 'ImageSlice&nbsp;';
+	var toggle = document.createElement('input');
+	toggle.setAttribute('type','checkbox');
+	fieldset.appendChild(toggle);
+	rect.appendChild(fieldset);
+	fieldset.appendChild(legend);
+	var holder = document.createElement('div');
+	fieldset.appendChild(holder);
+	holder.appendChild(buildAttributeGroup(['image'],item,'string'));
+	holder.appendChild(buildAttributeGroup(['x','y','width','height'],item.rect));
+	holder.appendChild(buildAttributeGroup(['x','y'], item));
+	holder.appendChild(buildAttributeGroup(['height','width'], item));
+	holder.appendChild(buildAttributeGroup(['anchorX','anchorY'], item));
+	holder.appendChild(buildAttributeGroup(['rotation'], item));
+	holder.appendChild(buildAttributeGroup(['onEnterFrame', 'onExitFrame'], item, 'function'));
+	
+	var children = document.createElement('ul');
+	children.setAttribute('class','children');
+	for(var i = 0; i != item.hasChildren; i++){
+		var child = document.createElement('li');
+		child.appendChild(buildRectEditor(item.children[i]));
+		children.appendChild(child);
+	}
+
+	fieldset.appendChild(children);
+
+	return rect;
+}
+
+var buildSceneEditor = function(item) {
+	var rect = document.createElement('div');
+	var fieldset = document.createElement('fieldset');
+	var legend = document.createElement('legend');
+	legend.innerHTML = 'Scene&nbsp;';
+	var toggle = document.createElement('input');
+	toggle.setAttribute('type','checkbox');
+	fieldset.appendChild(toggle);
+	rect.appendChild(fieldset);
+	fieldset.appendChild(legend);
+	var holder = document.createElement('div');
+	fieldset.appendChild(holder);
+	// holder.appendChild(buildNumberAttribute('height',item));
+	// holder.appendChild(buildNumberAttribute('width',item));
+	holder.appendChild(buildTextAttribute('onEnterFrame',item))
+	
+	var children = document.createElement('ul');
+	children.setAttribute('class','children');
+	for(var i = 0; i != item.hasChildren; i++){
+		var child = document.createElement('li');
+		switch (getType(item.children[i])){
+			case 'Rect': child.appendChild(buildRectEditor(item.children[i])); break;
+			case 'ImageSlice': child.appendChild(buildImageSliceEditor(item.children[i])); break;
+		}
+
+		children.appendChild(child);
+	}
+
+	fieldset.appendChild(children);
+
+	return rect;
+}
+
+var buildFromSceneGraph = function(graph) {
 	var temp = new Studio[graph.type];
 	for (item in graph){
 		switch (item){
+			case 'image' : 
+				//if(!Studio.assets[graph.image]){
+					var image = new Studio.Image(graph.image);
+					temp.image = image;
+
+				// }else{
+				// 	temp.image = Studio.assets[graph.image];
+				// }
+				break;
 			case 'color' : temp.color.style = (graph.color); break;
 			case 'children' : 
 				for(var i = 0; i !=graph.children.length; i++){
-					temp.addChild(buildFromSceneGraph(graph.children[i], editor));
+					temp.addChild(buildFromSceneGraph(graph.children[i]));
 				}; break;
 			break;
 			case 'hasChildren': break;
@@ -152,20 +275,54 @@ var buildFromSceneGraph = function(graph, editor){
 			}
 		}
 	}
-	if(editor) buildRectEditor(temp)
 	return temp;
+}
+
+var buildEditor = function(obj) {
+	var editor = document.createElement('div');
+	editor.setAttribute('id','editor')
+
+	editor.appendChild(buildSceneEditor(obj))
+
+	document.body.appendChild(editor);
+	var compileButton = document.createElement('button');
+	compileButton.innerHTML = "Compile JSON";
+
+	var buildButton = document.createElement('button');
+	buildButton.innerHTML = "Build From JSON";
+
+	var output = document.createElement('textarea');
+
+	compileButton.onclick = function(){
+		output.value = JSON.stringify(buildSceneGraph(stage.children[0]));
+	}
+
+	buildButton.onclick = function(){
+		stage.children = [];
+		stage.hasChildren = 0;
+		var tt = buildFromSceneGraph(JSON.parse(output.value));
+		stage.addChild(tt);
+		buildEditor(stage);
+
+	}
+
+	editor.appendChild(compileButton);
+	editor.appendChild(buildButton);
+	editor.appendChild(output);
 }
 
 
 
 
-var ARM = {"color":"rgba(1,0,0,1)","anchorY":0.1,"width":50,"height":100,"y":50,"x":200,"children":[{"color":"rgba(85,85,85,1)","anchorY":0.15,"width":30,"height":120,"y":80,"x":0,"children":[{"color":"rgba(255,0,255,1)","anchorY":0.15,"width":20,"height":60,"y":90,"x":0,"children":[{"color":"rgba(0,255,255,1)","anchorY":0.15,"width":15,"height":40,"y":45,"x":0,"children":[{"color":"rgba(255,0,255,1)","width":5,"height":5,"y":0,"x":0,"onEnterFrame":"function (){\n\tthis.rotation+=5;\n}","type":"Rect"},{"color":"rgba(255,255,0,1)","anchorY":0.15,"width":11,"height":30,"y":30,"x":0,"children":[{"color":"rgba(0,255,255,1)","width":3,"height":3,"y":0,"x":0,"type":"Rect"}],"hasChildren":1,"onHoverStart":"function (){\n\tthis.color.setFromHex('#FF7F00')\n}","onHoverEnd":"function (){\n\tthis.color.setFromHex('#000')\n}","type":"Rect"}],"hasChildren":2,"type":"Rect"},{"color":"rgba(85,85,85,1)","width":7,"height":7,"y":0,"x":0,"onEnterFrame":"function (){\n\tthis.rotation+=5;\n}","type":"Rect"}],"hasChildren":2,"type":"Rect"},{"color":"rgba(0,0,0,1)","width":9,"height":9,"y":0,"x":0,"onEnterFrame":"function (){\n\tthis.rotation+=5;\n}","type":"Rect"}],"hasChildren":2,"type":"Rect"}],"hasChildren":1,"alpha":0.75,"onHoverStart":"function (){\n\tthis.color.setFromHex('#FF7F00')\n}","onHoverEnd":"function (){\n\tthis.color.setFromHex('#000')\n}","type":"Rect"};
+
+var ARM = {"image":"assets/rockster.png","color":"rgba(1,1,1,1)","rect":{"x":0,"y":0,"height":55,"width":56},"anchorY":0,"width":75,"height":112,"y":50,"x":200,"children":[{"color":"rgba(85,85,85,1)","anchorY":0.15,"width":30,"height":120,"y":80,"x":0,"children":[{"color":"rgba(255,0,255,1)","anchorY":0.15,"width":20,"height":60,"y":90,"x":0,"children":[{"color":"rgba(0,255,255,1)","anchorY":0.15,"width":15,"height":40,"y":45,"x":0,"children":[{"color":"rgba(255,0,255,1)","width":5,"height":5,"y":0,"x":0,"onEnterFrame":"function (){\n\tthis.rotation+=5;\n}","type":"Rect","rotation":24700},{"color":"rgba(255,255,0,1)","anchorY":0.15,"width":11,"height":30,"y":30,"x":0,"children":[{"color":"rgba(0,255,255,1)","width":3,"height":3,"y":0,"x":0,"type":"Rect"}],"hasChildren":1,"onHoverStart":"function (){\n\tthis.color.setFromHex('#FF7F00')\n}","onHoverEnd":"function (){\n\tthis.color.setFromHex('#000')\n}","type":"Rect"}],"hasChildren":2,"type":"Rect"},{"color":"rgba(85,85,85,1)","width":7,"height":7,"y":0,"x":0,"onEnterFrame":"function (){\n\tthis.rotation+=5;\n}","type":"Rect","rotation":24700}],"hasChildren":2,"type":"Rect"},{"color":"rgba(0,0,0,1)","width":9,"height":9,"y":0,"x":0,"onEnterFrame":"function (){\n\tthis.rotation+=5;\n}","type":"Rect","rotation":24700}],"hasChildren":2,"type":"Rect"}],"hasChildren":1,"alpha":0.75,"onHoverStart":"function (){\n\tthis.color.setFromHex('#FF7F00')\n}","onHoverEnd":"function (){\n\tthis.color.setFromHex('#000')\n}","type":"ImageSlice"};
+
+var arm_built = buildFromSceneGraph( ARM );
 
 
-// console.log(JSON.stringify(buildSceneGraph(shoulder)));
+stage.addChild( arm_built );
+buildEditor(stage);
 
-
-stage.addChild(buildFromSceneGraph(ARM, true));
 
 Studio.start();
 // Studio.active = false
