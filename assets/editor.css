@@ -26,6 +26,19 @@ canvas{
 		background: #f4f4f4;
 		padding: 0 .5em 0;
 	}
+	#editor fieldset.group{
+		position: relative;
+		border: none;
+		margin-bottom: .5em;
+		background: #f4f4f4;
+		padding: 0;
+	}
+	#editor fieldset.group > div{
+		margin-left: 1em;
+		padding: .25em .5em;
+		box-shadow: inset 1px 1px 0px #fff, 1px 1px 0px #ccc;
+		background: transparent;
+	}
 	#editor legend{
 		padding: 0 .5em 0 1.25em;
 	}
@@ -64,7 +77,7 @@ canvas{
 	}
 	#editor fieldset > div {
 		display: none;
-		padding: .5em 0 .75em
+		padding: .5em 0 .25em
 	}
 	#editor input:checked + legend ~ div{
 		display: block;
@@ -83,7 +96,4 @@ canvas{
 	}
 	#editor input:checked + legend ~ ul{
 		display: block;
-	}
-	#editor ul.children:before{
-		content: "Children";
 	}

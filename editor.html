@@ -66,11 +66,14 @@ var buildSceneGraph = function(graph) {
 	return temp;
 }
 
-var buildNumberAttribute = function(label, item) {
+var buildNumberAttribute = function(label, item , min, max, step) {
 	var x = document.createElement('label');
 	x.innerHTML = label + ": "
 	var x_input = document.createElement('input');
 	x_input.setAttribute('type','number');
+	if(min) x_input.setAttribute('min',min);
+	if(min) x_input.setAttribute('max',max);
+	if(min) x_input.setAttribute('step',step);
 	x_input.value = item[label];
 	x.appendChild(x_input);
 	x_input.oninput = function(){
@@ -122,11 +125,17 @@ var buildStringAttribute = function(label, item) {
 	return x;
 }
 
-var buildGroupHolder = function(name, items){
+var buildGroupHolder = function(name){
 	var group = document.createElement('fieldset');
+	group.setAttribute('class','group');
 	var legend = document.createElement('legend');
-	legend.innerHTML="group";
+	var toggle = document.createElement('input');
+	toggle.setAttribute('type','checkbox');
+	group.appendChild(toggle);
+	legend.innerHTML=name;
 	group.appendChild(legend);
+	return group;
+
 }
 
 var buildAttributeGroup = function(attr, item, type){
@@ -159,24 +168,40 @@ var buildRectEditor = function(item) {
 	fieldset.appendChild(legend);
 	var holder = document.createElement('div');
 	fieldset.appendChild(holder);
-	holder.appendChild(buildColorEditor(item.color));
-	holder.appendChild(buildAttributeGroup(['x','y'], item));
-	holder.appendChild(buildAttributeGroup(['height','width'], item));
-	holder.appendChild(buildAttributeGroup(['anchorX','anchorY'], item));
-	holder.appendChild(buildAttributeGroup(['rotation'], item));
-	holder.appendChild(buildAttributeGroup(['onEnterFrame', 'onExitFrame'], item, 'function'));
-	
+
+	var group = buildGroupHolder("Color & Alpha");
+	group.appendChild(buildColorEditor(item.color));
+	group.appendChild(buildAttributeGroup(['alpha','visible','active'], item));
+	holder.appendChild(group);
+
+	group = buildGroupHolder("Postion");
+	group.appendChild(buildAttributeGroup(['x','y','rotation'], item));
+	holder.appendChild(group);
+
+	group = buildGroupHolder("Dimensions");
+	group.appendChild(buildAttributeGroup(['height','width'], item));
+	holder.appendChild(group);
+
+	group = buildGroupHolder("Anchor Point");
+	group.appendChild(buildAttributeGroup(['anchorX','anchorY'], item));
+	holder.appendChild(group);
+
+	group = buildGroupHolder("Frame Actions");
+	group.appendChild(buildAttributeGroup(['onEnterFrame', 'onExitFrame'], item, 'function'));
+	holder.appendChild(group);
+
+	group = buildGroupHolder("Children");
 	var children = document.createElement('ul');
 	children.setAttribute('class','children');
-	
+	group.appendChild(children)
 	for(var i = 0; i != item.hasChildren; i++){
 		var child = document.createElement('li');
 		child.appendChild(buildRectEditor(item.children[i]));
 		children.appendChild(child);
 	}
 
-	fieldset.appendChild(children);
-
+	holder.appendChild(group);
+	fieldset.appendChild(holder);
 	return rect;
 }
 
