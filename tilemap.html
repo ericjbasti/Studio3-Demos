@@ -14,12 +14,36 @@
 </body>
 <script src="studio-compiled.js"></script>
 <script>
-	
+
 var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/30, fullscreen:0, color: Studio.BLUE})
+
+function getImage(url){
+    return new Promise(function(resolve, reject){
+        var img = new Image()
+        img.onload = function(){
+            resolve(url)
+        }
+        img.onerror = function(){
+            reject(url)
+        }
+        img.src = url
+    })
+}
+
+
+Studio.FocusEngine = function(){
+	this.active = null;
+	this.focus_list = new LinkedList();
+}
+
+
+
+
+
+
 
 Studio.load = function(path, type, callback){
 	var request = new XMLHttpRequest();
-
 	request.onload = function() {
 		var data = null;
 		if ((request.status >= 200 && request.status < 400) || request.status == 0) {
@@ -43,7 +67,7 @@ Studio.load = function(path, type, callback){
 }
 
 Studio.TileMap = function(data, set){
-	this.cache = new Studio.Cache();
+	this.cache = new Studio.Cache(480,320);
 }
 
 Studio.TileMap.prototype = {
@@ -58,11 +82,8 @@ Studio.TileMap.prototype = {
 		for(var y = 0; y !=mY; y++ ){
 			for(var x = 0; x!= mX; x++){
 				var i = (map.data[((y+sy)*map.width)+(x+sx)])-1;
-				var _y = i/set.across | 0;
-				var _x = i - (_y * set.across) ;
-
-				// buffer.strokeRect(x*width,y*height,width,height);
-				// buffer.drawImage(set.set.image,x*set.tileWidth,y*set.tileHeight)
+				var _y = i/set.across | 0 ;
+				var _x = i - (_y * set.across);
 				buffer.drawImage(set.set.image, _x*set.tileWidth, _y*set.tileHeight, set.tileWidth, set.tileHeight, x*set.tileWidth, y*set.tileHeight, set.tileWidth, set.tileHeight)
 			}
 		}
@@ -89,13 +110,33 @@ var buildMap = function(a){
 	tole.build(a,grass,0,0)
 }
 
+var grass;//new Studio.TileSet('assets/tiles_packed.png', 16, 16);
 
-var grass = new Studio.TileSet('assets/tiles_packed.png', 16, 16);
-Studio.load('assets/simplemap.json','json', buildMap)
+var tole;//new Studio.TileMap();
+// var sss = new Studio.Sprite({image:tole.cache});
+// stage.addChild(sss);
 
-var tole = new Studio.TileMap();
-var sss = new Studio.Sprite({image:tole.cache});
-stage.addChild(sss);
+Studio.load('assets/simplemap.json','json', function(data){
+	// console.log(data)
+	var set = data.tilesets[0];
+	var setimage = new Studio.Image('assets/'+set.image);
+
+	var test = function(result){
+		if (!result) {
+			return;
+		}
+		if(result == true){
+			console.log('Cool the image is ready, now we can do something with it.');
+		}
+	}
+
+	setimage.status.addListener(test);
+
+	// var tileset = new Studio.TileSet(setimage, set.tilewidth, set.tileheight);
+	// console.log(tileset);
+
+});
+
 Studio.start();
 
 </script>
