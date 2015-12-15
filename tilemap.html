@@ -73,7 +73,7 @@ Studio.TileMap = function(data, set){
 Studio.TileMap.prototype = {
 	constructor: Studio.TileMap,
 	build: function(data,set,sx,sy,mx,my){
-		var map = data.layers[0];
+		var map = data;
 		var buffer = this.cache.buffer;
 		var width = set.tileWidth;
 		var height = set.tileHeight;
@@ -81,7 +81,7 @@ Studio.TileMap.prototype = {
 		var mY = my || map.height-sy;
 		for(var y = 0; y !=mY; y++ ){
 			for(var x = 0; x!= mX; x++){
-				var i = (map.data[((y+sy)*map.width)+(x+sx)])-1;
+				var i = (map.data[((y+sy)*map.width)+(x+sx)]) - set.firstgid;
 				var _y = i/set.across | 0 ;
 				var _x = i - (_y * set.across);
 				buffer.drawImage(set.set.image, _x*set.tileWidth, _y*set.tileHeight, set.tileWidth, set.tileHeight, x*set.tileWidth, y*set.tileHeight, set.tileWidth, set.tileHeight)
@@ -92,11 +92,12 @@ Studio.TileMap.prototype = {
 
 
 
-Studio.TileSet = function( path, width, height){
+Studio.TileSet = function( image, width, height, imagewidth){
+	this.firstgid = 1;
 	this.tileWidth = width || 32;
 	this.tileHeight = height || 32;
-	this.across = 1;
-	this.set = new Studio.Image( path, this, this.onLoadComplete);
+	this.across = imagewidth/width | 0;
+	this.set = image || null;
 }
 
 Studio.TileSet.prototype = {
@@ -110,31 +111,27 @@ var buildMap = function(a){
 	tole.build(a,grass,0,0)
 }
 
-var grass;//new Studio.TileSet('assets/tiles_packed.png', 16, 16);
-
-var tole;//new Studio.TileMap();
-// var sss = new Studio.Sprite({image:tole.cache});
-// stage.addChild(sss);
-
 Studio.load('assets/simplemap.json','json', function(data){
-	// console.log(data)
+	console.log(data)
 	var set = data.tilesets[0];
 	var setimage = new Studio.Image('assets/'+set.image);
-
+	var tileset =  new Studio.TileSet( setimage, set.tilewidth, set.tileheight, set.imagewidth);
 	var test = function(result){
 		if (!result) {
+			console.log("The image isn't ready so we need to wait.");
 			return;
 		}
 		if(result == true){
-			console.log('Cool the image is ready, now we can do something with it.');
+			console.log( 'The Image is ready, we can now create the tileset from the information provided, and then build the map from the data layer.' );
+			for(var i in data.layers){
+				var map  = new Studio.TileMap();
+				map.build( data.layers[i], tileset, 0, 0);
+			}
 		}
 	}
+	// change to addListenerFunction( function ) ... this explains what the variable needs to be.
 
 	setimage.status.addListener(test);
-
-	// var tileset = new Studio.TileSet(setimage, set.tilewidth, set.tileheight);
-	// console.log(tileset);
-
 });
 
 Studio.start();
