@@ -10,7 +10,7 @@
 		<link rel="stylesheet" href="assets/debug.css" />
 	</head>
 <body style="margin:0;background: #333">
-	<canvas id="canvas" height="480" width="480"  style="cursor:pointer;display: block;outline:1px solid #BBFF00;"></canvas>
+	<canvas id="canvas" width="960" height="640" style="cursor:pointer;display: block;outline:1px solid #BBFF00;"></canvas>
 </body>
 <script src="studio-compiled.js"></script>
 <script>
@@ -37,17 +37,15 @@ Studio.FocusEngine = function(){
 }
 
 
-
-
-
-
-
 Studio.load = function(path, type, callback){
+	
 	var request = new XMLHttpRequest();
+
 	request.onload = function() {
 		var data = null;
 		if ((request.status >= 200 && request.status < 400) || request.status == 0) {
 			console.log('%cStudio loaded file : '+path, Studio.statStyle);
+			
 			if(type.toLowerCase() == "json"){
 				data = JSON.parse(request.responseText);
 			}
@@ -67,7 +65,7 @@ Studio.load = function(path, type, callback){
 }
 
 Studio.TileMap = function(data, set){
-	this.cache = new Studio.Cache(480,320);
+	this.cache = new Studio.Cache(480,320,1);
 }
 
 Studio.TileMap.prototype = {
@@ -77,6 +75,8 @@ Studio.TileMap.prototype = {
 		var buffer = this.cache.buffer;
 		var width = set.tileWidth;
 		var height = set.tileHeight;
+		var sx = sx || 0;
+		var sy = sy || 0;
 		var mX = mx || map.width-sx;
 		var mY = my || map.height-sy;
 		for(var y = 0; y !=mY; y++ ){
@@ -87,6 +87,7 @@ Studio.TileMap.prototype = {
 				buffer.drawImage(set.set.image, _x*set.tileWidth, _y*set.tileHeight, set.tileWidth, set.tileHeight, x*set.tileWidth, y*set.tileHeight, set.tileWidth, set.tileHeight)
 			}
 		}
+		this.cache.ready = true;
 	},
 };
 
@@ -107,12 +108,9 @@ Studio.TileSet.prototype = {
 	}
 };
 
-var buildMap = function(a){
-	tole.build(a,grass,0,0)
-}
+var map = new Studio.TileMap();
 
 Studio.load('assets/simplemap.json','json', function(data){
-	console.log(data)
 	var set = data.tilesets[0];
 	var setimage = new Studio.Image('assets/'+set.image);
 	var tileset =  new Studio.TileSet( setimage, set.tilewidth, set.tileheight, set.imagewidth);
@@ -122,18 +120,18 @@ Studio.load('assets/simplemap.json','json', function(data){
 			return;
 		}
 		if(result == true){
+			// map  = new Studio.TileMap();
 			console.log( 'The Image is ready, we can now create the tileset from the information provided, and then build the map from the data layer.' );
 			for(var i in data.layers){
-				var map  = new Studio.TileMap();
-				map.build( data.layers[i], tileset, 0, 0);
+				map.build( data.layers[i], tileset);
 			}
 		}
 	}
 	// change to addListenerFunction( function ) ... this explains what the variable needs to be.
-
 	setimage.status.addListener(test);
 });
-
+var tt = new Studio.Sprite({width: 960, height: 640, x: stage.width/2, y: stage.height/2, image: map.cache})
+stage.addChild(tt);
 Studio.start();
 
 </script>
