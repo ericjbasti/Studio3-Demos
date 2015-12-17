@@ -10,12 +10,13 @@
 		<link rel="stylesheet" href="assets/debug.css" />
 	</head>
 <body style="margin:0;background: #333">
-	<canvas id="canvas" width="960" height="640" style="cursor:pointer;display: block;outline:1px solid #BBFF00;"></canvas>
+	<canvas id="canvas" width="480" height="320" style="cursor:pointer;display: block;outline:1px solid #BBFF00; image-rendering: -webkit-optimize-contrast;"></canvas>
 </body>
 <script src="studio-compiled.js"></script>
+<script src="stats.js"></script>
 <script>
 
-var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/30, fullscreen:0, color: Studio.BLUE})
+var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/30, fullscreen:0, color: Studio.BLUE, resolution: 2})
 
 function getImage(url){
     return new Promise(function(resolve, reject){
@@ -132,6 +133,38 @@ Studio.load('assets/simplemap.json','json', function(data){
 });
 var tt = new Studio.Sprite({width: 960, height: 640, x: stage.width/2, y: stage.height/2, image: map.cache})
 stage.addChild(tt);
+
+var jane = new Studio.Image('assets/char.png');
+
+var box = new Studio.Sprite({x:-100, y:-100, height: 42, width: 24, image: jane})
+stage.addChild(box)
+box.onEnterFrame = function(){
+	if(stage.keys[38]){
+		this.y -= 2;
+	}
+	if(stage.keys[37]){
+		this.x -= 2;
+	}
+	if(stage.keys[40]){
+		this.y += 2;
+	}
+	if(stage.keys[39]){
+		this.x += 2;
+	}
+}
+
+stage.enableKeyboardInput();
+
+
+stage.camera.bindTo(tt)
+stage.camera.track(box)
+stage.addEffect(STATS,{
+	external: true, 
+	height: 50,
+	width: stage.width,
+	position: 0,
+	clear_mode:'cover'}
+);
 Studio.start();
 
 </script>
