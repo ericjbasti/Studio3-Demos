@@ -19,7 +19,7 @@
 </style>
 <script>
 	
-var stage = new Studio.Stage("canvas",{fullscreen:0, resolution: 2});
+var stage = new Studio.Stage("canvas",{fullscreen:0, resolution: 1});
 
 Studio.UIButton = function(attr, stage){
 	this.hovered = false;
@@ -69,7 +69,7 @@ Studio.UIButton.prototype.onRelease = function(a){
 	}
 }
 
-var button = new Studio.UIButton({x:400,y:150, height: 24, width: 60},stage);
+var button = new Studio.UIButton({x:400,y:150, height: 24, width: 60, text:'Jump!'},stage);
 button.hover = function(a){
 	stage.stopTween(this.hoverOut_tween)
 	stage.playTween(this.hoverIn_tween)
@@ -84,21 +84,84 @@ button.reset = function(a){
 }
 
 button.action = function(a){
-	console.log('nice click!')
+	t.velocityY = -20;
 }
 
+var buttonRight = new Studio.UIButton({x:450,y:200, height: 24, width: 24, text:'>'},stage);
+
+buttonRight.hover = function(a){
+	t.velocityX +=30;
+}
+var buttonLeft = new Studio.UIButton({x:410,y:200, height: 24, width: 24, text:'<'},stage);
+
+buttonLeft.hover = function(a){
+	t.velocityX -=30;
+}
 var button2 = new Studio.UIButton({x: 160, y: 200, height: 350, width: 300, text:"Lorem ipsum dolor...\n\nSit amet, consectetur adipiscing elit. Quisque feugiat eleifend malesuada. Proin bibendum nunc et imperdiet viverra. Suspendisse lectus quam, tempus nec consequat tristique, pharetra a leo. Vestibulum cursus est libero, sit amet maximus erat faucibus tempor. Vestibulum at mauris ut felis eleifend finibus eget a nunc. Duis efficitur maximus leo, vel porta urna hendrerit ac.\n\nPraesent convallis tempus risus id fringilla. Aliquam id est sit amet ex tincidunt luctus ac nec nisi. Vestibulum sed libero vel enim scelerisque ornare vitae sed orci. Maecenas tincidunt turpis nibh, vitae tristique nulla commodo a. Nulla in mi in ipsum facilisis eleifend eu lobortis nunc. Aenean rhoncus, lorem a dictum consectetur, augue orci ornare lorem, sed tristique sapien orci eget lorem. Nulla ullamcorper sem vel risus commodo, iaculis dapibus arcu molestiy."}, stage)
+
+
+var t = new Studio.Rect({width: 50, height: 30, x: -10, y: 100, color: Studio.BLUE, anchorX: 0})
+
+var makePhysicObject = function(who){
+	who.velocityY = 0;
+	who.velocityX = 0;
+	who.friction  = .9;
+}
+
+
+
+var gravity = .92
+
+
+makePhysicObject(t);
+
+t.onEnterFrame = function(){
+	this.velocityY += gravity;
+	this.velocityX *= this.friction;
+	this.y+=this.velocityY;
+	this.x+=this.velocityX;
+	if(this.y+this.height>stage.height){
+		this.y=stage.height-this.height;
+	}
+	if(this.x>stage.width){
+		this.x-=stage.width;
+	}
+	if(this.x<0){
+		this.x+=stage.width;
+	}
+}
+
+t.draw = function(ctx){
+	this.setStyle(ctx);
+	this.setAlpha(ctx);
+	ctx.fillRect(this._world.x - (this._world.width*this.anchorX), this._world.y, this._world.width, this._world.height)
+	if(this._world.x < 0){
+		ctx.fillRect(stage.width + this._world.x, this._world.y, this._world.width, this._world.height);
+		return;
+	}
+	if((this._world.x + this._world.width) > stage.width){
+		ctx.fillRect(this._world.x-stage.width, this._world.y, this._world.width, this._world.height);
+		return;
+	}
+}
+
 
 
 
 stage.enableTouchEvents();
 
-stage.addChild(button);
+stage.addChildren(button, buttonRight, buttonLeft);
 
 stage.addChild(button2)
 
 stage.addButton(button);
+stage.addButton(buttonRight);
+stage.addButton(buttonLeft);
+stage.addChild(t)
 
+
+// stage.addEffect(Studio.Effect.Bloom);
+// stage.addEffect(Studio.Effect.BillAtkinsonDither_BW);
 stage.addEffect(STATS,{
 	external: false, 
 	height: 50,
@@ -106,7 +169,6 @@ stage.addEffect(STATS,{
 	position: 0,
 	clear_mode:'cover'}
 );
-
 stage.ready = true;
 Studio.start();
 </script>
