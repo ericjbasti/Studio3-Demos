@@ -19,7 +19,7 @@
 </style>
 <script>
 	
-var stage = new Studio.Stage("canvas",{fullscreen:0, resolution: 1});
+var stage = new Studio.Stage("canvas",{fullscreen:0, resolution: 1, dur: 1000/60});
 
 Studio.UIButton = function(attr, stage){
 	this.hovered = false;
@@ -97,62 +97,108 @@ var buttonLeft = new Studio.UIButton({x:410,y:200, height: 24, width: 24, text:'
 buttonLeft.hover = function(a){
 	t.velocityX -=30;
 }
-var button2 = new Studio.UIButton({x: 160, y: 200, height: 350, width: 300, text:"Lorem ipsum dolor...\n\nSit amet, consectetur adipiscing elit. Quisque feugiat eleifend malesuada. Proin bibendum nunc et imperdiet viverra. Suspendisse lectus quam, tempus nec consequat tristique, pharetra a leo. Vestibulum cursus est libero, sit amet maximus erat faucibus tempor. Vestibulum at mauris ut felis eleifend finibus eget a nunc. Duis efficitur maximus leo, vel porta urna hendrerit ac.\n\nPraesent convallis tempus risus id fringilla. Aliquam id est sit amet ex tincidunt luctus ac nec nisi. Vestibulum sed libero vel enim scelerisque ornare vitae sed orci. Maecenas tincidunt turpis nibh, vitae tristique nulla commodo a. Nulla in mi in ipsum facilisis eleifend eu lobortis nunc. Aenean rhoncus, lorem a dictum consectetur, augue orci ornare lorem, sed tristique sapien orci eget lorem. Nulla ullamcorper sem vel risus commodo, iaculis dapibus arcu molestiy."}, stage)
+var button2 = new Studio.UIButton({x: 200, y: 200, height: 330, width: 300, text:"Lorem ipsum dolor...\n\nSit amet, consectetur adipiscing elit. Quisque feugiat eleifend malesuada. Proin bibendum nunc et imperdiet viverra. Suspendisse lectus quam, tempus nec consequat tristique, pharetra a leo. Vestibulum cursus est libero, sit amet maximus erat faucibus tempor. Vestibulum at mauris ut felis eleifend finibus eget a nunc. Duis efficitur maximus leo, vel porta urna hendrerit ac.\n\nPraesent convallis tempus risus id fringilla. Aliquam id est sit amet ex tincidunt luctus ac nec nisi. Vestibulum sed libero vel enim scelerisque ornare vitae sed orci. Maecenas tincidunt turpis nibh, vitae tristique nulla commodo a. Nulla in mi in ipsum facilisis eleifend eu lobortis nunc. Aenean rhoncus, lorem a dictum consectetur, augue orci ornare lorem, sed tristique sapien orci eget lorem. Nulla ullamcorper sem vel risus commodo, iaculis dapibus arcu molestiy."}, stage)
 
 
-var t = new Studio.Rect({width: 50, height: 30, x: -10, y: 100, color: Studio.BLUE, anchorX: 0})
+var t = new Studio.Rect({width: 32, height: 32, x: -10, y: 100, color: Studio.BLUE})
 
-var makePhysicObject = function(who){
+var makePhysicObject = function(who, world){
 	who.velocityY = 0;
 	who.velocityX = 0;
 	who.friction  = .9;
-}
-
-
-
-var gravity = .92
-
-
-makePhysicObject(t);
-
-t.onEnterFrame = function(){
-	this.velocityY += gravity;
-	this.velocityX *= this.friction;
-	this.y+=this.velocityY;
-	this.x+=this.velocityX;
-	if(this.y+this.height>stage.height){
-		this.y=stage.height-this.height;
-	}
-	if(this.x>stage.width){
-		this.x-=stage.width;
-	}
-	if(this.x<0){
-		this.x+=stage.width;
+	who.onEnterFrame = function(){
+		this.velocityY += world.gravity;
+		this.velocityX *= this.friction;
+		this.y+=this.velocityY;
+		this.x+=this.velocityX;
+		if(this.y+this.height*this.anchorY>world.height){
+			this.y = world.height-(this.height*this.anchorX);
+		}
+		if(this.x>world.width){
+			this.x-=world.width;
+		}
+		if(this.x<0){
+			this.x+=world.width;
+		}
 	}
 }
+
+
+
+stage.gravity = .78;
+
+
+makePhysicObject( t, stage);
 
 t.draw = function(ctx){
 	this.setStyle(ctx);
 	this.setAlpha(ctx);
-	ctx.fillRect(this._world.x - (this._world.width*this.anchorX), this._world.y, this._world.width, this._world.height)
-	if(this._world.x < 0){
-		ctx.fillRect(stage.width + this._world.x, this._world.y, this._world.width, this._world.height);
+	ctx.fillRect(this._dx - (this._world.width*this.anchorX), this._dy - (this._world.height*this.anchorY), this._world.width, this._world.height)
+	if(this._dx < 0){
+		ctx.fillRect(stage.width + this._dx - (this._world.width*this.anchorX), this._dy - (this._world.height*this.anchorY), this._world.width, this._world.height);
 		return;
 	}
-	if((this._world.x + this._world.width) > stage.width){
-		ctx.fillRect(this._world.x-stage.width, this._world.y, this._world.width, this._world.height);
-		return;
+	if((this._dx + this._world.width) > stage.width){
+		ctx.fillRect(this._dx - (this._world.width*this.anchorX) -stage.width, this._dy - (this._world.height*this.anchorY), this._world.width, this._world.height);
+		return; 
 	}
 }
 
+var block = new Studio.Rect({x:300, y: 300, height: 32, width: 32, color: Studio.RED})
 
 
+
+stage.onEnterFrame = function(){
+	if(this.keys[38] || this.keys["UP"]){
+		t.velocityY = -10;
+	}
+	if(this.keys[37] || this.keys["LEFT"]){
+		t.velocityX -= .51;
+	}
+	if(this.keys[40] || this.keys["DOWN"]){
+		//t.velocityY += 4;
+	}
+	if(this.keys[39] || this.keys["RIGHT"]){
+		t.velocityX += .51;
+	}
+
+	if(t.hitTestRect(block)){
+		// if(t.velocityY<=0){
+		// 	t.velocityY = 0;
+		// 	t.y = block._world.y+(block._world.height*block.anchorY)+(t._world.height*t.anchorY);
+		// 	t._snapback();
+		// 	return;
+		// }
+		if(t.velocityY>=0){
+			if(t.y+(t.height*t.anchorY) < block.y){
+				t.velocityY = 0;
+				t.y = block._world.y-(block._world.height*block.anchorY)-(t._world.height*t.anchorY);
+				t._snapback();
+			}
+			return;
+		}
+		if(t.x < block._world.x){
+			t.velocityX =0
+			t.x = ((block._world.x-(block._world.width*block.anchorX))-t.width-1) | 0 ;
+			// t.x=;
+		}
+		if(t.x> block._world.x){
+			t.velocityX =0
+			t.x = ((block._world.x+(block._world.width*block.anchorX))) | 0 ;
+			// t.x=;
+		}
+		// t.alpha = .5;
+	}else{
+		// t.alpha = 1;
+	}
+
+}
 
 stage.enableTouchEvents();
 
 stage.addChildren(button, buttonRight, buttonLeft);
 
-stage.addChild(button2)
+// stage.addChild(button2)
 
 stage.addButton(button);
 stage.addButton(buttonRight);
@@ -169,6 +215,65 @@ stage.addEffect(STATS,{
 	position: 0,
 	clear_mode:'cover'}
 );
+
+stage.enableKeyboardInput();
+
+var GAMEPAD = new Studio.Plugin({
+	options: {
+	},
+	init: function(a) {
+		this.gamepads = navigator.getGamepads();
+		this.gamepad = null;
+	    this.remote = null;
+	},
+	action: function(a) {
+		this.gamepads = navigator.getGamepads();
+		this.gamepad = null;
+	    this.remote = null;
+
+	    for(var z = 0; z!=this.gamepads.length;z++){
+	        if(this.gamepads[z]){
+	        	if(this.gamepads[z].id=='Remote'){
+	            	this.remote = this.gamepads[z]
+	            }else{
+	            	this.gamepad = this.gamepads[z]
+	            }
+	        }
+	    }
+	    for(var i = 0; i != this.gamepads.length; i ++){
+	        if(this.gamepads[i]){
+	            this.gamepad = this.gamepads[i];
+	            stage.keys['A'] = this.gamepad.buttons[0].value; // A
+	            stage.keys['B'] = this.gamepad.buttons[1].value; // B
+	            stage.keys['X'] = this.gamepad.buttons[2].value; // X
+	            stage.keys['Y'] = this.gamepad.buttons[3].value; // Y
+
+	            stage.keys['L1'] = this.gamepad.buttons[4].value; // L1
+	            stage.keys['R1'] = this.gamepad.buttons[5].value; // R1
+	            stage.keys['L2'] = this.gamepad.buttons[6].value; // L2
+	            stage.keys['R2'] = this.gamepad.buttons[7].value; // R2
+
+	            stage.keys['UP'] = this.gamepad.buttons[12].value; // Up
+	            stage.keys['DOWN'] = this.gamepad.buttons[13].value; // Down
+	            stage.keys['LEFT'] = this.gamepad.buttons[14].value; // Left
+	            stage.keys['RIGHT'] = this.gamepad.buttons[15].value; // Right
+
+	            //stage.keys['MENU'] = this.gamepad.buttons[16].value; // Menu
+
+	            // drawAnalogStick(gamepad.axes[0], gamepad.axes[1], 540, 416); // left stick
+	            // drawAnalogStick(gamepad.axes[2], gamepad.axes[3], 736, 416); // right stick
+	            // ctx.translate(1200,0)
+	        }
+	    }
+	}
+})
+
+stage.addChild(block);
+if(navigator.getGamepads){
+	stage.addEffect(GAMEPAD);
+}
+
+
 stage.ready = true;
 Studio.start();
 </script>
