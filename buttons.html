@@ -113,6 +113,7 @@ var makePhysicObject = function(who, world){
 		this.x+=this.velocityX;
 		if(this.y+this.height*this.anchorY>world.height){
 			this.y = world.height-(this.height*this.anchorX);
+			this.velocityY = 0;
 		}
 		if(this.x>world.width){
 			this.x-=world.width;
@@ -144,11 +145,11 @@ t.draw = function(ctx){
 	}
 }
 
-var block = new Studio.Rect({x:300, y: 300, height: 32, width: 32, color: Studio.RED})
+var block = new Studio.Rect({x:300, y: 300, height: 40, width: 40, color: Studio.RED})
 
 
 
-stage.onEnterFrame = function(){
+stage.onExitFrame = function(){
 	if(this.keys[38] || this.keys["UP"]){
 		t.velocityY = -10;
 	}
@@ -169,7 +170,8 @@ stage.onEnterFrame = function(){
 		// 	t._snapback();
 		// 	return;
 		// }
-		if(t.velocityY>=0){
+		console.log(t.velocityY);
+		if(t.velocityY>.1){
 			if(t.y+(t.height*t.anchorY) < block.y){
 				t.velocityY = 0;
 				t.y = block._world.y-(block._world.height*block.anchorY)-(t._world.height*t.anchorY);
@@ -177,14 +179,14 @@ stage.onEnterFrame = function(){
 			}
 			return;
 		}
-		if(t.x < block._world.x){
+		if(t._world.x < block._world.x){
 			t.velocityX =0
-			t.x = ((block._world.x-(block._world.width*block.anchorX))-t.width-1) | 0 ;
+			t.x = ((block._world.x)-block.width) | 0 ;
 			// t.x=;
 		}
-		if(t.x> block._world.x){
+		if(t._world.x> block._world.x){
 			t.velocityX =0
-			t.x = ((block._world.x+(block._world.width*block.anchorX))) | 0 ;
+			t.x = ((block._world.x)+block.width) | 0 ;
 			// t.x=;
 		}
 		// t.alpha = .5;
