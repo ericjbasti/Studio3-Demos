@@ -100,9 +100,24 @@ buttonLeft.hover = function(a){
 var button2 = new Studio.UIButton({x: 200, y: 100, height: 80, width: 300, text:"Hello BLUE...\n\nWelcome to a world of shapes. Those RED block? Oh you can stand on those if you want."}, stage)
 
 
-var chupe = new Studio.Image('assets/chupe.png')
+var chupe = new Studio.SpriteSheet('assets/chupe.png')
 
-var t = new Studio.ImageSlice({width: 32, height: 32, x: -10, y: 100, image: chupe, rect: {x:0,y:0, width: 32, height: 32}})
+var t = new Studio.SpriteAnimation({width: 32, height: 32, x: -10, y: 100, sheet: chupe, rect: {x:0,y:0, width: 32, height: 32}});
+
+var right = {
+	pant: [[0,1],[1,1],[2,1],[3,1]],
+	walk: [[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0]],
+	jump: [[6,1],[6,1]]
+}
+
+var left = {
+	pant: [[0,3],[1,3],[2,3],[3,3]],
+	walk: [[0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[6,2],[7,2]],
+	jump: [[5,3],[5,3]]
+}
+t.loop = right.walk;
+t.hitbox = new Studio.DisplayObject({height: 32, width: 20});
+t.addChild(t.hitbox);
 
 var makePhysicObject = function(who, world){
 	who.velocityY = 0;
@@ -135,32 +150,38 @@ stage.gravity = .78;
 
 makePhysicObject( t, stage);
 
-t.draw = function(ctx){
-	this.setStyle(ctx);
-	this.setAlpha(ctx);
-	ctx.drawImage(this.image.image, this.rect.x, this.rect.y, this.rect.width, this.rect.height, this._dx - (this._world.width*this.anchorX), this._dy - (this._world.height*this.anchorY), this._world.width, this._world.height)
-	if(this._dx -  (this._world.width*this.anchorX) < 0){
-		ctx.drawImage(this.image.image, this.rect.x, this.rect.y, this.rect.width, this.rect.height, stage.width + this._dx - (this._world.width*this.anchorX), this._dy - (this._world.height*this.anchorY), this._world.width, this._world.height);
-		return;
-	}
-	if((this._dx + this._world.width) > stage.width){
-		ctx.drawImage(this.image.image, this.rect.x, this.rect.y, this.rect.width, this.rect.height, this._dx - (this._world.width*this.anchorX) -stage.width, this._dy - (this._world.height*this.anchorY), this._world.width, this._world.height);
-		return; 
-	}
-}
+// RECT overlapdraw
+// t.draw = function(ctx){
+// 	this.setStyle(ctx);
+// 	this.setAlpha(ctx);
+// 	ctx.drawImage(this.image.image, this.rect.x, this.rect.y, this.rect.width, this.rect.height, this._dx - (this._world.width*this.anchorX), this._dy - (this._world.height*this.anchorY), this._world.width, this._world.height)
+// 	if(this._dx -  (this._world.width*this.anchorX) < 0){
+// 		ctx.drawImage(this.image.image, this.rect.x, this.rect.y, this.rect.width, this.rect.height, stage.width + this._dx - (this._world.width*this.anchorX), this._dy - (this._world.height*this.anchorY), this._world.width, this._world.height);
+// 		return;
+// 	}
+// 	if((this._dx + this._world.width) > stage.width){
+// 		ctx.drawImage(this.image.image, this.rect.x, this.rect.y, this.rect.width, this.rect.height, this._dx - (this._world.width*this.anchorX) -stage.width, this._dy - (this._world.height*this.anchorY), this._world.width, this._world.height);
+// 		return; 
+// 	}
+// }
+t.borderlap = true;
+t.border= stage;
+
+
+
 var blocks = [];
 
-for (var i = 0; i != 5; i++){
-	var block = new Studio.Rect({x: 60+(i*120), y: 260+(i*1), height: 40, width: 40, color: Studio.RED})
+for (var i = 0; i != 15; i++){
+	var block = new Studio.Rect({x: 32+(i*32), y: 260+(i*2), height: 32, width: 32, color: Studio.RED})
 	blocks.push(block);
 	stage.addChild(block);
 }
 
 var prizes = [];
-var prizemax = 3;
+var prizemax = 7;
 var prizegot = 0;
 for (var i = 0; i != prizemax; i++){
-	var block = new Studio.Rect({x: 100+(i*120), y: 200, height: 20, width: 20, color: Studio.YELLOW})
+	var block = new Studio.Rect({x: 100+(i*60), y: 200, height: 20, width: 20, color: Studio.YELLOW})
 	prizes.push(block);
 	stage.addChild(block);
 }
@@ -168,6 +189,7 @@ for (var i = 0; i != prizemax; i++){
 
 
 t.jumping = false;
+t.dir = right;
 
 stage.onExitFrame = function(){
 	if((this.keys[38] || this.keys["UP"] || this.keys["A"])){
@@ -178,59 +200,56 @@ stage.onExitFrame = function(){
 	}
 	if(this.keys[37] || this.keys["LEFT"]){
 		t.velocityX -= .51;
+		t.dir = left;
 	}
 	if(this.keys[40] || this.keys["DOWN"]){
 		//t.velocityY += 4;
 	}
 	if(this.keys[39] || this.keys["RIGHT"]){
 		t.velocityX += .51;
+		t.dir = right;
 	}
+	if (t.velocityY < 0){
+		t.loop = t.dir.jump;
+	}else{
+		if (t.velocityX > 1 || t.velocityX < -1){
+			t.loop = t.dir.walk;
+		}else{
+			t.loop = t.dir.pant;
+		}
+	}
+
 	for (var i = 0; i != blocks.length; i++){
 		var block = blocks[i];
-		if(t.hitTestRect(block)){
-		// if(t.velocityY<=0){
-		// 	t.velocityY = 0;
-		// 	t.y = block._world.y+(block._world.height*block.anchorY)+(t._world.height*t.anchorY);
-		// 	t._snapback();
-		// 	return;
-		// }
-		var dx = t.x-block.x;
-		var dy = t.y-block.y;
+		if(block.x-32>t.x || block.x+32<t.x){
+			
+		}else if(block.y-32>t.y || block.y+32<t.y){
 
-		if(dy<-10 && t.velocityY>0){
-			if(t.y+(t.height*t.anchorY) < block.y){
-				t.velocityY = 0;
-				t.y = block._world.y-(block._world.height*block.anchorY)-(t._world.height*t.anchorY)-1;
-				t._snapback();
-				t.jumping = false;
+		}else if(t.hitbox.hitTestRect(block)){
+			var dx = t.x-block.x;
+			var dy = t.y-block.y;
+
+			if(dy<-10 && t.velocityY>0){
+				if(t.y+(t.height*t.anchorY) < block.y){
+					t.velocityY = 0;
+					t.y = block._world.y-(block._world.height*block.anchorY)-(t._world.height*t.anchorY)-1;
+					t._snapback();
+					t.jumping = false;
+				}
+				return;
 			}
-			return;
+		}else{
+			
 		}
-		// if(dy>10){
-		// 	t.velocityY = 0;
-		// 	t.y = block._world.y+(block._world.height*block.anchorY)+(t._world.height*t.anchorY)+1;
-		// 	return;
-		// }
-
-		// if(dx<-10){
-		// 	t.velocityX =0
-		// 	t.x = ((block._world.x)-block.width) | 0 ;
-		// 	return;
-		// }
-		// if(dx>10){
-		// 	t.velocityX =0
-		// 	t.x = ((block._world.x)+block.width) | 0 ;
-		// 	return;
-		// }
-		// t.alpha = .5;
-	}else{
-		// t.alpha = 1;
-	}
 	}
 
 	for (var i = 0; i != prizes.length; i++){
 		var block = prizes[i];
 		if(block.got){
+
+		}else if(block.x-32>t.x || block.x+32<t.x){
+			
+		}else if(block.y-32>t.y || block.y+32<t.y){
 
 		}else if(t.hitTestRect(block)){
 			block.got = true;
@@ -332,7 +351,7 @@ if(navigator.getGamepads){
 	stage.addEffect(GAMEPAD);
 }
 
-
+stage.snap=true
 stage.ready = true;
 Studio.start();
 </script>
