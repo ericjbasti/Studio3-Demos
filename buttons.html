@@ -97,8 +97,13 @@ var buttonLeft = new Studio.UIButton({x:410,y:200, height: 24, width: 24, text:'
 buttonLeft.hover = function(a){
 	t.velocityX -=30;
 }
-var button2 = new Studio.UIButton({x: 200, y: 100, height: 80, width: 300, text:"Hello BLUE...\n\nWelcome to a world of shapes. Those RED block? Oh you can stand on those if you want."}, stage)
+var button2 = new Studio.UIButton({x: 200, y: 100, height: 80, width: 300, text:"Hello Chupe...\n\nWelcome to a world of shapes. Those RED block? Oh you can stand on those if you want."}, stage)
 
+
+
+
+
+var curse = new Studio.SpriteSheet('assets/Seperated.png')
 
 var chupe = new Studio.SpriteSheet('assets/chupe.png')
 
@@ -133,6 +138,7 @@ var makePhysicObject = function(who, world){
 			this.y = world.height-(this.height*this.anchorX);
 			this.velocityY = 0;
 			t.jumping = false;
+			t.platform = false;
 		}
 		if(this.x>world.width){
 			this.x-=world.width;
@@ -140,8 +146,13 @@ var makePhysicObject = function(who, world){
 		if(this.x<0){
 			this.x+=world.width;
 		}
+		if(this.platform){
+			if(this.platform.velocityX)	this.x+=this.platform.velocityX;
+		}
 	}
 }
+
+
 
 
 
@@ -171,17 +182,50 @@ t.border= stage;
 
 var blocks = [];
 
-for (var i = 0; i != 15; i++){
-	var block = new Studio.Rect({x: 32+(i*32), y: 260+(i*2), height: 32, width: 32, color: Studio.RED})
+for (var i = 0; i != 2; i++){
+	var block = new Studio.ImageSlice({x: 16+(i*32), y: 32*8, height: 32, width: 32, image:curse, rect:{x:0,y:32*12, width:32, height:32}})
 	blocks.push(block);
 	stage.addChild(block);
 }
+
+for (var i = 0; i != 2; i++){
+	var block = new Studio.ImageSlice({x: (stage.width-16)-(i*32), y: 32*8, height: 32, width: 32, image:curse, rect:{x:0,y:32*12, width:32, height:32}})
+	blocks.push(block);
+	stage.addChild(block);
+}
+
+for (var i = 0; i != 4; i++){
+	var block = new Studio.ImageSlice({x: (stage.width/2)-(i*32)+32, y: 32*10, height: 32, width: 32, image:curse, rect:{x:0,y:32*12, width:32, height:32}})
+	blocks.push(block);
+	stage.addChild(block);
+}
+
+
+var movers = new Studio.DisplayObject();
+movers.x = (stage.width/2)-32
+movers.y = 32*5;
+var count = 0;
+movers.onEnterFrame = function(){
+	this.velocityX = Math.sin(count)*2;
+	this.x += this.velocityX;
+	count+=.02;
+	for(var i = 0; i!= this.hasChildren; i++){
+		this.children[i].velocityX = this.velocityX;
+	}
+}
+for (var i = 0; i != 2; i++){
+	var block = new Studio.ImageSlice({x: (i*32), y: 0, height: 32, width: 32, image:curse, rect:{x:0,y:32*13, width:32, height:32}})
+	blocks.push(block);
+	movers.addChild(block);
+}
+stage.addChild(movers)
+
 
 var prizes = [];
 var prizemax = 7;
 var prizegot = 0;
 for (var i = 0; i != prizemax; i++){
-	var block = new Studio.Rect({x: 100+(i*60), y: 200, height: 20, width: 20, color: Studio.YELLOW})
+	var block = new Studio.ImageSlice({x: 100+(i*60), y: 64+parseInt(Math.random()*5)*32, height: 20, width: 20, image:curse, rect:{x:0,y:32*6, width:32, height:32}})
 	prizes.push(block);
 	stage.addChild(block);
 }
@@ -191,8 +235,8 @@ for (var i = 0; i != prizemax; i++){
 t.jumping = false;
 t.dir = right;
 
-stage.onExitFrame = function(){
-	if((this.keys[38] || this.keys["UP"] || this.keys["A"])){
+stage.gamepadInput = function(){
+	if((this.keys[38] || this.keys["UP"] || this.keys["A"] || this.keys["B"])){
 		if(!t.jumping){
 			t.velocityY = -16;
 			t.jumping = true;
@@ -218,19 +262,24 @@ stage.onExitFrame = function(){
 			t.loop = t.dir.pant;
 		}
 	}
+}
 
+
+stage.onExitFrame = function(){
+	this.gamepadInput();
 	for (var i = 0; i != blocks.length; i++){
 		var block = blocks[i];
-		if(block.x-32>t.x || block.x+32<t.x){
-			
-		}else if(block.y-32>t.y || block.y+32<t.y){
+
+		if(block._world.x-32>t.x || block._world.x+32<t.x){
+
+		}else if(block._world.y-32>t.y || block._world.y+32<t.y){
 
 		}else if(t.hitbox.hitTestRect(block)){
-			var dx = t.x-block.x;
-			var dy = t.y-block.y;
-
+			var dx = t.x-block._world.x;
+			var dy = t.y-block._world.y;
+			t.platform = block;
 			if(dy<-10 && t.velocityY>0){
-				if(t.y+(t.height*t.anchorY) < block.y){
+				if(t.y+(t.height*t.anchorY) < block._world.y){
 					t.velocityY = 0;
 					t.y = block._world.y-(block._world.height*block.anchorY)-(t._world.height*t.anchorY)-1;
 					t._snapback();
@@ -239,7 +288,7 @@ stage.onExitFrame = function(){
 				return;
 			}
 		}else{
-			
+
 		}
 	}
 
@@ -258,6 +307,7 @@ stage.onExitFrame = function(){
 				if(prizegot ==prizemax){
 					for(var i = 0; i != prizes.length; i++){
 						var block = prizes[i];
+						block.y= 64+parseInt(Math.random()*5)*32;
 						stage.addTween(block,'quadIn', {scaleX: 1, scaleY: 1 , alpha: 1, rotation: 0}, 300, function(){
 							this.got = false;
 						});
@@ -273,17 +323,17 @@ stage.onExitFrame = function(){
 
 }
 
-stage.enableTouchEvents();
+// stage.enableTouchEvents();
 
-stage.addChildren(button, buttonRight, buttonLeft);
-
-stage.addChild(button2)
-
-stage.addButton(button);
-stage.addButton(buttonRight);
-stage.addButton(buttonLeft);
+// stage.addButton(button);
+// stage.addButton(buttonRight);
+// stage.addButton(buttonLeft);
 stage.addChild(t)
 
+
+// stage.addChildren(button, buttonRight, buttonLeft);
+
+// stage.addChild(button2)
 
 // stage.addEffect(Studio.Effect.Bloom);
 // stage.addEffect(Studio.Effect.BillAtkinsonDither_BW);
