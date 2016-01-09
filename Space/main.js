@@ -1,4 +1,4 @@
-var stage = new Studio.Stage("stage",{fullscreen: 1, dur:1000/10})
+var stage = new Studio.Stage("stage",{fullscreen: 1, dur:1000/1})
 stage.color.setFromHex("#000").alpha(.18).build()
 
 var AU = 92.960 // ~distance of Earth from Sun in millions of miles 92,956,050 miles  scale = 
@@ -171,6 +171,15 @@ theSun.addChildren(mercury, venus, earth, mars, jupiter, saturn, uranus, neptune
 theSun.speed = .25;
 stage.camera.scaleX= stage.camera.scaleY = 1.5;
 
+stage.addEffect(STATS,{
+	external: true, 
+	height: 60,
+	width: stage.width,
+	position: 0,
+	clear_mode:'cover'}
+);
+
+
 Studio.start();
 
 // stage.addTween(stage.camera,'quadInOut',{scaleX:1, scaleY: 1}, 9000)
@@ -190,3 +199,4 @@ speed.onchange = function(){
 	var val = parseFloat(this.value);
 	theSun.speed = val;
 }
+

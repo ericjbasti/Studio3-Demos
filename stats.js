@@ -9,6 +9,7 @@ var STATS = new Studio.Plugin({
 		refresh: .25,
 	},
 	init: function(a) { // lets build out a canvas for the stats
+		this.active = true;
 		this.buffer = document.createElement('canvas');
 		this.buffer.style.position = 'absolute';
 		this.buffer.style.top = '0';
@@ -89,8 +90,8 @@ var STATS = new Studio.Plugin({
 			ctx.fillStyle = 'rgb(20,245,0)';
 		}
 		
-		// ctx.fillRect(this.step,this.half,2,-(Studio.delta/2));
-		ctx.fillRect(this.step,this.half,2,-(stage._d))
+		ctx.fillRect(this.step,this.half,2,-(Studio.delta/2));
+		// ctx.fillRect(this.step,this.half,2,-(stage._d))
 		this.step++;
 		if (this.step > this.buffer.width) {
 			this.step = 0;

@@ -23,13 +23,15 @@ var stage = new Studio.Stage("canvas",{fullscreen:0, resolution: 2, dur: 1000/60
 
 var FOCUS_ENGINE = new Studio.Plugin({
 	options: {
-		waitTime: 12,
+		waitTime: 12, // frames
 	},
 	init: function(a) {
+		stage.enableKeyboardInput();
 		this.wait = this.waitTime;
 		this.cur = null;
 		this.wait = 0;
 		this.currentMenu = null;
+		this.active = true
 	},
 	setCurrentMenu : function(menu){
 		this.currentMenu = menu;
@@ -60,7 +62,7 @@ var FOCUS_ENGINE = new Studio.Plugin({
 			}
 			this.wait = this.options.waitTime;
 		}
-		if(stage.keys[13]==1 || stage.keys[32]==1	){
+		if(stage.keys[13] || stage.keys[32] || stage.keys["A"]){
 			this.cur.action();
 			this.wait = this.options.waitTime*2;
 		}
@@ -171,7 +173,6 @@ button3.reset = function(a){
 }
 
 stage.enableTouchEvents();
-stage.enableKeyboardInput();
 
 stage.addButton(button)
 stage.addChildren(button)
@@ -187,8 +188,7 @@ homeMenu.add(button);
 homeMenu.add(button2);
 homeMenu.add(button3);
 
-
-stage.addEffect(FOCUS_ENGINE,{});
+stage.addInput(FOCUS_ENGINE,{});
 FOCUS_ENGINE.setCurrentMenu(homeMenu);
 stage.snap=true
 Studio.start();

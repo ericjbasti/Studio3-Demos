@@ -16,21 +16,7 @@
 <script src="stats.js"></script>
 <script>
 
-var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/30, fullscreen:0, color: Studio.BLUE, resolution: 2})
-
-function getImage(url){
-    return new Promise(function(resolve, reject){
-        var img = new Image()
-        img.onload = function(){
-            resolve(url)
-        }
-        img.onerror = function(){
-            reject(url)
-        }
-        img.src = url
-    })
-}
-
+var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/60, fullscreen:0, color: Studio.BLUE, resolution: 2})
 
 Studio.FocusEngine = function(){
 	this.active = null;
@@ -66,14 +52,14 @@ Studio.load = function(path, type, callback){
 }
 
 Studio.TileMap = function(data, set){
-	this.cache = new Studio.Cache(480,320,1);
+	this.cache = new Studio.Cache(30*32,16*32,1);
 }
 
 Studio.TileMap.prototype = {
 	constructor: Studio.TileMap,
 	build: function(data,set,sx,sy,mx,my){
 		var map = data;
-		var buffer = this.cache.buffer;
+		var buffer = this.cache.ctx;
 		var width = set.tileWidth;
 		var height = set.tileHeight;
 		var sx = sx || 0;
@@ -111,7 +97,7 @@ Studio.TileSet.prototype = {
 
 var map = new Studio.TileMap();
 
-Studio.load('assets/simplemap.json','json', function(data){
+Studio.load('assets/thecurse.json','json', function(data){
 	var set = data.tilesets[0];
 	var setimage = new Studio.Image('assets/'+set.image);
 	var tileset =  new Studio.TileSet( setimage, set.tilewidth, set.tileheight, set.imagewidth);

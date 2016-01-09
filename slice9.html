@@ -81,7 +81,7 @@ Studio.Slice9.prototype._drawStreched = function(ctx){
 	ctx.drawImage(this.borders.image, this.innerRect.x + this.innerRect.width, this.innerRect.y + this.innerRect.height, c_w, g_h, a_w + b_w , a_h + d_h, c_w, g_h);
 }
 Studio.Slice9.prototype.updateCache = function(){
-	this._drawStreched(this.cache.buffer);
+	this._drawStreched(this.cache.ctx);
 	this.cache.ready = true;
 }
 
@@ -129,13 +129,13 @@ var slice9_2 = new Studio.Slice9({borders:temp, rect: {x:0,y:0,height:520, width
 
 var cc = new Studio.Cache(51,51,2);
 
-cc.buffer.fillStyle="rgba(200,0,20,.5)";
-cc.buffer.fillRect(10,10,40,40);
-cc.buffer.lineWidth = 1
-cc.buffer.strokeRect(1,1,40,40);
-cc.buffer.fillStyle="rgba(0,0,200,.5)";
-cc.buffer.fillRect(1,1,40,40);
-cc.buffer.strokeRect(10,10,40,40);
+cc.ctx.fillStyle="rgba(200,0,20,.5)";
+cc.ctx.fillRect(10,10,40,40);
+cc.ctx.lineWidth = 1
+cc.ctx.strokeRect(1,1,40,40);
+cc.ctx.fillStyle="rgba(0,0,200,.5)";
+cc.ctx.fillRect(1,1,40,40);
+cc.ctx.strokeRect(10,10,40,40);
 
 var cc_border = new Studio.Slice9({borders:cc, rect: {x:0,y:0,height:51*2, width: 51*2}, innerRect: {x:11*2, y:11*2, width: 20*2, height: 20*2}, height: 100, width: 100, x: 100, y: 100, resolution:2})
 var slice9 = new Studio.Slice9({borders:temp, rect: {x:0,y:0,height:520, width: 480}, innerRect: {x:36, y:36, width: 408, height: 446}, height: 200, width: 200, x: 200, y: 200, resolution:2})
