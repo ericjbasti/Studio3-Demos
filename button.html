@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+    <title>Studio3</title>
+	<meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1"/>
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<link rel="apple-touch-icon" href="icon.png" />
+</head>
+
+<body style="margin:0;background: #333">
+	<canvas id="canvas" height="360" width="640"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
+</body>
+<script src="studio-compiled.js"></script>
+<script src="stats.js"></script>
+<style>
+	canvas{image-rendering: -webkit-optimize-contrast;}
+
+</style>
+<script>
+	
+var stage = new Studio.Stage("canvas",{fullscreen:0, resolution: 2, dur: 1000/60, interpolate: 1});
+
+var FOCUS_ENGINE = new Studio.Plugin({
+	options: {
+		waitTime: 12,
+	},
+	init: function(a) {
+		this.wait = this.waitTime;
+		this.cur = null;
+		this.wait = 0;
+		this.currentMenu = null;
+	},
+	setCurrentMenu : function(menu){
+		this.currentMenu = menu;
+		this.cur = this.currentMenu.first;
+		if(this.cur.hover){
+			this.cur.hover();
+		}
+	},
+	action: function(stage) {
+		// the action fires at the end of every stage loop. 
+		// a = stage
+		this.wait--;
+		if(this.wait>0) return;
+
+		if(stage.keys[38] || stage.keys["UP"]){
+			if(this.cur.prev){
+				this.cur.reset();
+				this.cur = this.cur.prev;
+				this.cur.hover();
+			}
+			this.wait = this.options.waitTime;
+		}
+		if(stage.keys[40] || stage.keys["DOWN"]){
+			if(this.cur.next){
+				this.cur.reset();
+				this.cur = this.cur.next;
+				this.cur.hover();
+			}
+			this.wait = this.options.waitTime;
+		}
+		if(stage.keys[13]==1 || stage.keys[32]==1	){
+			this.cur.action();
+			this.wait = this.options.waitTime*2;
+		}
+	}
+
+})
+
+
+
+Studio.UIButton = function(attr, stage){
+	this.hovered = false;
+	this.text = 'Button';
+	if (attr) {
+		this.apply(attr);
+	}
+	this.back = new Studio.Rect({height: this.height, width: this.width});
+	this.back.color.setFromHex("#FF00FF")
+	this.front = new Studio.Rect({height: this.height-4, width: this.width-4});
+	this.front.color.set(0,0,0,.8);
+	this.textBox = new Studio.TextBox(this.width-10, this.height, stage).apply({
+		x: 0 , 
+		y: 0 , 
+		font: '16px BigBreak',
+		lineHeight: 14 | 0 , 
+		vertical_align: Studio.MIDDLE, 
+		horizontal_align: 0.5,
+		shadowColor: '#FF0080'
+	})
+	this.front.color.set(0,0,0,.8);
+	this.textBox.setText(this.text).finish();
+	this.addChildren(this.back,this.front,this.textBox);
+	this.hoverIn_tween = stage.createTween(this, 'quadInOut', {scaleX: 1.2, scaleY: 1.2}, 300).loop(true).reflect(true);
+	this.hoverOut_tween = stage.createTween(this, 'quadOut', {scaleX: 1, scaleY: 1}, 300);
+}
+Studio.UIButton.prototype = new Studio.DisplayObject();
+Studio.UIButton.prototype.constructor = Studio.UIButton;
+
+Studio.UIButton.prototype.onTap = Studio.UIButton.prototype.onHoverStart = function(a){
+	if(this.hover){
+		this.hover(a);
+	}
+}
+Studio.UIButton.prototype.onTapOutside = Studio.UIButton.prototype.onHoverEnd = function(a){
+	if(this.reset){
+		this.reset(a);
+	}
+}
+
+Studio.UIButton.prototype.onRelease = function(a){
+	if(this.action){
+		this.action(a);
+	}
+	if(this.reset){
+		this.reset(a);
+	}
+}
+
+var button = new Studio.UIButton({x:400,y:150, height: 24, width: 120, text:'Button 1'},stage);
+
+button.hover = function(a){
+	stage.stopTween(this.hoverOut_tween)
+	stage.playTween(this.hoverIn_tween)
+	this.back.color.setFromHex("#FF0080")
+	this.textBox.setColor('#FFFF66').finish()
+}
+
+button.reset = function(a){
+	stage.stopTween(this.hoverIn_tween);
+	stage.playTween(this.hoverOut_tween)
+	this.back.color.setFromHex("#FF00FF")
+	this.textBox.setColor('#FFFFFF').finish()
+}
+
+button.action = function(a){
+	console.log('Test1')
+}
+
+var button2 = new Studio.UIButton({x:400,y:190, height: 24, width: 120, text:'Button 2'},stage);
+
+button2.hover = function(a){
+	stage.stopTween(this.hoverOut_tween)
+	stage.playTween(this.hoverIn_tween)
+	this.back.color.setFromHex("#FF0080")
+	this.textBox.setColor('#FFFF66').finish()
+}
+
+button2.reset = function(a){
+	stage.stopTween(this.hoverIn_tween);
+	stage.playTween(this.hoverOut_tween)
+	this.back.color.setFromHex("#FF00FF")
+	this.textBox.setColor('#FFFFFF').finish()
+}
+
+var button3 = new Studio.UIButton({x:400,y:230, height: 24, width: 120, text:'Button 3'},stage);
+
+button3.hover = function(a){
+	stage.stopTween(this.hoverOut_tween)
+	stage.playTween(this.hoverIn_tween)
+	this.back.color.setFromHex("#FF0080")
+	this.textBox.setColor('#FFFF66').finish()
+}
+
+button3.reset = function(a){
+	stage.stopTween(this.hoverIn_tween);
+	stage.playTween(this.hoverOut_tween)
+	this.back.color.setFromHex("#FF00FF")
+	this.textBox.setColor('#FFFFFF').finish()
+}
+
+stage.enableTouchEvents();
+stage.enableKeyboardInput();
+
+stage.addButton(button)
+stage.addChildren(button)
+
+stage.addButton(button2)
+stage.addChildren(button2)
+
+stage.addButton(button3)
+stage.addChildren(button3)
+
+var homeMenu = new LinkedList();
+homeMenu.add(button);
+homeMenu.add(button2);
+homeMenu.add(button3);
+
+
+stage.addEffect(FOCUS_ENGINE,{});
+FOCUS_ENGINE.setCurrentMenu(homeMenu);
+stage.snap=true
+Studio.start();
+
+</script>
+</html>
+

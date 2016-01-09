@@ -15,7 +15,7 @@
 <script src="stats.js"></script>
 <script>
 	
-var stage = new Studio.Stage('canvas',{webgl:1, dur:1000/60, fullscreen:0, resolution: 1})
+var stage = new Studio.Stage('canvas',{webgl:1, dur:1000/59.97, fullscreen:0, resolution: 1, interpolate: 1})
 
 var MAX = 16000/1 | 0 ;
 gravity = .4;
@@ -53,12 +53,14 @@ BOXdrop.prototype.onEnterFrame = function(){
 	}
 }
 
-
 for (var i = 0; i!=MAX;i++){
 	var yy=new BOXdrop({x:stage.width/2 ,y:Math.random()*120,width:3 ,height:3 ,velocityX: 2-(Math.random()*4),velocityY: -10+(Math.random()*6), hit:10});
 	stage.addChild(yy);
 	yy._snapback();
 }
+
+
+
 
 stage.addEffect(STATS,{
 	external: true, 

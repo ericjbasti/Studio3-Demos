@@ -21,7 +21,7 @@
 <script src="studio-compiled.js"></script>
 <script>
 	
-var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/30, fullscreen:0, color: Studio.BLUE})
+var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/59.97, fullscreen:0, color: Studio.BLUE})
 
 var fps_range = document.getElementById("targetFrameRate");
 var dd = document.getElementById('dd');
@@ -38,7 +38,7 @@ var block = function(){
 Studio.extend(block,Studio.Rect);
 
 block.prototype.onEnterFrame = function(){
-	this.y += 2 * this._world.speed;
+	this.y += 3* this._world.speed;
 
 	if(this.y>stage.height+10){
 		this.y -= (stage.height + 20);
@@ -47,7 +47,7 @@ block.prototype.onEnterFrame = function(){
 }
 
 
-for (var j = 0; j!=2 ;j++){
+for (var j = 0; j!=28 ;j++){
 	for (var i = 0; i!=32 ;i++){
 		var yy=new block().apply({x:i*10+5, y: j*12});
 		stage.addChild(yy);

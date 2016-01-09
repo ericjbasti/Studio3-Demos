@@ -89,7 +89,8 @@ var STATS = new Studio.Plugin({
 			ctx.fillStyle = 'rgb(20,245,0)';
 		}
 		
-		ctx.fillRect(this.step,this.half,2,-(Studio.delta/2));
+		// ctx.fillRect(this.step,this.half,2,-(Studio.delta/2));
+		ctx.fillRect(this.step,this.half,2,-(stage._d))
 		this.step++;
 		if (this.step > this.buffer.width) {
 			this.step = 0;
