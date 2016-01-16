@@ -124,30 +124,38 @@ t.loop = right.walk;
 t.hitbox = new Studio.DisplayObject({height: 32, width: 20});
 t.addChild(t.hitbox);
 
+var maxVelocity = 16;
+
 var makePhysicObject = function(who, world){
 	who.velocityY = 0;
 	who.velocityX = 0;
 	who.friction  = .9;
-	who.onEnterFrame = function(){
+	who.bounce = 0;
+	who.hitbox = who;
+	who.maxVelocity = who.height/2;
+	who.logic = function(){
+		// gravity is a constant force
 		this.velocityY += world.gravity;
-		if(this.velocityY>this.height/2) this.velocityY = this.height/2;
+
+		if(this.platform){
+			if(this.platform.velocityX)	this.x+=this.platform.velocityX;
+			if(this.platform.velocityY)	this.y+=this.platform.velocityY;
+		}
+		if(this.velocityY>this.maxVelocity) this.velocityY = this.maxVelocity;
 		this.velocityX *= this.friction;
 		this.y+=this.velocityY;
 		this.x+=this.velocityX;
 		if(this.y+this.height*this.anchorY>world.height){
 			this.y = world.height-(this.height*this.anchorX);
-			this.velocityY = 0;
-			t.jumping = false;
-			t.platform = false;
+			this.velocityY *= this.bounce;
+			this.jumping = false;
+			this.platform = false;
 		}
 		if(this.x>world.width){
 			this.x-=world.width;
 		}
 		if(this.x<0){
 			this.x+=world.width;
-		}
-		if(this.platform){
-			if(this.platform.velocityX)	this.x+=this.platform.velocityX;
 		}
 	}
 }
@@ -160,6 +168,7 @@ stage.gravity = .78;
 
 
 makePhysicObject( t, stage);
+
 
 // RECT overlapdraw
 // t.draw = function(ctx){
@@ -183,19 +192,19 @@ t.border= stage;
 var blocks = [];
 
 for (var i = 0; i != 2; i++){
-	var block = new Studio.ImageSlice({x: 16+(i*32), y: 32*8, height: 32, width: 32, image:curse, rect:{x:0,y:32*12, width:32, height:32}})
+	var block = new Studio.ImageSlice({x: 16+(i*32), y: 32*7, height: 32, width: 32, image:curse, rect:{x:0,y:32*12, width:32, height:32}})
 	blocks.push(block);
 	stage.addChild(block);
 }
 
 for (var i = 0; i != 2; i++){
-	var block = new Studio.ImageSlice({x: (stage.width-16)-(i*32), y: 32*8, height: 32, width: 32, image:curse, rect:{x:0,y:32*12, width:32, height:32}})
+	var block = new Studio.ImageSlice({x: (stage.width-16)-(i*32), y: 32*7, height: 32, width: 32, image:curse, rect:{x:0,y:32*12, width:32, height:32}})
 	blocks.push(block);
 	stage.addChild(block);
 }
 
 for (var i = 0; i != 4; i++){
-	var block = new Studio.ImageSlice({x: (stage.width/2)-(i*32)+32, y: 32*10, height: 32, width: 32, image:curse, rect:{x:0,y:32*12, width:32, height:32}})
+	var block = new Studio.ImageSlice({x: (stage.width/2)-(i*32)+32, y: 32*9, height: 32, width: 32, image:curse, rect:{x:0,y:32*12, width:32, height:32}})
 	blocks.push(block);
 	stage.addChild(block);
 }
@@ -207,7 +216,9 @@ movers.y = 32*5;
 var count = 0;
 movers.onEnterFrame = function(){
 	this.velocityX = Math.sin(count)*2;
+	this.velocityY = Math.cos(count);
 	this.x += this.velocityX;
+	this.y += this.velocityY;
 	count+=.02;
 	for(var i = 0; i!= this.hasChildren; i++){
 		this.children[i].velocityX = this.velocityX;
@@ -236,7 +247,7 @@ t.jumping = false;
 t.dir = right;
 
 stage.gamepadInput = function(){
-	if((this.keys[38] || this.keys["UP"] || this.keys["A"] || this.keys["B"])){
+	if((this.keys[38] || this.keys["UP"] || this.keys["A"])){
 		if(!t.jumping){
 			t.velocityY = -16;
 			t.jumping = true;
@@ -245,6 +256,19 @@ stage.gamepadInput = function(){
 	if(this.keys[37] || this.keys["LEFT"]){
 		t.velocityX -= .51;
 		t.dir = left;
+	}
+	if(this.keys[32] || this.keys["B"]){
+		if(!ball.jumping){
+			ball.y=t.y;
+			ball.x = t.x;
+			ball.velocityY = 0;
+			ball.jumping = true;
+			if(t.dir==left){
+				ball.velocityX=-16;
+			}else{
+				ball.velocityX=16;
+			}
+		}
 	}
 	if(this.keys[40] || this.keys["DOWN"]){
 		//t.velocityY += 4;
@@ -264,59 +288,73 @@ stage.gamepadInput = function(){
 	}
 }
 
+var ball = new Studio.Rect({x:200,y:200, height: 8, width: 8, color: Studio.BLUE})
+makePhysicObject(ball,stage)
+ball.velocityX = 12
+ball.friction = .5
+ball.maxVelocity = 12;
+ball.bounce = -.5
+stage.addChild(ball)
 
-stage.onExitFrame = function(){
+var actionables = [t,ball];
+
+stage.logic = function(){
 	this.gamepadInput();
 	for (var i = 0; i != blocks.length; i++){
 		var block = blocks[i];
+		for(var j = 0; j!=actionables.length; j++){
+			var t = actionables[j];
+			if(block._world.x-32>t.x || block._world.x+32<t.x){
 
-		if(block._world.x-32>t.x || block._world.x+32<t.x){
+			}else if(block._world.y-32>t.y || block._world.y+32<t.y){
 
-		}else if(block._world.y-32>t.y || block._world.y+32<t.y){
-
-		}else if(t.hitbox.hitTestRect(block)){
-			var dx = t.x-block._world.x;
-			var dy = t.y-block._world.y;
-			t.platform = block;
-			if(dy<-10 && t.velocityY>0){
-				if(t.y+(t.height*t.anchorY) < block._world.y){
-					t.velocityY = 0;
-					t.y = block._world.y-(block._world.height*block.anchorY)-(t._world.height*t.anchorY)-1;
-					t._snapback();
-					t.jumping = false;
+			}else if(t.hitbox.hitTestRect(block)){
+				var dx = t.x-block._world.x;
+				var dy = t.y-block._world.y;
+				t.platform = block;
+				if(dy<-10 && t.velocityY>0){
+					if(t.y+(t.height*t.anchorY) < block._world.y){
+						t.velocityY *= t.bounce;
+						t.y = block._world.y-(block._world.height*block.anchorY)-(t._world.height*t.anchorY)-1;
+						t._snapback();
+						t.jumping = false;
+					}
+					// return;
 				}
-				return;
-			}
-		}else{
+			}else{
 
+			}
 		}
 	}
 
 	for (var i = 0; i != prizes.length; i++){
 		var block = prizes[i];
-		if(block.got){
+		for(var j = 0; j!=actionables.length; j++){
+			var t = actionables[j];
+			if(block.got){
 
-		}else if(block.x-32>t.x || block.x+32<t.x){
-			
-		}else if(block.y-32>t.y || block.y+32<t.y){
+			}else if(block.x-32>t.x || block.x+32<t.x){
+				
+			}else if(block.y-32>t.y || block.y+32<t.y){
 
-		}else if(t.hitTestRect(block)){
-			block.got = true;
-			prizegot++;
-			stage.addTween(block,'quadOut', {scaleX: 2, scaleY: 2 , alpha: 0, rotation: 360}, 300 , function(){
-				if(prizegot ==prizemax){
-					for(var i = 0; i != prizes.length; i++){
-						var block = prizes[i];
-						block.y= 64+parseInt(Math.random()*5)*32;
-						stage.addTween(block,'quadIn', {scaleX: 1, scaleY: 1 , alpha: 1, rotation: 0}, 300, function(){
-							this.got = false;
-						});
-						prizegot = 0;
+			}else if(t.hitTestRect(block)){
+				block.got = true;
+				prizegot++;
+				stage.addTween(block,'quadOut', {scaleX: 2, scaleY: 2 , alpha: 0, rotation: 360}, 300 , function(){
+					if(prizegot ==prizemax){
+						for(var i = 0; i != prizes.length; i++){
+							var block = prizes[i];
+							block.y= 64+parseInt(Math.random()*5)*32;
+							stage.addTween(block,'quadIn', {scaleX: 1, scaleY: 1 , alpha: 1, rotation: 0}, 300, function(){
+								this.got = false;
+							});
+							prizegot = 0;
+						}
 					}
-				}
-			});
-		}else{
-			// t.alpha = 1;
+				});
+			}else{
+				// t.alpha = 1;
+			}
 		}
 	}
 
@@ -337,13 +375,13 @@ stage.addChild(t)
 
 // stage.addEffect(Studio.Effect.Bloom);
 // stage.addEffect(Studio.Effect.BillAtkinsonDither_BW);
-stage.addEffect(STATS,{
-	external: false, 
-	height: 60,
-	width: stage.width,
-	position: 0,
-	clear_mode:'cover'}
-);
+// stage.addEffect(STATS,{
+// 	external: false, 
+// 	height: 60,
+// 	width: stage.width,
+// 	position: 0,
+// 	clear_mode:'cover'}
+// );
 
 stage.enableKeyboardInput();
 
@@ -401,6 +439,7 @@ if(navigator.getGamepads){
 	stage.addEffect(GAMEPAD);
 
 }
+
 
 stage.snap=true
 stage.ready = true;

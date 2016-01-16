@@ -18,7 +18,7 @@
 var stage = new Studio.Stage('canvas',{webgl:1, dur:1000/59.97, fullscreen:0, resolution: 1, interpolate: 1})
 
 var MAX = 16000/1 | 0 ;
-gravity = .4;
+gravity = .333;
 
 
 var BOXdrop = function(attr){
@@ -32,7 +32,7 @@ var BOXdrop = function(attr){
 
 Studio.extend(BOXdrop, Studio.Rect)
 
-BOXdrop.prototype.onEnterFrame = function(){
+BOXdrop.prototype.logic = function(){
 	this.velocityY += gravity
 	this.x+=this.velocityX;
 	this.y+=this.velocityY;
