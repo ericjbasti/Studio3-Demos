@@ -38,7 +38,7 @@ var block = function(){
 Studio.extend(block,Studio.Rect);
 
 block.prototype.onEnterFrame = function(){
-	this.y += 3* this._world.speed;
+	this.y += 3;
 
 	if(this.y>stage.height+10){
 		this.y -= (stage.height + 20);

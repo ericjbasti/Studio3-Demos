@@ -20,7 +20,8 @@
 <script>
 	
 var stage = new Studio.Stage("canvas",{fullscreen:2, resolution: 1, dur: 1000/60, interpolate: 0});
-
+	    stage.GAMEPAD_1 = {};
+	    stage.GAMEPAD_2 = {};
 Studio.UIButton = function(attr, stage){
 	this.hovered = false;
 	this.text = 'Button';
@@ -106,9 +107,6 @@ var button2 = new Studio.UIButton({x: 200, y: 100, height: 80, width: 300, text:
 var curse = new Studio.SpriteSheet('assets/Seperated.png')
 
 var chupe = new Studio.SpriteSheet('assets/chupe.png')
-
-var t = new Studio.SpriteAnimation({width: 32, height: 32, x: -10, y: 100, sheet: chupe, rect: {x:0,y:0, width: 32, height: 32}});
-
 var right = {
 	pant: [[0,1],[1,1],[2,1],[3,1]],
 	walk: [[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0]],
@@ -120,11 +118,6 @@ var left = {
 	walk: [[0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[6,2],[7,2]],
 	jump: [[5,3],[5,3]]
 }
-t.loop = right.walk;
-t.hitbox = new Studio.DisplayObject({height: 32, width: 20});
-t.addChild(t.hitbox);
-
-var maxVelocity = 16;
 
 var makePhysicObject = function(who, world){
 	who.velocityY = 0;
@@ -145,8 +138,8 @@ var makePhysicObject = function(who, world){
 		this.velocityX *= this.friction;
 		this.y+=this.velocityY;
 		this.x+=this.velocityX;
-		if(this.y+this.height*this.anchorY>world.height){
-			this.y = world.height-(this.height*this.anchorX);
+		if(this.y+this._world.height*this.anchorY>world.height){
+			this.y = world.height-(this._world.height*this.anchorX);
 			this.velocityY *= this.bounce;
 			this.jumping = false;
 			this.platform = false;
@@ -161,13 +154,34 @@ var makePhysicObject = function(who, world){
 }
 
 
+var Player = function(world){
+	this.width = 32;
+	this.height= 32; 
+	this.sheet= chupe;
+	this.rect ={x:0,y:0, width: 32, height: 32};
+	this.loop = right.walk;
+	this.hitbox = new Studio.DisplayObject({height: 32, width: 20});
+	this.addChild(this.hitbox);
 
+	makePhysicObject(this,world);
+	this.borderlap = true;
+	this.border= world;
+	this.jumping = false;
+	this.dir = right;
+	this._hitAnimation = world.createTween(this,'bounceOut',{scaleY:.2, scaleX: 1.75}, 200);
+	this._hitAnimation.then('linear',{scaleX:3},200).then('chillInOut',{scaleY:1, scaleX:1}, 200, function(){this._hit=0}).last();
+}
+Studio.extend(Player,Studio.SpriteAnimation)
 
+Player.prototype.hit = function(){
+	stage.playTween(this._hitAnimation);
+}
+
+var PLAYER_1 = new Player(stage);
+var PLAYER_2 = new Player(stage);
 
 stage.gravity = .78;
 
-
-makePhysicObject( t, stage);
 
 
 // RECT overlapdraw
@@ -184,8 +198,6 @@ makePhysicObject( t, stage);
 // 		return; 
 // 	}
 // }
-t.borderlap = true;
-t.border= stage;
 
 
 
@@ -242,22 +254,18 @@ for (var i = 0; i != prizemax; i++){
 }
 
 
-
-t.jumping = false;
-t.dir = right;
-
-stage.gamepadInput = function(){
-	if((this.keys[38] || this.keys["UP"] || this.keys["A"])){
+stage.gamepadInput = function(t, pad){
+	if((this.keys[38] || pad["UP"] || pad["A"])){
 		if(!t.jumping){
 			t.velocityY = -16;
 			t.jumping = true;
 		}
 	}
-	if(this.keys[37] || this.keys["LEFT"]){
+	if(this.keys[37] || pad["LEFT"]){
 		t.velocityX -= .51;
 		t.dir = left;
 	}
-	if(this.keys[32] || this.keys["B"]){
+	if(this.keys[32] || pad["B"]){
 		if(!ball.jumping){
 			ball.y=t.y;
 			ball.x = t.x;
@@ -270,10 +278,10 @@ stage.gamepadInput = function(){
 			}
 		}
 	}
-	if(this.keys[40] || this.keys["DOWN"]){
+	if(this.keys[40] || pad["DOWN"]){
 		//t.velocityY += 4;
 	}
-	if(this.keys[39] || this.keys["RIGHT"]){
+	if(this.keys[39] || pad["RIGHT"]){
 		t.velocityX += .51;
 		t.dir = right;
 	}
@@ -291,15 +299,41 @@ stage.gamepadInput = function(){
 var ball = new Studio.Rect({x:200,y:200, height: 8, width: 8, color: Studio.BLUE})
 makePhysicObject(ball,stage)
 ball.velocityX = 12
-ball.friction = .5
+ball.friction = .932
 ball.maxVelocity = 12;
 ball.bounce = -.5
 stage.addChild(ball)
 
-var actionables = [t,ball];
+var actionables = [PLAYER_1,PLAYER_2,ball];
 
 stage.logic = function(){
-	this.gamepadInput();
+
+	if(PLAYER_1){
+		this.gamepadInput(PLAYER_1, stage.GAMEPAD_1);
+	}
+	if(PLAYER_2){
+		this.gamepadInput(PLAYER_2, stage.GAMEPAD_2);
+	}
+
+	if(!PLAYER_1._hit && !PLAYER_2._hit){
+		if(PLAYER_1.hitbox.hitTestRect(PLAYER_2.hitbox)){
+			var dx = PLAYER_1.x-PLAYER_2.x;
+			var dy = PLAYER_1.y-PLAYER_2.y;
+			if(dy>24 && PLAYER_2.jumping && PLAYER_2.velocityY>0){
+				PLAYER_1._hit = true;
+				PLAYER_1.hit();
+				PLAYER_2.velocityY = -18;
+				PLAYER_2.jumping = true;
+			}
+			if(dy<-24 && PLAYER_1.jumping && PLAYER_1.velocityY>0){
+				PLAYER_2._hit = true;
+				PLAYER_2.hit();
+				PLAYER_1.velocityY = -18;
+				PLAYER_1.jumping = true;
+			}
+		}
+	}
+
 	for (var i = 0; i != blocks.length; i++){
 		var block = blocks[i];
 		for(var j = 0; j!=actionables.length; j++){
@@ -366,9 +400,9 @@ stage.logic = function(){
 // stage.addButton(button);
 // stage.addButton(buttonRight);
 // stage.addButton(buttonLeft);
-stage.addChild(t)
+stage.addChild(PLAYER_1)
 
-
+stage.addChild(PLAYER_2)
 // stage.addChildren(button, buttonRight, buttonLeft);
 
 // stage.addChild(button2)
@@ -391,39 +425,35 @@ var GAMEPAD = new Studio.Plugin({
 	init: function(a) {
 		this.gamepads = navigator.getGamepads();
 		this.gamepad = null;
-	    this.remote = null;
+		this.active = true;
 	},
-	action: function(a) {
+	action: function(stage) {
 		this.gamepads = navigator.getGamepads();
-		this.gamepad = null;
-	    this.remote = null;
-
-	    for(var z = 0; z!=this.gamepads.length;z++){
-	        if(this.gamepads[z]){
-	        	if(this.gamepads[z].id=='Remote'){
-	            	this.remote = this.gamepads[z]
-	            }else{
-	            	this.gamepad = this.gamepads[z]
-	            }
-	        }
-	    }
+		var pad = null;
 	    for(var i = 0; i != this.gamepads.length; i ++){
 	        if(this.gamepads[i]){
 	            this.gamepad = this.gamepads[i];
-	            stage.keys['A'] = this.gamepad.buttons[0].value; // A
-	            stage.keys['B'] = this.gamepad.buttons[1].value; // B
-	            stage.keys['X'] = this.gamepad.buttons[2].value; // X
-	            stage.keys['Y'] = this.gamepad.buttons[3].value; // Y
 
-	            stage.keys['L1'] = this.gamepad.buttons[4].value; // L1
-	            stage.keys['R1'] = this.gamepad.buttons[5].value; // R1
-	            stage.keys['L2'] = this.gamepad.buttons[6].value; // L2
-	            stage.keys['R2'] = this.gamepad.buttons[7].value; // R2
+	            if(i==0){
+	            	pad = stage.GAMEPAD_1;
+	            }else if(i==1){
+	            	pad = stage.GAMEPAD_2;
+	            }
 
-	            stage.keys['UP'] = this.gamepad.buttons[12].value; // Up
-	            stage.keys['DOWN'] = this.gamepad.buttons[13].value; // Down
-	            stage.keys['LEFT'] = this.gamepad.buttons[14].value; // Left
-	            stage.keys['RIGHT'] = this.gamepad.buttons[15].value; // Right
+	            pad['A'] = this.gamepad.buttons[0].value; // A
+	            pad['B'] = this.gamepad.buttons[1].value; // B
+	            pad['X'] = this.gamepad.buttons[2].value; // X
+	            pad['Y'] = this.gamepad.buttons[3].value; // Y
+
+	            pad['L1'] = this.gamepad.buttons[4].value; // L1
+	            pad['R1'] = this.gamepad.buttons[5].value; // R1
+	            pad['L2'] = this.gamepad.buttons[6].value; // L2
+	            pad['R2'] = this.gamepad.buttons[7].value; // R2
+
+	            pad['UP'] = this.gamepad.buttons[12].value; // Up
+	            pad['DOWN'] = this.gamepad.buttons[13].value; // Down
+	            pad['LEFT'] = this.gamepad.buttons[14].value; // Left
+	            pad['RIGHT'] = this.gamepad.buttons[15].value; // Right
 
 	            //stage.keys['MENU'] = this.gamepad.buttons[16].value; // Menu
 
@@ -436,8 +466,7 @@ var GAMEPAD = new Studio.Plugin({
 })
 
 if(navigator.getGamepads){
-	stage.addEffect(GAMEPAD);
-
+	stage.addInput(GAMEPAD);
 }
 
 
