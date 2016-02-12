@@ -19,7 +19,36 @@
 </style>
 <script>
 	
-var stage = new Studio.Stage("canvas",{fullscreen:0, resolution: 2, dur: 1000/60, interpolate: 1});
+
+var stage = new Studio.Stage("canvas",{fullscreen:0, resolution: 2, dur: 1000/3, interpolate: 1});
+
+
+
+var scene = new Studio.Rect({color:Studio.RED, width: 320, height: 300})
+
+var box = new Studio.Rect({y:200, x: 20, height: 10, width: 10, color: Studio.BLUE});
+box.velocityX = 20;
+box.onEnterFrame = function(){
+	this.x+=this.velocityX;
+
+	if(this.x>100 || this.x<0){
+		this.velocityX*=-1;
+	}
+}
+
+
+stage.addChild(box)
+stage.setScene(scene)
+scene.velocityX = 20;
+scene.onEnterFrame = function(){
+	this.x+=this.velocityX;
+
+	if(this.x>100 || this.x<0){
+		this.velocityX*=-1;
+	}
+}
+
+
 
 var FOCUS_ENGINE = new Studio.Plugin({
 	options: {
@@ -175,13 +204,13 @@ button3.reset = function(a){
 stage.enableTouchEvents();
 
 stage.addButton(button)
-stage.addChildren(button)
+scene.addChildren(button)
 
 stage.addButton(button2)
-stage.addChildren(button2)
+scene.addChildren(button2)
 
 stage.addButton(button3)
-stage.addChildren(button3)
+scene.addChildren(button3)
 
 var homeMenu = new LinkedList();
 homeMenu.add(button);
