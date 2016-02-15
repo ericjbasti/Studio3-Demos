@@ -25,25 +25,15 @@
 <script src="studio-compiled.js"></script>
 <script>
 	
-var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/10, fullscreen:0, color: Studio.BLUE})
+var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/6, fullscreen:1, color: Studio.BLUE})
 
 var fps_range = document.getElementById("targetFrameRate");
 var resolution = document.getElementById("resolution");
 var snap = document.getElementById("snap");
 var fullscreen = document.getElementById("fullscreen");
-stage.onEnterFrame = function(){
-	this.dur = parseFloat(fps_range.value);
-	var res = parseFloat(resolution.value);
-	if( res != this.resolution){
-		this.resolution = res;
-		this.setPixelRatio();
-	}
-	stage.snap = snap.checked;
-	if(fullscreen.checked != this.fullscreen){
-		this.fullscreen = fullscreen.checked;
-		this._sizeCanvas(this.fullscreen);
-	}
+stage.onEnterFrame = function(){1
 }
+
 
 Studio.Slice9 = function(attr) {
 	this.borders = null;

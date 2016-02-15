@@ -9,10 +9,11 @@
 </head>
 
 <body style="margin:0;background: #333">
-	<canvas id="canvas" height="360" width="640"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
+	<canvas id="canvas" height="360" width="720"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
 </body>
 <script src="studio-compiled.js"></script>
 <script src="stats.js"></script>
+<script src="focus_engine.js"></script>
 <style>
 	canvas{image-rendering: -webkit-optimize-contrast;}
 
@@ -20,14 +21,25 @@
 <script>
 	
 
-var stage = new Studio.Stage("canvas",{fullscreen:0, resolution: 2, dur: 1000/3, interpolate: 1});
+var stage = new Studio.Stage("canvas",{fullscreen:0, resolution: 2, dur: 1000/10, interpolate: 1});
+
+
+var scene2 = new Studio.Scene({color: Studio.BLUE, width: 320, height: 300, x: 400})
+
+
+var scene = new Studio.Scene({color:Studio.RED, width: 320, height: 300, x: 500})
 
 
 
-var scene = new Studio.Rect({color:Studio.RED, width: 320, height: 300})
+scene.onActivate = scene2.onActivate = function(){
+	this.x = 1;
+}
+scene.onDeactivate = scene2.onDeactivate = function(){
+	this.x = 322;
+}
 
 var box = new Studio.Rect({y:200, x: 20, height: 10, width: 10, color: Studio.BLUE});
-box.velocityX = 20;
+box.velocityX = 2;
 box.onEnterFrame = function(){
 	this.x+=this.velocityX;
 
@@ -39,65 +51,6 @@ box.onEnterFrame = function(){
 
 stage.addChild(box)
 stage.setScene(scene)
-scene.velocityX = 20;
-scene.onEnterFrame = function(){
-	this.x+=this.velocityX;
-
-	if(this.x>100 || this.x<0){
-		this.velocityX*=-1;
-	}
-}
-
-
-
-var FOCUS_ENGINE = new Studio.Plugin({
-	options: {
-		waitTime: 12, // frames
-	},
-	init: function(a) {
-		stage.enableKeyboardInput();
-		this.wait = this.waitTime;
-		this.cur = null;
-		this.wait = 0;
-		this.currentMenu = null;
-		this.active = true
-	},
-	setCurrentMenu : function(menu){
-		this.currentMenu = menu;
-		this.cur = this.currentMenu.first;
-		if(this.cur.hover){
-			this.cur.hover();
-		}
-	},
-	action: function(stage) {
-		// the action fires at the end of every stage loop. 
-		// a = stage
-		this.wait--;
-		if(this.wait>0) return;
-
-		if(stage.keys[38] || stage.keys["UP"]){
-			if(this.cur.prev){
-				this.cur.reset();
-				this.cur = this.cur.prev;
-				this.cur.hover();
-			}
-			this.wait = this.options.waitTime;
-		}
-		if(stage.keys[40] || stage.keys["DOWN"]){
-			if(this.cur.next){
-				this.cur.reset();
-				this.cur = this.cur.next;
-				this.cur.hover();
-			}
-			this.wait = this.options.waitTime;
-		}
-		if(stage.keys[13] || stage.keys[32] || stage.keys["A"]){
-			this.cur.action();
-			this.wait = this.options.waitTime*2;
-		}
-	}
-
-})
 
 
 
@@ -149,7 +102,7 @@ Studio.UIButton.prototype.onRelease = function(a){
 	}
 }
 
-var button = new Studio.UIButton({x:400,y:150, height: 24, width: 120, text:'Button 1'},stage);
+var button = new Studio.UIButton({x:400,y:150, height: 24, width: 120, text:'Scene 1'},stage);
 
 button.hover = function(a){
 	stage.stopTween(this.hoverOut_tween)
@@ -166,10 +119,10 @@ button.reset = function(a){
 }
 
 button.action = function(a){
-	console.log('Test1')
+	stage.setScene(scene2)
 }
 
-var button2 = new Studio.UIButton({x:400,y:190, height: 24, width: 120, text:'Button 2'},stage);
+var button2 = new Studio.UIButton({x:400,y:190, height: 24, width: 120, text:'Scene 2'},stage);
 
 button2.hover = function(a){
 	stage.stopTween(this.hoverOut_tween)
@@ -185,7 +138,11 @@ button2.reset = function(a){
 	this.textBox.setColor('#FFFFFF').finish()
 }
 
-var button3 = new Studio.UIButton({x:400,y:230, height: 24, width: 120, text:'Button 3'},stage);
+button2.action = function(a){
+	stage.setScene(scene)
+}
+
+var button3 = new Studio.UIButton({x:400,y:230, height: 24, width: 120, text:'Stage'},stage);
 
 button3.hover = function(a){
 	stage.stopTween(this.hoverOut_tween)
@@ -203,14 +160,16 @@ button3.reset = function(a){
 
 stage.enableTouchEvents();
 
-stage.addButton(button)
 scene.addChildren(button)
+scene.addButton(button)
 
-stage.addButton(button2)
-scene.addChildren(button2)
+
+scene2.addButton(button2)
+scene2.addChildren(button2)
 
 stage.addButton(button3)
-scene.addChildren(button3)
+stage.addChildren(button3)
+
 
 var homeMenu = new LinkedList();
 homeMenu.add(button);
@@ -219,7 +178,7 @@ homeMenu.add(button3);
 
 stage.addInput(FOCUS_ENGINE,{});
 FOCUS_ENGINE.setCurrentMenu(homeMenu);
-stage.snap=true
+stage.snap=false
 Studio.start();
 
 </script>
