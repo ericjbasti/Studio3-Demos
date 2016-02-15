@@ -1,4 +1,4 @@
-var stage = new Studio.Stage("stage",{fullscreen: 1, dur:1000/1})
+var stage = new Studio.Stage("stage",{fullscreen: 1, dur:1000/30})
 stage.color.setFromHex("#000").alpha(.18).build()
 
 var AU = 92.960 // ~distance of Earth from Sun in millions of miles 92,956,050 miles  scale = 
