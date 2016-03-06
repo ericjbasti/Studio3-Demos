@@ -46,6 +46,7 @@ var FOCUS_ENGINE = new Studio.Plugin({
 		if(stage.keys[13] || stage.keys[32] || stage.keys["A"]){
 			this.cur.action();
 			this.wait = this.options.waitTime*2;
+			this.cur.reset();
 		}
 	}
 

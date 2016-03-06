@@ -15,9 +15,9 @@
 <script src="stats.js"></script>
 <script>
 	
-var stage = new Studio.Stage('canvas',{webgl:1, dur:1000/60, fullscreen:0, resolution: 1, interpolate: 1})
+var stage = new Studio.Stage('canvas',{webgl:1, dur:1000/60, fullscreen:0, resolution: 1, interpolate: 0})
 
-var MAX = 16000/10 | 0 ;
+var MAX = 16000/6 | 0 ;
 gravity = .4;
 
 
@@ -51,6 +51,7 @@ BOXdrop.prototype.logic = function(){
 		this.hit--;
 		this.y = stage.height-1;
 	}
+	// this.color.set(100-(this.velocityY*33),100-(this.velocityX*33),150,1);
 }
 
 for (var i = 0; i!=MAX;i++){
@@ -76,4 +77,5 @@ Studio.start();
 
 
 </html>
+
 

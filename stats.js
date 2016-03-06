@@ -103,6 +103,7 @@ var STATS = new Studio.Plugin({
 		ctx.fillStyle = 'rgba(0,0,0,.8)';
 		ctx.fillRect(0, 0, this.buffer.width, 12);
 		ctx.fillStyle = 'rgb(255,255,255)';
+
 		if(this.memory){
 			ctx.fillText((this._tick/this.options.refresh | 0) + ' fps / ' + Studio.draws + ' draw / ' + this._spikes + ' spikes     MEM: '+(this.memory* 0.000000954).toFixed(3)+'  &  Buildup: '+(this.memory-this.old_memory), 2, 10);
 			this.old_memory = this.memory;

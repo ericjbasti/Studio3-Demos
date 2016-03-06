@@ -1,0 +1,369 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+    <title>Studio3</title>
+	<meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1"/>
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<link rel="apple-touch-icon" href="icon.png" />
+</head>
+
+<body style="margin:0;background: #333">
+	<canvas id="canvas" height="584" width="960"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
+</body>
+<script src="studio-compiled.js"></script>
+<script src="stats.js"></script>
+<script src="focus_engine.js"></script>
+<style>
+	canvas{
+		image-rendering: optimizeSpeed;
+		image-rendering: -moz-crisp-edges;
+		image-rendering: -webkit-optimize-contrast;
+		image-rendering: optimize-contrast;
+		-ms-interpolation-mode: nearest-neighbor;
+	}
+</style>
+<script>
+
+var _parts = new Studio.Image('breakdown/_parts.png');
+var sprites = {
+	'arcade': {
+		x: 334, y: 1001, width: 88, height: 21},
+
+	'back': {
+		x: 514, y: 285, width: 192, height: 240},
+
+	'background': {
+		x: 0, y: 0, width: 320, height: 568},
+
+	'ball': {
+		x: 203, y: 1008, width: 9, height: 9},
+
+	'ball_large': {
+		x: 127, y: 1011, width: 11, height: 11},
+
+	'ball_small': {
+		x: 354, y: 986, width: 7, height: 7},
+
+	'blue_back': {
+		x: 321, y: 0, width: 192, height: 284},
+
+	'blue_layer_1': {
+		x: 514, y: 0, width: 192, height: 284},
+
+	'blue_layer_2': {
+		x: 900, y: 0, width: 164, height: 260},
+
+	'break-glass': {
+		x: 828, y: 965, width: 132, height: 37},
+
+	'break-left': {
+		x: 423, y: 986, width: 134, height: 37},
+
+	'break-right': {
+		x: 833, y: 891, width: 132, height: 37},
+
+	'down-glass': {
+		x: 698, y: 923, width: 134, height: 41},
+
+	'down-left': {
+		x: 693, y: 985, width: 134, height: 39},
+
+	'down-right': {
+		x: 558, y: 985, width: 134, height: 39},
+
+	'green_back': {
+		x: 193, y: 569, width: 192, height: 284},
+
+	'green_layer_1': {
+		x: 0, y: 569, width: 192, height: 284},
+
+	'green_layer_2': {
+		x: 772, y: 285, width: 164, height: 260},
+
+	'grey_back': {
+		x: 707, y: 0, width: 192, height: 284},
+
+	'grey_layer_1': {
+		x: 386, y: 559, width: 192, height: 284},
+
+	'grey_layer_2': {
+		x: 579, y: 526, width: 192, height: 284},
+
+	'holder': {
+		x: 547, y: 923, width: 150, height: 61},
+
+	'layer1': {
+		x: 547, y: 844, width: 192, height: 78},
+
+	'layer2': {
+		x: 321, y: 534, width: 192, height: 24},
+
+	'layer3': {
+		x: 354, y: 854, width: 192, height: 82},
+
+	'layer4': {
+		x: 0, y: 854, width: 192, height: 156},
+
+	'layer5': {
+		x: 961, y: 929, width: 80, height: 54},
+
+	'layer6': {
+		x: 193, y: 854, width: 160, height: 146},
+
+	'layer7': {
+		x: 321, y: 285, width: 192, height: 248},
+
+	'layer8': {
+		x: 354, y: 937, width: 192, height: 48},
+
+	'paddle': {
+		x: 55, y: 1011, width: 39, height: 10},
+
+	'paddle_large': {
+		x: 0, y: 1011, width: 54, height: 10},
+
+	'paddle_small': {
+		x: 95, y: 1011, width: 31, height: 10},
+
+	'pill_1': {
+		x: 171, y: 1018, width: 15, height: 6},
+
+	'pill_2': {
+		x: 187, y: 1011, width: 15, height: 6},
+
+	'pill_3': {
+		x: 187, y: 1018, width: 15, height: 6},
+
+	'pill_4': {
+		x: 155, y: 1011, width: 15, height: 6},
+
+	'pill_5': {
+		x: 193, y: 1001, width: 15, height: 6},
+
+	'pill_6': {
+		x: 139, y: 1011, width: 15, height: 6},
+
+	'pill_7': {
+		x: 139, y: 1018, width: 15, height: 6},
+
+	'pill_8': {
+		x: 155, y: 1018, width: 15, height: 6},
+
+	'pill_9': {
+		x: 171, y: 1011, width: 15, height: 6},
+
+	'shadow': {
+		x: 740, y: 811, width: 138, height: 79},
+
+	'shot': {
+		x: 209, y: 1001, width: 3, height: 6},
+
+	'timetrials': {
+		x: 213, y: 1001, width: 120, height: 22},
+}
+
+
+Studio.UIButton = function(attr, stage){
+	this.hovered = false;
+	this.text = 'Button';
+	if (attr) {
+		this.apply(attr);
+	}
+	this.back = new Studio.Rect({height: this.height, width: this.width});
+	this.back.color.setFromHex("#FF00FF")
+	this.front = new Studio.Rect({height: this.height-4, width: this.width-4});
+	this.front.color.set(0,0,0,.8);
+	this.textBox = new Studio.TextBox(this.width-10, this.height, stage).apply({
+		x: 0 , 
+		y: 0 , 
+		font: '16px BigBreak',
+		lineHeight: 14 | 0 , 
+		vertical_align: Studio.MIDDLE, 
+		horizontal_align: 0.5,
+		shadowColor: '#FF0080'
+	})
+	this.front.color.set(0,0,0,.8);
+	this.textBox.setText(this.text).finish();
+	this.addChildren(this.back,this.front,this.textBox);
+
+	this.hoverIn_tween = stage.createTween(this, 'quadInOut', {scaleX: 1.2, scaleY: 1.2}, 300).loop(true).reflect(true);
+	this.hoverOut_tween = stage.createTween(this, 'quadOut', {scaleX: 1, scaleY: 1}, 300);
+}
+Studio.UIButton.prototype = new Studio.DisplayObject();
+Studio.UIButton.prototype.constructor = Studio.UIButton;
+
+Studio.UIButton.prototype.onTap = Studio.UIButton.prototype.onHoverStart = function(a){
+	if(this.hover){
+		this.hover(a);
+	}
+}
+Studio.UIButton.prototype.onTapOutside = Studio.UIButton.prototype.onHoverEnd = function(a){
+	if(this.reset){
+		this.reset(a);
+	}
+}
+
+Studio.UIButton.prototype.onRelease = function(a){
+	if(this.action){
+		this.action(a);
+	}
+	if(this.reset){
+		this.reset(a);
+	}
+}
+
+
+var stage = new Studio.Stage("canvas",{fullscreen:0, resolution: 1, dur: 1000/60, interpolate: 1, smoothing: false});
+
+var button3 = new Studio.UIButton({x:160,y:230, height: 24, width: 120, text:'Stage'},stage);
+
+button3.hover = function(a){
+	stage.stopTween(this.hoverOut_tween)
+	stage.playTween(this.hoverIn_tween)
+	this.back.color.setFromHex("#FF0080")
+	this.textBox.setColor('#FFFF66').finish()
+}
+
+button3.reset = function(a){
+	stage.stopTween(this.hoverIn_tween);
+	stage.playTween(this.hoverOut_tween)
+	this.back.color.setFromHex("#FF00FF")
+	this.textBox.setColor('#FFFFFF').finish()
+}
+
+button3.action = function(a){
+	if(stage.activeScene){
+		stage.clearScene();
+	}else{
+		stage.setScene(home);
+	}
+}
+
+
+
+var Paralaxx = {
+	init : function(){
+		for (var i = 0; i  !== this.children.length; i++) {
+			this.children[i]._offsetY = this.children[i].y;
+			this.children[i]._offsetX = this.children[i].x;
+		}
+	},
+	frame : function(){
+		for (var i = 0; i  !== this.children.length; i++) {
+			this.children[i].y = (((this.y) * i )*.1)+this.children[i]._offsetY;
+			this.children[i].x = (((this.x) * i )*.1)+this.children[i]._offsetX;
+		}
+	}
+}
+
+
+var home = new Studio.Scene({
+	width: stage.width, 
+	height: stage.height, 
+	x: 0,
+	y: -stage.height,
+	build : function(){
+		var centerH = this.width/2;
+		var centerV = this.height/3;
+		this.addChild(new Studio.ImageSlice({image: _parts, rect: sprites['shadow'], width: 276, height: 158, x: 0 +centerH, y: -6+centerV}));
+		this.addChild(new Studio.ImageSlice({image: _parts, rect: sprites['down-left'], width: 268, height: 78, x: 2+centerH, y: 18+centerV}));
+		this.addChild(new Studio.ImageSlice({image: _parts, rect: sprites['break-right'], width: 264, height: 74, x: 0+centerH, y: -60+centerV}));
+		this.addChild(new Studio.ImageSlice({image: _parts, rect: sprites['ball_large'],width: 22, height: 22, x: 3+centerH, y: 94+centerV}));
+		this.addChild(new Studio.ImageSlice({image: _parts, rect: sprites['break-left'], width: 268, height: 74, x: 2+centerH, y: -60+centerV}));
+		this.addChild(new Studio.ImageSlice({image: _parts, rect: sprites['down-right'], width: 268, height: 78, x: 2+centerH, y: 20+centerV}));
+		this.addChild(new Studio.ImageSlice({image: _parts, rect: sprites['down-glass'], width: 268, height: 82, x: 2+centerH, y: 20+centerV}));
+		this.addChild(new Studio.ImageSlice({image: _parts, rect: sprites['break-glass'], width: 264, height: 74, x: 0+centerH, y: -60+centerV}));
+		this.addChild(new Studio.ImageSlice({image: _parts, rect: sprites['holder'], width: 300, height: 122, x: 2+centerH, y: 40+centerV}));
+		
+		var button = new Studio.UIButton({x:0+centerH,y:150+centerV, height: 24, width: 120, text:'Scene 1'},stage);
+
+		button.hover = function(a){
+			stage.stopTween(this.hoverOut_tween)
+			stage.playTween(this.hoverIn_tween)
+			this.back.color.setFromHex("#FF0080")
+			this.textBox.setColor('#FFFF66').finish()
+		}
+
+		button.reset = function(a){
+			stage.stopTween(this.hoverIn_tween);
+			stage.playTween(this.hoverOut_tween)
+			this.back.color.setFromHex("#FF00FF")
+			this.textBox.setColor('#FFFFFF').finish()
+		}
+
+		button.action = function(a){
+		}
+
+		this.addChild(button);
+		this.addButton(button);
+	
+		this.menu = new LinkedList();
+		this.menu.add(button);
+
+
+		var button2 = new Studio.UIButton({x:0+centerH,y:190+centerV, height: 24, width: 120, text:'Scene 2'},stage);
+
+		button2.hover = function(a){
+			stage.stopTween(this.hoverOut_tween)
+			stage.playTween(this.hoverIn_tween)
+			this.back.color.setFromHex("#FF0080")
+			this.textBox.setColor('#FFFF66').finish()
+		}
+
+		button2.reset = function(a){
+			stage.stopTween(this.hoverIn_tween);
+			stage.playTween(this.hoverOut_tween)
+			this.back.color.setFromHex("#FF00FF")
+			this.textBox.setColor('#FFFFFF').finish()
+		}
+
+		button2.action = function(a){
+
+		}
+
+		this.addChild(button2);
+		this.addButton(button2);
+
+		this.menu.add(button2);
+		this.menu.add(button3);
+		this.slideIn = stage.createTween(this,'elasticOut',{y: 0, x:0}, 3600);
+		this.slideOut = stage.createTween(this,'chillInOut',{x:-stage.width}, 1500, function(){
+			this.close();
+			this.y = -stage.height;
+			this.x = 0;
+		});
+	},
+	init : Paralaxx.init,
+	onActivate: function(stage){
+		stage.stopTween(this.slideOut);
+		stage.playTween(this.slideIn);
+		FOCUS_ENGINE.setCurrentMenu(this.menu);
+	},
+	onDeactivate: function(stage){
+		stage.stopTween(this.slideIn);
+		stage.playTween(this.slideOut);
+	},
+	i:0,
+	onEnterFrame: Paralaxx.frame
+})
+
+
+
+stage.setScene(home)
+
+stage.enableTouchEvents();
+
+
+
+stage.addButton(button3)
+stage.addChildren(button3)
+
+
+stage.addInput(FOCUS_ENGINE,{});
+stage.snap=true
+Studio.start();
+
+</script>
+</html>
+
