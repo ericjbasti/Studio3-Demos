@@ -24,6 +24,7 @@
 	}
 </style>
 <script>
+var background = new Studio.Image('assets/classic_blue.png');
 
 var _parts = new Studio.Image('breakdown/_parts.png');
 var sprites = {
@@ -264,6 +265,9 @@ var home = new Studio.Scene({
 	x: 0,
 	y: -stage.height,
 	build : function(){
+		var patt = new Studio.Pattern({width:stage.width,height:stage.height, image: background, anchorX:0, anchorY:0},stage);
+		this.addChild(patt);
+		patt.setPattern(64,64);
 		var centerH = this.width/2;
 		var centerV = this.height/3;
 		this.addChild(new Studio.ImageSlice({image: _parts, rect: sprites['shadow'], width: 276, height: 158, x: 0 +centerH, y: -6+centerV}));
@@ -349,7 +353,6 @@ var home = new Studio.Scene({
 })
 
 
-
 stage.setScene(home)
 
 stage.enableTouchEvents();
@@ -359,6 +362,9 @@ stage.enableTouchEvents();
 stage.addButton(button3)
 stage.addChildren(button3)
 
+stage.onReady = function(){
+	home.children[0].setPattern(96,96)
+}
 
 stage.addInput(FOCUS_ENGINE,{});
 stage.snap=true
