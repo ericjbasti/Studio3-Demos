@@ -15,27 +15,35 @@
 <script src="stats.js"></script>
 <script>
 	
-var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/60, fullscreen:1, resolution: 1})
+var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/60, fullscreen:1, resolution: 2})
 stage.color.setFromHex("#333")
 var butter_sheet = new Studio.Image('assets/butterfly.png');
+
+butter_sheet.slice = {
+	Body: {x:250, y:0, height: 85, width: 22},
+	Blue_Left_Wing: {x:0, y:0, height: 194, width: 122},
+	Blue_Right_Wing: {x:122, y:0, height: 194, width: 122},
+	Monarch_Left_Wing: {x:246, y:96, height: 159, width: 114},
+	Monarch_Right_Wing: {x:246+114, y:96, height: 159, width: 114}
+}
 
 var BlueMorpho = function(attr){
 	this.image = butter_sheet;
 	this.width = 22;
 	this.height = 85;
 	this.y = 200
-	this.rect = {x:250, y:0, height: 85, width: 22};
+	this.slice = 'Body';
 	this.scaleY = this.scaleX = .5 + (Math.random()*.15)
 	if(attr){
 		this.apply(attr);
 	}
-	this.leftWing = new Studio.ImageSlice({rect:{x:0, y:0, height: 194, width: 122}, image: butter_sheet, anchorX: 1, height: 194, width: 122, x: -5, y: -15});
-	this.rightWing = new Studio.ImageSlice({rect:{x:122, y:0, height: 194, width: 122}, image: butter_sheet, anchorX: 0, height: 194, width: 122, x:5, y: -15});
+	this.leftWing = new Studio.Sprite({slice:'Blue_Left_Wing', image: butter_sheet, anchorX: 1, height: 194, width: 122, x: -5, y: -15});
+	this.rightWing = new Studio.Sprite({slice:'Blue_Right_Wing', image: butter_sheet, anchorX: 0, height: 194, width: 122, x:5, y: -15});
 	this.addChild(this.leftWing)
 	this.addChild(this.rightWing)
 	this.init();
 }
-Studio.extend(BlueMorpho, Studio.ImageSlice)
+Studio.extend(BlueMorpho, Studio.Sprite)
 
 BlueMorpho.prototype.init = function(){
 	this.count = Math.random()*22;
@@ -73,19 +81,19 @@ var Monarch = function(attr){
 	this.width = 18;
 	this.height = 66;
 	this.y = 200
-	this.rect = {x:250, y:0, height: 85, width: 22};
+	this.slice = 'Body'
 	this.scaleY = this.scaleX = .4 + (Math.random()*.15)
 	if(attr){
 		this.apply(attr);
 	}
-	this.leftWing = new Studio.ImageSlice({rect:{x:246, y:96, height: 159, width: 114}, image: butter_sheet, anchorX: 1, height: 194, width: 122, x: -3, y: -15});
-	this.rightWing = new Studio.ImageSlice({rect:{x:246+114, y:96, height: 159, width: 114}, image: butter_sheet, anchorX: 0, height: 194, width: 122, x:3, y: -15});
+	this.leftWing = new Studio.Sprite({slice: 'Monarch_Left_Wing', image: butter_sheet, anchorX: 1, height: 194, width: 122, x: -3, y: -15});
+	this.rightWing = new Studio.Sprite({slice: 'Monarch_Right_Wing', image: butter_sheet, anchorX: 0, height: 194, width: 122, x:3, y: -15});
 	this.addChild(this.leftWing)
 	this.addChild(this.rightWing)
 	this.init();
 }
 
-Studio.extend(Monarch, Studio.ImageSlice)
+Studio.extend(Monarch, Studio.Sprite)
 
 Monarch.prototype.init = function(){
 	this.count = Math.random()*22;
@@ -122,12 +130,12 @@ for (var i = 0; i != 150 ; i++){
 	stage.addChild(a);
 	// stage.addChild(b);
 }
-for (var i = 0; i != 150 ; i++){
+for (var i = 0; i != 50 ; i++){
 	var b = new Monarch({x: Math.random() * stage.width, y: Math.random() * stage.height});
 	stage.addChild(b);
 }
 
-stage.enableTouchEvents();
+// stage.enableTouchEvents();
 // stage.addEffect(Studio.Effect.Replicator,{x:3,y:3});
 stage.addEffect(STATS,{
 	external: false, 

@@ -62,18 +62,23 @@ stage.playTween(TweenChain);
 
 var Rockster_image = new Studio.Image("assets/rockster.png")
 
-var Rockster = new Studio.ImageSlice({	
+Rockster_image.addSlice({
+	Shoulder: {
+		x: 306,
+		y:12, 
+		width: 62, 
+		height: 49
+	}
+});
+
+
+var Rockster = new Studio.Sprite({	
 		image: Rockster_image,
 		x: 100, 
 		y: 100,
 		width: 62,
 		height: 49,
-		rect: {
-			x: 306,
-			y:12, 
-			width: 62, 
-			height: 49
-		}
+		slice: 'Shoulder'
 	}
 )
 

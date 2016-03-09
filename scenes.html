@@ -27,7 +27,7 @@
 var background = new Studio.Image('assets/classic_blue.png');
 
 var _parts = new Studio.Image('breakdown/_parts.png');
-var sprites = {
+_parts.slice = {
 	'arcade': {
 		x: 334, y: 1001, width: 88, height: 21},
 
@@ -267,18 +267,17 @@ var home = new Studio.Scene({
 	build : function(){
 		var patt = new Studio.Pattern({width:stage.width,height:stage.height, image: background, anchorX:0, anchorY:0},stage);
 		this.addChild(patt);
-		patt.setPattern(64,64);
 		var centerH = this.width/2;
 		var centerV = this.height/3;
-		this.addChild(new Studio.ImageSlice({image: _parts, rect: sprites['shadow'], width: 276, height: 158, x: 0 +centerH, y: -6+centerV}));
-		this.addChild(new Studio.ImageSlice({image: _parts, rect: sprites['down-left'], width: 268, height: 78, x: 2+centerH, y: 18+centerV}));
-		this.addChild(new Studio.ImageSlice({image: _parts, rect: sprites['break-right'], width: 264, height: 74, x: 0+centerH, y: -60+centerV}));
-		this.addChild(new Studio.ImageSlice({image: _parts, rect: sprites['ball_large'],width: 22, height: 22, x: 3+centerH, y: 94+centerV}));
-		this.addChild(new Studio.ImageSlice({image: _parts, rect: sprites['break-left'], width: 268, height: 74, x: 2+centerH, y: -60+centerV}));
-		this.addChild(new Studio.ImageSlice({image: _parts, rect: sprites['down-right'], width: 268, height: 78, x: 2+centerH, y: 20+centerV}));
-		this.addChild(new Studio.ImageSlice({image: _parts, rect: sprites['down-glass'], width: 268, height: 82, x: 2+centerH, y: 20+centerV}));
-		this.addChild(new Studio.ImageSlice({image: _parts, rect: sprites['break-glass'], width: 264, height: 74, x: 0+centerH, y: -60+centerV}));
-		this.addChild(new Studio.ImageSlice({image: _parts, rect: sprites['holder'], width: 300, height: 122, x: 2+centerH, y: 40+centerV}));
+		this.addChild(new Studio.Sprite({image: _parts, slice: 'shadow', width: 276, height: 158, x: 0 +centerH, y: -6+centerV}));
+		this.addChild(new Studio.Sprite({image: _parts, slice: 'down-left', width: 268, height: 78, x: 2+centerH, y: 18+centerV}));
+		this.addChild(new Studio.Sprite({image: _parts, slice: 'break-right', width: 264, height: 74, x: 0+centerH, y: -60+centerV}));
+		this.addChild(new Studio.Sprite({image: _parts, slice: 'ball_large',width: 22, height: 22, x: 3+centerH, y: 94+centerV}));
+		this.addChild(new Studio.Sprite({image: _parts, slice: 'break-left', width: 268, height: 74, x: 2+centerH, y: -60+centerV}));
+		this.addChild(new Studio.Sprite({image: _parts, slice: 'down-right', width: 268, height: 78, x: 2+centerH, y: 20+centerV}));
+		this.addChild(new Studio.Sprite({image: _parts, slice: 'down-glass', width: 268, height: 82, x: 2+centerH, y: 20+centerV}));
+		this.addChild(new Studio.Sprite({image: _parts, slice: 'break-glass', width: 264, height: 74, x: 0+centerH, y: -60+centerV}));
+		this.addChild(new Studio.Sprite({image: _parts, slice: 'holder', width: 300, height: 122, x: 2+centerH, y: 40+centerV}));
 		
 		var button = new Studio.UIButton({x:0+centerH,y:150+centerV, height: 24, width: 120, text:'Scene 1'},stage);
 
@@ -363,7 +362,7 @@ stage.addButton(button3)
 stage.addChildren(button3)
 
 stage.onReady = function(){
-	home.children[0].setPattern(96,96)
+	// home.children[0].setPattern(96,96)
 }
 
 stage.addInput(FOCUS_ENGINE,{});

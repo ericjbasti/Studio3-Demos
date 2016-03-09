@@ -120,6 +120,7 @@ if (typeof Object.create !== 'function') {
 // @codekit-append "Studio/DisplayObjects/Stage.js"
 // @codekit-append "Studio/DisplayObjects/TextBox.js"
 // @codekit-append "Studio/DisplayObjects/Tween.js"
+// @codekit-append "Studio/DisplayObjects/Pattern.js"
 
 // @codekit-append "Studio/Effects/Standards.js"
 
@@ -364,17 +365,19 @@ Studio.Messanger = function() {
 	this.status = 0;
 };
 
-Studio.Messanger.prototype.addListener = function(callback) {
-	this.listeners.push(callback);
+Studio.Messanger.prototype.addListener = function(callback, who) {
+	this.listeners.push({callback:callback,who:who});
 	// reply back with current status when adding new listener.
-	callback(this.status);
+	who[callback].call(who,this.status);
 };
 
 Studio.Messanger.prototype.setStatus = function(message) {
 	this.status = message;
 	// now lets tell everyone that listens.
+	var who = null;
 	for (var i = 0; i < this.listeners.length; i++) {
-		this.listeners[i](this.status);
+		who = this.listeners[i].who;
+		who[this.listeners[i].callback].call(who,this.status);
 	}
 };
 
@@ -681,11 +684,19 @@ Studio.Plugin.prototype._options = function(a) {
  * Image
  */
 
-Studio.Image = function(path) {
+Studio.Image = function studio_image(path) {
 	this.image = null;
 	this.path = null;
 	if (path) {
 		this.loadImage(path);
+	}
+	this.slice = {
+		'Full': {
+			x:0,
+			y:0,
+			width: 1,
+			height: 1
+		}
 	}
 	this.status = new Studio.Messanger();
 };
@@ -696,7 +707,7 @@ Studio.Image.prototype.ready = false;
 Studio.Image.prototype.height = 1;
 Studio.Image.prototype.width = 1;
 
-Studio.Image.prototype.loadImage = function(who) {
+Studio.Image.prototype.loadImage = function studio_image_loadImage(who) {
 	if (Studio.assets[who]) {
 		console.warn('Already loaded : ', who, Studio.assets[who]);
 		this.image = Studio.assets[who];
@@ -713,8 +724,8 @@ Studio.Image.prototype.loadImage = function(who) {
 			Studio.progress = Studio.queue / Studio.assets.length;
 			newAsset.ready = true;
 			newAsset.status.setStatus(newAsset.ready);
-			newAsset.height = this.height;
-			newAsset.width = this.width;
+			newAsset.slice['Full'].height = this.height;
+			newAsset.slice['Full'].width = this.width;
 
 			if (Studio.queue === Studio.assets.length) {
 				Studio.loaded = true;
@@ -726,6 +737,14 @@ Studio.Image.prototype.loadImage = function(who) {
 	}
 };
 
+Studio.Image.prototype.addSlice = function studio_image_addSlice(slices){
+	for(var i in slices){
+		if(this.slice[i]){
+			console.warn('Overiding image slice: '+i);
+		}
+		this.slice[i] = slices[i];
+	}
+}
 
 Studio.Cache = function(width, height, resolution) {
 	var resolution = resolution || 1;
@@ -872,6 +891,8 @@ Studio.DisplayObject = function(attr) {
 	// set any of these to false if you know they will never be needed.
 	// this will increase performace, by reducing calculations done per object per frame.
 
+
+	// for interpolating fixed time steps
 	this.__x = this._world.x;
 	this.__y = this._world.y;
 	this._dx = this._world.x;
@@ -1108,33 +1129,58 @@ Studio.DisplayObject.prototype = {
 	snapshot: function() {
 		this.__x = this._world.x;
 		this.__y = this._world.y;
-		this.__width = this._world.width;
-		this.__height = this._world.height;
+		if(this.__update_DIMENSIONS){
+			this.__width = this._world.width;
+			this.__height = this._world.height;
+		}
 		if (this._world.rotation) {
 			this._world.angle = this.angle;
+		}
+	},
+	__deltaXY: function(ratio){
+		if (this.__update_XY) {
+			this._dx = this.__delta(this.__x, this._world.x, ratio);
+			this._dy = this.__delta(this.__y, this._world.y, ratio);
+		}
+	},
+	__deltaHW: function(ratio){
+		if(this.__update_DIMENSIONS){
+			this._dwidth = this.__delta(this.__width, this._world.width, ratio);
+			this._dheight = this.__delta(this.__height, this._world.height, ratio);
+		}
+	},
+	__deltaRotation: function(ratio){
+		if (this._world.rotation) {
+			this._dAngle = this.__delta(this._world.angle, this.angle, ratio);
 		}
 	},
 	__delta: function(snap, cur, ratio) {
 		return snap + ((cur - snap) * ratio);
 	},
 	_delta: function(ratio) {
-		this._dx = this.__delta(this.__x, this._world.x, ratio);
-		this._dy = this.__delta(this.__y, this._world.y, ratio);
-		this._dwidth = this.__delta(this.__width, this._world.width, ratio);
-		this._dheight = this.__delta(this.__height, this._world.height, ratio);
-		if (this._world.rotation) {
-			this._dAngle = this.__delta(this._world.angle, this.angle, ratio);
-		}
-
+		this.__deltaXY(ratio);
+		this.__deltaHW(ratio);
+		this.__deltaRotation(ratio);
 	},
-	_dset: function() {
-		this._dx = this._world.x;
-		this._dy = this._world.y;
+	__dsetXY: function(){
+		if (this.__update_XY) {
+			this._dx = this._world.x;
+			this._dy = this._world.y;
+		}
+	},
+	__dsetHW: function(){
 		this._dwidth = this._world.width;
 		this._dheight = this._world.height;
+	},
+	__dsetRotation: function(){
 		if (this._world.rotation) {
 			this._dAngle = this.parent.angle+this.angle;
 		}
+	},
+	_dset: function() {
+		this.__dsetXY();
+		this.__dsetHW();
+		this.__dsetRotation();
 	},
 	_snapback: function() {
 		this.force_update();
@@ -1511,8 +1557,10 @@ Studio.Circle.prototype.draw = function(ctx) {
 
 Studio.Sprite = function(attr) {
 	this.image = null;
+	this.slice = 'Full';
 	this.color = new Studio.Color(1, 1, 1, 1);
 	this._boundingBox = new Studio.Box();
+
 	if (attr) {
 		this.apply(attr);
 	}
@@ -1523,11 +1571,21 @@ Studio.extend(Studio.Sprite, Studio.Rect);
 Studio.Sprite.prototype.drawAngled = function(ctx) {
 	ctx.save();
 	this.prepAngled(ctx);
-	ctx.drawImage(this.image.image, 0, 0, this.image.width, this.image.height,  - (this.width * this.anchorX), - (this.height * this.anchorY), this.width, this.height);
+	console.log(this.slice)
+	ctx.drawImage(this.image.image, 
+		this.image.slice[this.slice].x, 
+		this.image.slice[this.slice].y, 
+		this.image.slice[this.slice].width, 
+		this.image.slice[this.slice].height, 
+		-(this.width * this.anchorX), 
+		-(this.height * this.anchorY),
+		this.width, 
+		this.height
+	);
 	ctx.restore();
 };
 
-Studio.Sprite.prototype.draw = function(ctx) {
+Studio.Sprite.prototype.draw = function Studio_Sprite_draw(ctx) {
 	if (!this.image) {
 		return;
 	}
@@ -1538,48 +1596,21 @@ Studio.Sprite.prototype.draw = function(ctx) {
 	if (this.angle) {
 		this.drawAngled(ctx);
 	} else {
-
-		ctx.drawImage(this.image.image, 0, 0, this.image.width, this.image.height,this._dx - (this._dwidth * this.anchorX), this._dy - (this._dheight * this.anchorY), this._dwidth, this._dheight);
+		ctx.drawImage(
+			this.image.image, 
+			this.image.slice[this.slice].x, 
+			this.image.slice[this.slice].y, 
+			this.image.slice[this.slice].width, 
+			this.image.slice[this.slice].height,
+			this._dx - (this._dwidth * this.anchorX), 
+			this._dy - (this._dheight * this.anchorY), 
+			this._dwidth, 
+			this._dheight
+		);
 	}
 };
 
-/**
- * ImageSlice
- */
 
-Studio.ImageSlice = function(attr) {
-	this.image = null;
-	this.color = new Studio.Color(1, 1, 1, 1);
-	this.rect = {x: 0, y: 0, height: 32, width: 32};
-	this._boundingBox = new Studio.Box();
-	if (attr) {
-		this.apply(attr);
-	}
-};
-
-Studio.extend(Studio.ImageSlice, Studio.Sprite);
-
-Studio.ImageSlice.prototype.drawAngled = function(ctx) {
-	ctx.save();
-	this.prepAngled(ctx);
-	ctx.drawImage(this.image.image, this.rect.x, this.rect.y, this.rect.width, this.rect.height, - (this.width * this.anchorX), - (this.height * this.anchorY), this.width, this.height);
-	ctx.restore();
-};
-
-Studio.ImageSlice.prototype.draw = function(ctx) {
-	if (!this.image) {
-		return;
-	}
-	if (!this.image.ready) {
-		return;
-	}
-	this.setAlpha(ctx);
-	if (this.angle) {
-		this.drawAngled(ctx);
-	} else {
-		ctx.drawImage(this.image.image, this.rect.x, this.rect.y, this.rect.width, this.rect.height, this._dx - (this._dwidth * this.anchorX), this._dy - (this._dheight * this.anchorY)-2, this._dwidth, this._dheight);
-	}
-};
 
 /**
  * SpriteAnimation --- just like a Sprite but uses a SpriteSheet to render, and as such has frames, framerates etc...
@@ -1651,32 +1682,6 @@ Studio.SpriteAnimation.prototype.updateFrame = function() {
 	}
 	this.setSlice();
 };
-
-Studio.SpriteSheet = function(path, attr) {
-	this.image = new Studio.Image();
-	this.rect = {height: 32, width: 32};
-	if (path) {
-		this.loadImage(path);
-	}
-	if (attr) {
-		this.apply(attr);
-	}
-};
-
-Studio.extend(Studio.SpriteSheet, Studio.Image);
-
-Studio.SpriteSheet.prototype.apply = function(obj) {
-	var keys = Object.keys(obj);
-	var i = keys.length;
-	var key;
-	while (i) {
-		key = keys[i - 1];
-		this[key] = obj[key];
-		i--;
-	}
-};
-
-
 
 /**
 * Camera
@@ -2524,6 +2529,92 @@ Studio.Stage.prototype.stopTween = function(who, snap, original) {
 		}
 		this.tweens[who.id] = null;
 		delete this.tweens[who.id];
+	}
+};
+
+
+/*
+
+	Studio.Pattern(
+		attr : {} || null 		(defaults to { height: 512, width: 512, resolution: 1})
+	)
+
+	Studio.Pattern is an extention of Studio.Rect. 
+	It contains a Studio.Cache to store the pattern once created.
+
+	ex. var pattern = new Studio.Pattern({ 
+			x:20, 
+			y:20, 
+			width: 256,
+			height: 128,
+			resolution: 2
+		});
+
+*/
+
+Studio.Pattern = function(attr) {
+	this.height = 512
+	this.width = 512
+	this.resolution = 1;
+	this.image = null
+	// this.pattern = [{0,0,96,96}]
+	if (attr) {
+		this.apply(attr)
+	}
+	this.cache = new Studio.Cache(this.width, this.height, this.resolution)
+	this._cached = false
+	this.image.status.addListener("onImageReady", this)
+	return this;
+};
+
+Studio.extend(Studio.Pattern, Studio.Rect);
+
+/*
+	setPattern
+*/
+
+Studio.Pattern.prototype.setPattern = function(width, height) {
+	for (var x = 0; x < this.width; x += width) {
+		for (var y = 0; y < this.height; y += height) {
+			this.cache.ctx.drawImage(this.image.image, x, y, width, height)
+		}
+	}
+	return this;
+};
+
+/*
+	onImageReady(
+		ready : Boolean		// value returned by image object
+	)
+
+	Once the image for this pattern is loaded we can create the pattern.
+	Otherwise the cache is never auto populated.
+*/
+
+Studio.Pattern.prototype.onImageReady = function(ready) {
+	if (ready) {
+		this.setPattern(96, 96)
+	}
+}
+  
+Studio.Pattern.prototype.debugDraw = function(ctx) {
+	ctx.strokeRect(this._dx - (this._world.width * this.anchorX), this._dy - (this._world.height * this.anchorY) - this._vertical_align, this._world.width, this._wrap_height)
+};
+
+Studio.Pattern.prototype.drawAngled = function(ctx) {
+	ctx.save()
+	this.prepAngled(ctx)
+	ctx.drawImage(this.cache.image, 0, 0, this.cache.image.width, this.cache.image.height, -(this._dwidth * this.anchorX), -(this._dheight * this.anchorY), this._dwidth, this._dheight)
+	ctx.restore()
+};
+
+Studio.Pattern.prototype.draw = function(ctx) {
+	this.setAlpha(ctx)
+	// since we don't resize the ctx, we need to compensate based on the differences of the ctx height and text height
+	if (this.angle) {
+		this.drawAngled(ctx)
+	} else {
+		ctx.drawImage(this.cache.image, 0, 0, this.cache.image.width, this.cache.image.height, this._dx - (this._dwidth * this.anchorX), this._dy - (this._dheight * this.anchorY), this._dwidth, this._dheight)
 	}
 };
 
