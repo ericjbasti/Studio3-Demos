@@ -16,19 +16,19 @@
 <script>
 	
 var stage = new Studio.Stage('canvas',{webgl:1, dur:1000/60, fullscreen:0, resolution: 1, interpolate: 1, _maxCount: 16333})
-var MAX = stage._maxCount/10 | 0 ;
+var MAX = stage._maxCount/1 | 0 ;
 gravity = .4;
 
 var ball = new Studio.Image('assets/char.png')
 ball.addSlice({
-	'head': {x:0, y:0, width: 12, height: 10}
+	'head': {x:0, y:0, width: 12, height: 10},
+	'feet': {x:0, y:10, width: 12, height: 11}
 })
-var ball2 = new Studio.Image('assets/butterfly-wing-right.png')
 
 
 var BOXdrop = function(attr){
 	this.image = ball;
-	this.slice = 'head';
+	this.slice = 'feet';
 	this.color = new Studio.Color();
 	if(attr){
 		this.apply(attr);
@@ -66,7 +66,7 @@ BOXdrop.prototype.logic = function(){
 }
 
 for (var i = 0; i!=MAX;i++){
-	var yy=new BOXdrop({x:stage.width/2 ,y:Math.random()*120,width:24 ,height:44 ,velocityX: 2-(Math.random()*4),velocityY: -10+(Math.random()*6), hit:10});
+	var yy=new BOXdrop({x:stage.width/2 ,y:Math.random()*120,width:24 ,height:24 ,velocityX: 2-(Math.random()*4),velocityY: -10+(Math.random()*6), hit:10});
 	stage.addChild(yy);
 	yy._snapback();
 }

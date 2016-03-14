@@ -25,6 +25,7 @@
 </style>
 <script>
 var background = new Studio.Image('assets/classic_blue.png');
+background.addSlice({'Pyramid':{x:13,y:13,width:22,height:22}})
 
 
 
@@ -294,8 +295,21 @@ var home = new Studio.Scene({
 	x: 0,
 	y: -stage.height,
 	build : function(){
-		var patt = new Studio.Pattern({width:stage.width,height:stage.height, image: background, anchorX:0, anchorY:0},stage);
-		this.addChild(patt);
+		var back = new Studio.DisplayObject();
+		var patt = new Studio.Pattern({width:stage.width,height:stage.height,overflowX:96, overflowY: 96, image: background, anchorX:0, anchorY:0, slice:'Full'},stage);
+		
+		var back_clip = new Studio.Clip({width:this.width, height:this.height, anchorX: 0, anchorY: 0})
+		this.addChild(back_clip);
+		this.addChild(back);
+		this.addChild(new Studio.Restore());
+		back.addChild(patt);
+		var count = 0;
+		patt.onEnterFrame = function(){
+			this.x-=Math.sin(count);
+			count+=.01
+			this.y-=2;
+			this.checkOverflow();
+		}
 		var centerH = this.width/2;
 		var centerV = this.height/3;
 		this.addChild(new Studio.Sprite({image: _parts, slice: 'shadow', width: 276, height: 158, x: 0 +centerH, y: -6+centerV}));
@@ -371,6 +385,7 @@ var home = new Studio.Scene({
 		stage.stopTween(this.slideOut);
 		stage.playTween(this.slideIn);
 		FOCUS_ENGINE.setCurrentMenu(this.menu);
+
 	},
 	onDeactivate: function(stage){
 		stage.stopTween(this.slideIn);
