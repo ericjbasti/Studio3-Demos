@@ -27,8 +27,7 @@ var stage = new Studio.Stage('canvas',{
 var MAX = stage._maxCount/1 | 0
 var gravity = .4
 
-var ball = new Studio.Image('assets/char.png')
-ball.addSlice({
+var ball = new Studio.Image('assets/char.png',{
 	'head': {
 		x : 0, 
 		y : 0, 

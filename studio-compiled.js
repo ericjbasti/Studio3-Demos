@@ -334,6 +334,9 @@ Studio.apply = function(obj) { // Display Object and a few others share this fun
 	Studio.temp.keys = Object.keys(obj); // we use Studio.temp.keys to avoid creating more garbage.
 	Studio.temp.keys_i = Studio.temp.keys.length;
 	while (Studio.temp.keys_i) {
+		if(Studio.temp.key =='color_hex'){
+			this['color'].setFromHex(obj[Studio.temp.key]);
+		}
 		Studio.temp.key = Studio.temp.keys[Studio.temp.keys_i - 1];
 		this[Studio.temp.key] = obj[Studio.temp.key];
 		Studio.temp.keys_i--;
@@ -368,7 +371,11 @@ Studio.Messanger = function() {
 Studio.Messanger.prototype.addListener = function(callback, who) {
 	this.listeners.push({callback:callback,who:who});
 	// reply back with current status when adding new listener.
-	who[callback].call(who,this.status);
+	if(who){
+		who[callback].call(who,this.status)
+	}else{
+		callback(this.status)
+	}
 };
 
 Studio.Messanger.prototype.setStatus = function(message) {
@@ -377,7 +384,11 @@ Studio.Messanger.prototype.setStatus = function(message) {
 	var who = null;
 	for (var i = 0; i < this.listeners.length; i++) {
 		who = this.listeners[i].who;
-		who[this.listeners[i].callback].call(who,this.status);
+		if(who){
+			who[this.listeners[i].callback].call(who,this.status)
+		}else{
+			this.listeners[i].callback(this.status)
+		}
 	}
 };
 
@@ -684,12 +695,12 @@ Studio.Plugin.prototype._options = function(a) {
  * Image
  */
 
-Studio.Image = function studio_image(path) {
-	this.image = null;
-	this.path = null;
-	if (path) {
-		this.loadImage(path);
-	}
+Studio.Image = function studio_image(path, slices) {
+	this.path = path;
+	this.image = null
+	this.width = 1
+	this.height = 1
+
 	this.slice = {
 		'Full': {
 			x:0,
@@ -698,51 +709,71 @@ Studio.Image = function studio_image(path) {
 			height: 1
 		}
 	}
-	this.status = new Studio.Messanger();
+
+	this.sliceGL = {}
+
+	this.status = new Studio.Messanger()
+	if(slices){
+		this.addSlice(slices)
+	}
+
+	if (path) {
+		this.loadImage(path)
+	}
+	return this;
 };
 
 Studio.Image.prototype.constructor = Studio.Image;
 
-Studio.Image.prototype.ready = false;
-Studio.Image.prototype.height = 1;
-Studio.Image.prototype.width = 1;
+Studio.Image.prototype.ready = false
+Studio.Image.prototype.height = 1
+Studio.Image.prototype.width = 1
 
 Studio.Image.prototype.loadImage = function studio_image_loadImage(who) {
 	if (Studio.assets[who]) {
-		console.warn('Already loaded : ', who, Studio.assets[who]);
-		this.image = Studio.assets[who];
-		this.ready = true;
-		this.status.setStatus(this.ready);
-		return this;
+		console.warn('Already loaded : ', who, Studio.assets[who])
+		this.image = Studio.assets[who]
+		this.ready = true
+		this.status.setStatus(this.ready)
+		return this
 	} else {
-		//Studio.loaded=Studio.loadOnDemand;
-		Studio.assets[who] = new Image();
-		Studio.assets.length++;
-		var newAsset = this;
-		Studio.assets[who].onload = function() { // could have Event passed in
-			Studio.queue++;
-			Studio.progress = Studio.queue / Studio.assets.length;
-			newAsset.ready = true;
-			newAsset.status.setStatus(newAsset.ready);
-			newAsset.slice['Full'].height = this.height;
-			newAsset.slice['Full'].width = this.width;
-
+		Studio.assets[who] = new Image()
+		Studio.assets.length++
+		var image = this
+		Studio.assets[who].onload = function image_onload() { // could have Event passed in
+			Studio.queue++
+			Studio.progress = Studio.queue / Studio.assets.length
+			image.slice['Full'].height = this.height
+			image.slice['Full'].width = this.width
+			image.width = this.width
+			image.height = this.height
 			if (Studio.queue === Studio.assets.length) {
-				Studio.loaded = true;
+				Studio.loaded = true
 			}
-			return newAsset;
+			image.addSlice(image.slice)
+			image.ready = true
+			image.status.setStatus(image.ready)
+			return image
 		};
-		Studio.assets[who].src = who;
-		this.image = Studio.assets[who];
+		Studio.assets[who].src = who
+		this.image = Studio.assets[who]
 	}
-};
+}
+Studio.Image.prototype.buildSliceForGL = function studio_buildSliceForGL(slice){
+	var x = slice.x/this.width
+	var y = slice.y/this.height
+	return {
+		x: x,
+		y: y,
+		width: slice.width/this.width + x,
+		height: slice.height/this.height + y
+	}
+}
 
 Studio.Image.prototype.addSlice = function studio_image_addSlice(slices){
 	for(var i in slices){
-		if(this.slice[i]){
-			console.warn('Overiding image slice: '+i);
-		}
-		this.slice[i] = slices[i];
+		this.slice[i] = slices[i]
+		this.sliceGL[i] = this.buildSliceForGL(slices[i])
 	}
 }
 
@@ -757,6 +788,7 @@ Studio.Cache = function(width, height, resolution) {
 	this.ready = false;
 	this.ctx = this.image.getContext('2d');
 	this.ctx.scale(resolution, resolution);
+	this.slice.Full = {x:0,y:0,width:this.image.width,height:this.image.height}
 };
 
 Studio.extend(Studio.Cache, Studio.Image);
@@ -1399,7 +1431,8 @@ Studio.addTo(Studio.DisplayList.prototype, LinkedList.prototype);
 
 Studio.Rect = function(attr) {
 	this.color = new Studio.Color(1, 0, 0, 0);
-	this.slice = new Studio.Box(10, 0, 0, 0);
+	this.bounds = new Studio.Box(10, 0, 0, 0);
+	
 	if (attr) {
 		this.apply(attr);
 	}
@@ -1415,8 +1448,8 @@ Studio.Rect.prototype.addVert = function(gl, x, y, z, tx, ty) {
 	gl._batch[gl._count++] = this.color.g;
 	gl._batch[gl._count++] = this.color.b;
 	gl._batch[gl._count++] = this.color.a;
-	gl._batch[gl._count++] = (tx);
-	gl._batch[gl._count++] = (ty);
+	gl._batch[gl._count++] = tx;
+	gl._batch[gl._count++] = ty;
 	// gl._count +=8;
 };
 
@@ -1427,21 +1460,21 @@ Studio.Rect.prototype.buildElement = function(gl, ratio, interpolate) {
 		this._dset();
 	}
 	this._boundingBox.get_bounds(this);
-	this.addVert(gl, this._boundingBox.left, this._boundingBox.top, this._world.z, this.slice.left, this.slice.top);
-	this.addVert(gl, this._boundingBox.right, this._boundingBox.top, this._world.z, this.slice.right, this.slice.top);
-	this.addVert(gl, this._boundingBox.left, this._boundingBox.bottom, this._world.z, this.slice.left, this.slice.bottom);
-	this.addVert(gl, this._boundingBox.right, this._boundingBox.bottom, this._world.z, this.slice.right, this.slice.bottom);
+	this.addVert(gl, this._boundingBox.left, this._boundingBox.top, this._world.z, this.bounds.left, this.bounds.top);
+	this.addVert(gl, this._boundingBox.right, this._boundingBox.top, this._world.z, this.bounds.right, this.bounds.top);
+	this.addVert(gl, this._boundingBox.left, this._boundingBox.bottom, this._world.z, this.bounds.left, this.bounds.bottom);
+	this.addVert(gl, this._boundingBox.right, this._boundingBox.bottom, this._world.z, this.bounds.right, this.bounds.bottom);
 };
 
 Studio.Rect.prototype.buildTriangles = function(gl, ratio) {
 	this._delta(ratio);
 	this._boundingBox.get_bounds(this);
-	this.addVert(gl, this._boundingBox.left, this._boundingBox.top, this._world.z, this.slice.left, this.slice.top);
-	this.addVert(gl, this._boundingBox.right, this._boundingBox.top, this._world.z, this.slice.right, this.slice.top);
-	this.addVert(gl, this._boundingBox.left, this._boundingBox.bottom, this._world.z, this.slice.left, this.slice.bottom);
-	this.addVert(gl, this._boundingBox.right, this._boundingBox.top, this._world.z, this.slice.right, this.slice.top);
-	this.addVert(gl, this._boundingBox.left, this._boundingBox.bottom, this._world.z, this.slice.left, this.slice.bottom);
-	this.addVert(gl, this._boundingBox.right, this._boundingBox.bottom, this._world.z, this.slice.right, this.slice.bottom);
+	this.addVert(gl, this._boundingBox.left, this._boundingBox.top, this._world.z, this.bounds.left, this.bounds.top);
+	this.addVert(gl, this._boundingBox.right, this._boundingBox.top, this._world.z, this.bounds.right, this.bounds.top);
+	this.addVert(gl, this._boundingBox.left, this._boundingBox.bottom, this._world.z, this.bounds.left, this.bounds.bottom);
+	this.addVert(gl, this._boundingBox.right, this._boundingBox.top, this._world.z, this.bounds.right, this.bounds.top);
+	this.addVert(gl, this._boundingBox.left, this._boundingBox.bottom, this._world.z, this.bounds.left, this.bounds.bottom);
+	this.addVert(gl, this._boundingBox.right, this._boundingBox.bottom, this._world.z, this.bounds.right, this.bounds.bottom);
 };
 
 Studio.Rect.prototype.setStyle = function(ctx) {
@@ -1559,7 +1592,6 @@ Studio.Sprite = function(attr) {
 	this.image = null;
 	this.slice = 'Full';
 	this.color = new Studio.Color(1, 1, 1, 1);
-	this._boundingBox = new Studio.Box();
 
 	if (attr) {
 		this.apply(attr);
@@ -1571,7 +1603,6 @@ Studio.extend(Studio.Sprite, Studio.Rect);
 Studio.Sprite.prototype.drawAngled = function(ctx) {
 	ctx.save();
 	this.prepAngled(ctx);
-	console.log(this.slice)
 	ctx.drawImage(this.image.image, 
 		this.image.slice[this.slice].x, 
 		this.image.slice[this.slice].y, 
@@ -1583,6 +1614,20 @@ Studio.Sprite.prototype.drawAngled = function(ctx) {
 		this.height
 	);
 	ctx.restore();
+};
+
+
+Studio.Sprite.prototype.buildElement = function(gl, ratio, interpolate) {
+	if(interpolate){
+		this._delta(ratio);
+	}else{
+		this._dset();
+	}
+	this._boundingBox.get_bounds(this);
+	this.addVert(gl, this._boundingBox.left, this._boundingBox.top, this._world.z, this.image.sliceGL[this.slice].x, this.image.sliceGL[this.slice].y);
+	this.addVert(gl, this._boundingBox.right, this._boundingBox.top, this._world.z, this.image.sliceGL[this.slice].width, this.image.sliceGL[this.slice].y);
+	this.addVert(gl, this._boundingBox.left, this._boundingBox.bottom, this._world.z, this.image.sliceGL[this.slice].x, this.image.sliceGL[this.slice].height);
+	this.addVert(gl, this._boundingBox.right, this._boundingBox.bottom, this._world.z, this.image.sliceGL[this.slice].width, this.image.sliceGL[this.slice].height);
 };
 
 Studio.Sprite.prototype.draw = function Studio_Sprite_draw(ctx) {
@@ -1844,7 +1889,7 @@ Studio.Stage = function(domID, attr) {
 
 	this._getCanvasElement(domID);
 	this._count = 0;
-	this._maxCount = 16050;
+	this._maxCount = 16333;
 	this.dur = 1000 / 60;
 	this._d = this.dur/2;
 	this.resolution = window.devicePixelRatio; // defaults to device setting.
@@ -2167,31 +2212,6 @@ Studio.Stage.prototype.activeloop = function(delta) {
 		}
 	}
 };;
-
-Studio.Stage.prototype.prepTexture = function(gl){
-	var gl = this.ctx;
-	this._texture = gl.createTexture();
-	gl.bindTexture(gl.TEXTURE_2D, GAME._texture );
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-}
-
-
-Studio.Stage.prototype.setTexture = function(image, mipmap){
-	var gl = this.ctx;
-	
-	if(!this._texture) {
-		this.prepTexture(this.ctx);
-	}
-	this.ctx.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-	if(mipmap){
-		this.ctx.generateMipmap(gl.TEXTURE_2D);
-	}
-}
-
 
 Studio.Stage.prototype.loop = Studio.Stage.prototype.loading;
 
@@ -2555,12 +2575,19 @@ Studio.Stage.prototype.stopTween = function(who, snap, original) {
 Studio.Pattern = function(attr) {
 	this.height = 512
 	this.width = 512
+	this.overflowX = 0
+	this.overflowY = 0
 	this.resolution = 1;
 	this.image = null
+	this.slice = "Full"
+	this.offsetX = 0
+	this.offsetY = 0
 	// this.pattern = [{0,0,96,96}]
 	if (attr) {
 		this.apply(attr)
 	}
+	this.width = this.width+this.overflowX
+	this.height = this.height+this.overflowY
 	this.cache = new Studio.Cache(this.width, this.height, this.resolution)
 	this._cached = false
 	this.image.status.addListener("onImageReady", this)
@@ -2573,15 +2600,39 @@ Studio.extend(Studio.Pattern, Studio.Rect);
 	setPattern
 */
 
-Studio.Pattern.prototype.setPattern = function(width, height) {
+Studio.Pattern.prototype.setPattern = function() {
+	var slice = this.image.slice[this.slice];
+
+	var width = slice.width*this.scaleX || 0;
+	var height = slice.height*this.scaleY  || 0;
 	for (var x = 0; x < this.width; x += width) {
 		for (var y = 0; y < this.height; y += height) {
-			this.cache.ctx.drawImage(this.image.image, x, y, width, height)
+			if(this.offsetX+width>width){
+				this.offsetX -= width;
+			}
+			if(this.offsetY+height>height){
+				this.offsetY -= height;
+			}
+			this.cache.ctx.drawImage(this.image.image, slice.x, slice.y, slice.width, slice.height, x + this.offsetX,y + this.offsetY, width, height)
 		}
 	}
 	return this;
 };
 
+Studio.Pattern.prototype.checkOverflow = function(){
+	if(this.x>0){
+		this.x-=this.overflowX;
+	}
+	if(this.y>0){
+		this.y-=this.overflowY;
+	}
+	if(this.x<-this.overflowX){
+		this.x+=this.overflowX;
+	}
+	if(this.y<-this.overflowY){
+		this.y+=this.overflowY;
+	}
+}
 /*
 	onImageReady(
 		ready : Boolean		// value returned by image object
@@ -2593,7 +2644,7 @@ Studio.Pattern.prototype.setPattern = function(width, height) {
 
 Studio.Pattern.prototype.onImageReady = function(ready) {
 	if (ready) {
-		this.setPattern(96, 96)
+		this.setPattern()
 	}
 }
   
@@ -2872,11 +2923,9 @@ Studio.Stage.prototype.WEBGL = {
 			stencil: this.WEBGL.stencil
 		});
 	},
-
 	init: function(gl) {
 		gl._count = 0;
-		gl._batch = new Float32Array(16355 * 32);
-		// gl._batch = new Float32Array(62000*32);
+		gl._batch = new Float32Array(16384 * 32);
 		gl.clearColor(this.color.r, this.color.g, this.color.b, this.color.a);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		this.vertexShader = gl.createShader(gl.VERTEX_SHADER);
@@ -2904,6 +2953,25 @@ Studio.Stage.prototype.WEBGL = {
 		gl.useProgram(this.program);
 
 		this.buffer = gl.createBuffer();
+
+		this.prepTexture = function GL_prepTexture(gl){
+			this._texture = gl.createTexture();
+			gl.bindTexture(gl.TEXTURE_2D, stage._texture );
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		}
+		this.setTexture = function GL_setTexture(image, mipmap){
+			if(!this._texture) {
+				this.prepTexture(this.ctx);
+			}
+			this.ctx.texImage2D(this.ctx.TEXTURE_2D, 0, this.ctx.RGBA, this.ctx.RGBA, this.ctx.UNSIGNED_BYTE, image.image);
+			if(mipmap){
+				this.ctx.generateMipmap(this.ctx.TEXTURE_2D);
+			}
+		}
 	},
 
 	prep: function(gl) {
@@ -3194,8 +3262,8 @@ Studio.Stage.prototype.enableTouchEvents = function() {
 	var scaledMouse = {clientX: 0, clientY: 0}
 
 	var ratioEvent = function(event) {
-		scaledMouse.clientX = (event.clientX - me.canvas.offsetLeft) / me._scaleRatio;
-		scaledMouse.clientY = (event.clientY - me.canvas.offsetTop) / me._scaleRatio;
+		scaledMouse.clientX = (event.clientX - me.canvas.getBoundingClientRect().left) / me._scaleRatio;
+		scaledMouse.clientY = (event.clientY - me.canvas.getBoundingClientRect().top) / me._scaleRatio;
 		// return me.scaledMouse;
 	}
 

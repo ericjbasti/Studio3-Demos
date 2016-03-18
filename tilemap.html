@@ -18,11 +18,6 @@
 
 var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/60, fullscreen:0, color: Studio.BLUE, resolution: 2})
 
-Studio.FocusEngine = function(){
-	this.active = null;
-	this.focus_list = new LinkedList();
-}
-
 
 Studio.load = function(path, type, callback){
 	
@@ -101,7 +96,7 @@ Studio.load('assets/thecurse.json','json', function(data){
 	var set = data.tilesets[0];
 	var setimage = new Studio.Image('assets/'+set.image);
 	var tileset =  new Studio.TileSet( setimage, set.tilewidth, set.tileheight, set.imagewidth);
-	var test = function(result){
+	var test = function test(result){
 		if (!result) {
 			console.log("The image isn't ready so we need to wait.");
 			return;
