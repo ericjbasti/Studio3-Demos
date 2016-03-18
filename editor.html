@@ -25,7 +25,6 @@ var getType = function(who) {
 		case Studio.DisplayObject: 	type = "DisplayObject"; break;
 		case Studio.Rect: 			type = "Rect"; break;
 		case Studio.Sprite: 		type = "Sprite"; break;
-		case Studio.ImageSlice: 	type = "ImageSlice"; break;
 	}
 	return type;
 }
@@ -206,11 +205,11 @@ var buildRectEditor = function(item) {
 }
 
 
-var buildImageSliceEditor = function(item) {
+var buildSpriteEditor = function(item) {
 	var rect = document.createElement('div');
 	var fieldset = document.createElement('fieldset');
 	var legend = document.createElement('legend');
-	legend.innerHTML = 'ImageSlice&nbsp;';
+	legend.innerHTML = 'Sprite&nbsp;';
 	var toggle = document.createElement('input');
 	toggle.setAttribute('type','checkbox');
 	fieldset.appendChild(toggle);
@@ -261,7 +260,7 @@ var buildSceneEditor = function(item) {
 		var child = document.createElement('li');
 		switch (getType(item.children[i])){
 			case 'Rect': child.appendChild(buildRectEditor(item.children[i])); break;
-			case 'ImageSlice': child.appendChild(buildImageSliceEditor(item.children[i])); break;
+			case 'Sprite': child.appendChild(buildSpriteEditor(item.children[i])); break;
 		}
 
 		children.appendChild(child);
@@ -337,7 +336,10 @@ var buildEditor = function(obj) {
 }
 
 
-var ARM = {"image":"assets/rockster.png","color":"rgba(1,1,1,1)","rect":{"x":0,"y":0,"height":55,"width":56},"anchorY":0,"width":75,"height":112,"y":50,"x":200,"children":[{"color":"rgba(85,85,85,1)","anchorY":0.15,"width":30,"height":120,"y":80,"x":0,"children":[{"color":"rgba(255,0,255,1)","anchorY":0.15,"width":20,"height":60,"y":90,"x":0,"children":[{"color":"rgba(0,255,255,1)","anchorY":0.15,"width":15,"height":40,"y":45,"x":0,"children":[{"color":"rgba(255,0,255,1)","width":5,"height":5,"y":0,"x":0,"onEnterFrame":"function (){\n\tthis.rotation+=5;\n}","type":"Rect","rotation":24700},{"color":"rgba(255,255,0,1)","anchorY":0.15,"width":11,"height":30,"y":30,"x":0,"children":[{"color":"rgba(0,255,255,1)","width":3,"height":3,"y":0,"x":0,"type":"Rect"}],"hasChildren":1,"onHoverStart":"function (){\n\tthis.color.setFromHex('#FF7F00')\n}","onHoverEnd":"function (){\n\tthis.color.setFromHex('#000')\n}","type":"Rect"}],"hasChildren":2,"type":"Rect"},{"color":"rgba(85,85,85,1)","width":7,"height":7,"y":0,"x":0,"onEnterFrame":"function (){\n\tthis.rotation+=5;\n}","type":"Rect","rotation":24700}],"hasChildren":2,"type":"Rect"},{"color":"rgba(0,0,0,1)","width":9,"height":9,"y":0,"x":0,"onEnterFrame":"function (){\n\tthis.rotation+=5;\n}","type":"Rect","rotation":24700}],"hasChildren":2,"type":"Rect"}],"hasChildren":1,"alpha":0.75,"onHoverStart":"function (){\n\tthis.color.setFromHex('#FF7F00')\n}","onHoverEnd":"function (){\n\tthis.color.setFromHex('#000')\n}","type":"ImageSlice"};
+
+
+
+var ARM = {"image":"assets/rockster.png","color":"rgba(1,1,1,1)","rect":{"x":0,"y":0,"height":55,"width":56},"anchorY":0,"width":75,"height":112,"y":50,"x":200,"children":[{"color":"rgba(85,85,85,1)","anchorY":0.15,"width":30,"height":120,"y":80,"x":0,"children":[{"color":"rgba(255,0,255,1)","anchorY":0.15,"width":20,"height":60,"y":90,"x":0,"children":[{"color":"rgba(0,255,255,1)","anchorY":0.15,"width":15,"height":40,"y":45,"x":0,"children":[{"color":"rgba(255,0,255,1)","width":5,"height":5,"y":0,"x":0,"onEnterFrame":"function (){\n\tthis.rotation+=5;\n}","type":"Rect","rotation":24700},{"color":"rgba(255,255,0,1)","anchorY":0.15,"width":11,"height":30,"y":30,"x":0,"children":[{"color":"rgba(0,255,255,1)","width":3,"height":3,"y":0,"x":0,"type":"Rect"}],"hasChildren":1,"onHoverStart":"function (){\n\tthis.color.setFromHex('#FF7F00')\n}","onHoverEnd":"function (){\n\tthis.color.setFromHex('#000')\n}","type":"Rect"}],"hasChildren":2,"type":"Rect"},{"color":"rgba(85,85,85,1)","width":7,"height":7,"y":0,"x":0,"onEnterFrame":"function (){\n\tthis.rotation+=5;\n}","type":"Rect","rotation":24700}],"hasChildren":2,"type":"Rect"},{"color":"rgba(0,0,0,1)","width":9,"height":9,"y":0,"x":0,"onEnterFrame":"function (){\n\tthis.rotation+=5;\n}","type":"Rect","rotation":24700}],"hasChildren":2,"type":"Rect"}],"hasChildren":1,"alpha":0.75,"onHoverStart":"function (){\n\tthis.color.setFromHex('#FF7F00')\n}","onHoverEnd":"function (){\n\tthis.color.setFromHex('#000')\n}","type":"Sprite"};
 
 var arm_built = buildFromSceneGraph( ARM );
 

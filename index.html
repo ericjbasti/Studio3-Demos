@@ -15,25 +15,45 @@
 <script src="stats.js"></script>
 <script>
 	
-var stage = new Studio.Stage('canvas',{webgl:1, dur:1000/60, fullscreen:0, resolution: 1, interpolate: 1, _maxCount: 16333})
-var MAX = stage._maxCount/1 | 0 ;
-gravity = .4;
+var stage = new Studio.Stage('canvas',{
+	webgl : 1, 
+	dur : 1000/60, 
+	fullscreen : 0, 
+	resolution : 1, 
+	interpolate : 1, 
+	_maxCount : 16333
+})
+
+var MAX = stage._maxCount/1 | 0
+var gravity = .4
 
 var ball = new Studio.Image('assets/char.png')
 ball.addSlice({
-	'head': {x:0, y:0, width: 12, height: 10},
-	'feet': {x:0, y:10, width: 12, height: 11}
+	'head': {
+		x : 0, 
+		y : 0, 
+		width : 12, 
+		height : 10
+	},
+	'feet': {
+		x : 0, 
+		y : 10, 
+		width : 12, 
+		height : 11
+	}
 })
 
 
 var BOXdrop = function(attr){
-	this.image = ball;
-	this.slice = 'feet';
-	this.color = new Studio.Color();
+	this.image = ball
+	this.slice = 'feet'
+	this.color = new Studio.Color()
+
 	if(attr){
-		this.apply(attr);
+		this.apply(attr)
 	}
-	this.color.set(Math.random()*510,Math.random()*510,Math.random()*510,1)
+	this.color.set(Math.random()*510 ,Math.random()*510 ,Math.random()*510, 1)
+
 	// this.color.set(255,255,255,1)
 }
 
@@ -45,44 +65,48 @@ Studio.extend(BOXdrop, Studio.Sprite)
 
 BOXdrop.prototype.logic = function(){
 	this.velocityY += gravity
-	this.x+=this.velocityX;
-	this.y+=this.velocityY;
-	if(this.x>stage.width || this.x<0){
-		this.velocityX *=-1
+	this.x += this.velocityX
+	this.y += this.velocityY
+	if(this.x > stage.width || this.x < 0){
+		this.velocityX *= -1
 	}
 	if(!this.hit){
-		this.y = this.y-stage.height;
-		this.x = stage.width/2;
-		this.hit = 10;
-		this.velocityY = (Math.random()*3);
-		this._snapback();
+		this.y = this.y - stage.height;
+		this.x = stage.width/2
+		this.hit = 10
+		this.velocityY = Math.random()*3
+		this._snapback()
 	}
 	if(this.y>stage.height){
-		this.velocityY*=-.8;
-		this.hit--;
-		this.y = stage.height-1;
+		this.velocityY *= -.8
+		this.hit--
+		this.y = stage.height-1
 	}
-	// this.color.set(100-(this.velocityY*33),100-(this.velocityX*33),150,1);
 }
 
 for (var i = 0; i!=MAX;i++){
-	var yy=new BOXdrop({x:stage.width/2 ,y:Math.random()*120,width:24 ,height:24 ,velocityX: 2-(Math.random()*4),velocityY: -10+(Math.random()*6), hit:10});
-	stage.addChild(yy);
-	yy._snapback();
+	var yy=new BOXdrop({
+		x : stage.width/2 ,
+		y : Math.random()*120,
+		width : 24,
+		height : 24,
+		velocityX : 2-(Math.random()*4),
+		velocityY : -10+(Math.random()*6),
+		hit : 10
+	});
+	stage.addChild(yy)
 }
 
 
+stage.addEffect( STATS ,{
+	external : true, 
+	height : 50,
+	width : stage.width,
+	position : 0,
+	clear_mode :'erase'
+})
 
-
-stage.addEffect(STATS,{
-	external: true, 
-	height: 50,
-	width: stage.width,
-	position: 0,
-	clear_mode:'erase'}
-);
-
-Studio.start();
+Studio.start()
 
 </script>
 
