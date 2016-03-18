@@ -22,12 +22,36 @@
 		image-rendering: optimize-contrast;
 		-ms-interpolation-mode: nearest-neighbor;
 	}
+	.image-editor{
+		position: relative;
+	}
+	.image-slice{
+		position: absolute;
+		border: 1px solid currentColor;
+		color: #060;
+		cursor: pointer;
+	}
+	.image-slice:hover{
+		color: #0f0;
+	}
+	.image-slice-name{
+		display: none;
+		font-family: monospace;
+		font-size: 12px;
+		position: absolute;
+		top: -16px;
+		background: rgba(0,0,0,.5);
+		left: 0;
+		padding: 3px 4px;
+
+	}
+	.image-slice:hover .image-slice-name{
+		display: block
+	}
 </style>
 <script>
 var background = new Studio.Image('assets/classic_blue.png');
 background.addSlice({'Pyramid':{x:13,y:13,width:22,height:22}})
-
-
 
 
 var _parts = new Studio.Image('breakdown/_parts.png');
@@ -169,6 +193,32 @@ _parts.addSlice({
 });
 
 
+var buildImageEditor = function(image){
+	var editor = document.createElement('div')
+	editor.className = 'image-editor'
+	editor.style.width = image.width +'px'
+	editor.style.height = image.height +'px'
+	editor.style.background = 'url('+image.path+')'
+	for (var i in image.slice){
+		var slice = document.createElement('div')
+		slice.className = 'image-slice'
+		slice.style.border = '1px solid green'
+		slice.style.width = image.slice[i].width+'px'
+		slice.style.height = image.slice[i].height+'px'
+		slice.style.top = image.slice[i].y +'px'
+		slice.style.left = image.slice[i].x +'px'
+		slice.style.position = 'absolute'
+		var name = document.createElement('div')
+		name.className = 'image-slice-name'
+		name.innerHTML = i
+		slice.appendChild(name)
+		editor.appendChild(slice)
+	}	
+	document.body.appendChild(editor);
+}
+
+
+
 Studio.UIButton = function(attr, stage){
 	this.hovered = false;
 	this.text = 'Button';
@@ -249,7 +299,7 @@ stage.onReady = function(){
 
 var button3 = new Studio.UIButton({x:160,y:230, height: 24, width: 120, text:'Stage'},stage);
 
-button3.hover = function(a){
+button3.hover = button3.focus = function(a){
 	stage.stopTween(this.hoverOut_tween)
 	stage.playTween(this.hoverIn_tween)
 	this.back.color.setFromHex("#FF0080")
@@ -324,7 +374,7 @@ var home = new Studio.Scene({
 		
 		var button = new Studio.UIButton({x:0+centerH,y:150+centerV, height: 24, width: 120, text:'Scene 1'},stage);
 
-		button.hover = function(a){
+		button.hover = button.focus = function(a){
 			stage.stopTween(this.hoverOut_tween)
 			stage.playTween(this.hoverIn_tween)
 			this.back.color.setFromHex("#FF0080")
@@ -343,14 +393,11 @@ var home = new Studio.Scene({
 
 		this.addChild(button);
 		this.addButton(button);
-	
-		this.menu = new LinkedList();
-		this.menu.add(button);
 
 
 		var button2 = new Studio.UIButton({x:0+centerH,y:190+centerV, height: 24, width: 120, text:'Scene 2'},stage);
 
-		button2.hover = function(a){
+		button2.hover = button2.focus = function(a){
 			stage.stopTween(this.hoverOut_tween)
 			stage.playTween(this.hoverIn_tween)
 			this.back.color.setFromHex("#FF0080")
@@ -367,18 +414,18 @@ var home = new Studio.Scene({
 		button2.action = function(a){
 
 		}
-
 		this.addChild(button2);
 		this.addButton(button2);
-
-		this.menu.add(button2);
-		this.menu.add(button3);
+		
 		this.slideIn = stage.createTween(this,'elasticOut',{y: 0, x:0}, 3600);
 		this.slideOut = stage.createTween(this,'chillInOut',{x:-stage.width}, 1500, function(){
 			this.close();
 			this.y = -stage.height;
 			this.x = 0;
 		});
+
+		this.menu = [button,button2,button3];
+
 	},
 	init : Paralaxx.init,
 	onActivate: function(stage){
@@ -390,6 +437,7 @@ var home = new Studio.Scene({
 	onDeactivate: function(stage){
 		stage.stopTween(this.slideIn);
 		stage.playTween(this.slideOut);
+		FOCUS_ENGINE.setCurrentMenu(global_menu);
 	},
 	i:0,
 	onEnterFrame: Paralaxx.frame
@@ -400,7 +448,7 @@ stage.setScene(home)
 
 stage.enableTouchEvents();
 
-
+var global_menu = [button3];
 
 stage.addButton(button3)
 stage.addChildren(button3)
