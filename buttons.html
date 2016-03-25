@@ -104,9 +104,12 @@ var button2 = new Studio.UIButton({x: 200, y: 100, height: 80, width: 300, text:
 
 
 
-var curse = new Studio.SpriteSheet('assets/Seperated.png')
-var ball_img = new Studio.Image('assets/ball3.png');
-var chupe = new Studio.SpriteSheet('assets/chupe.png');
+var curse = new Studio.Image('assets/Seperated.png')
+curse.addSlice({'Statue':{x:0,y:32*6,width:32,height:32}})
+curse.addSlice({'Rock':{x:0,y:32*12,width:32,height:32}})
+curse.addSlice({'Floating Rock':{x:0,y:32*13,width:32,height:32}})
+// var ball_img = new Studio.Image('assets/ball3.png');
+var chupe = new Studio.Image('assets/chupe.png');
 var right = {
 	pant: [[0,1],[1,1],[2,1],[3,1]],
 	walk: [[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0]],
@@ -159,7 +162,7 @@ var makePhysicObject = function(who, world){
 var Player = function(world){
 	this.width = 32;
 	this.height= 32; 
-	this.sheet= chupe;
+	this.sheet = chupe;
 	this.rect ={x:0,y:0, width: 32, height: 32};
 	this.loop = right.walk;
 	this.hitbox = new Studio.DisplayObject({height: 32, width: 20});
@@ -209,35 +212,35 @@ stage.gravity = .78;
 var blocks = [];
 
 for (var i = 0; i != 2; i++){
-	var block = new Studio.ImageSlice({x: 16+(i*32), y: 32*7, height: 32, width: 32, image:curse, rect:{x:0,y:32*12, width:32, height:32}})
+	var block = new Studio.Sprite({x: 16+(i*32), y: 32*7, height: 32, width: 32, image:curse, slice:'Rock'})
 	blocks.push(block);
 	stage.addChild(block);
 }
 
 for (var i = 0; i != 22; i++){
-	var block = new Studio.ImageSlice({x: 0+(i*32), y: 32*11, height: 32, width: 32, image:curse, rect:{x:0,y:32*12, width:32, height:32}})
+	var block = new Studio.Sprite({x: 0+(i*32), y: 32*11, height: 32, width: 32, image:curse, slice:'Rock'})
 	blocks.push(block);
 	stage.addChild(block);
 }
 
 
 for (var i = 0; i != 2; i++){
-	var block = new Studio.ImageSlice({x: (stage.width-16)-(i*32), y: 32*7, height: 32, width: 32, image:curse, rect:{x:0,y:32*12, width:32, height:32}})
+	var block = new Studio.Sprite({x: (stage.width-16)-(i*32), y: 32*7, height: 32, width: 32, image:curse, slice:'Rock'})
 	blocks.push(block);
 	stage.addChild(block);
 }
 for (var i = 0; i != 6; i++){
-	var block = new Studio.ImageSlice({x: (stage.width/2)-(i*32)+62, y: 32*10, height: 32, width: 32, image:curse, rect:{x:0,y:32*12, width:32, height:32}})
+	var block = new Studio.Sprite({x: (stage.width/2)-(i*32)+62, y: 32*10, height: 32, width: 32, image:curse, slice:'Rock'})
 	blocks.push(block);
 	stage.addChild(block);
 }
 for (var i = 0; i != 4; i++){
-	var block = new Studio.ImageSlice({x: (stage.width/2)-(i*32)+32, y: 32*9, height: 32, width: 32, image:curse, rect:{x:0,y:32*12, width:32, height:32}})
+	var block = new Studio.Sprite({x: (stage.width/2)-(i*32)+32, y: 32*9, height: 32, width: 32, image:curse, slice:'Rock'})
 	blocks.push(block);
 	stage.addChild(block);
 }
 for (var i = 0; i != 2; i++){
-	var block = new Studio.ImageSlice({x: (stage.width/2)-(i*32), y: 32*8, height: 32, width: 32, image:curse, rect:{x:0,y:32*12, width:32, height:32}})
+	var block = new Studio.Sprite({x: (stage.width/2)-(i*32), y: 32*8, height: 32, width: 32, image:curse, slice:'Rock'})
 	blocks.push(block);
 	stage.addChild(block);
 }
@@ -257,7 +260,7 @@ movers.onEnterFrame = function(){
 	}
 }
 for (var i = 0; i != 2; i++){
-	var block = new Studio.ImageSlice({x: (i*32), y: 0, height: 32, width: 32, image:curse, rect:{x:0,y:32*13, width:32, height:32}})
+	var block = new Studio.Sprite({x: (i*32), y: 0, height: 32, width: 32, image:curse, slice:'Floating Rock'})
 	blocks.push(block);
 	movers.addChild(block);
 }
@@ -268,7 +271,7 @@ var prizes = [];
 var prizemax = 7;
 var prizegot = 0;
 for (var i = 0; i != prizemax; i++){
-	var block = new Studio.ImageSlice({x: 100+(i*60), y: 64+parseInt(Math.random()*5)*32, height: 20, width: 20, image:curse, rect:{x:0,y:32*6, width:32, height:32}})
+	var block = new Studio.Sprite({x: 100+(i*60), y: 64+parseInt(Math.random()*5)*32, height: 20, width: 20, image:curse, slice:'Statue'})
 	prizes.push(block);
 	stage.addChild(block);
 }
@@ -318,7 +321,7 @@ stage.gamepadInput = function(t, pad){
 	}
 }
 
-var ball = new Studio.Sprite({image:ball_img, x:200,y:200, height: 11, width: 11, color: Studio.BLUE})
+var ball = new Studio.Rect({x:200,y:200, height: 11, width: 11, color: Studio.BLUE})
 makePhysicObject(ball,stage)
 ball.velocityX = 12
 ball.friction = .95

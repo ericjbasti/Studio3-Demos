@@ -18,11 +18,11 @@
 
 var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/60, fullscreen:0, color: Studio.BLUE, resolution: 2})
 
-var map = new Studio.TileMap(320,320,1,{offsetX: 0, offsetY: 2});
+var map = new Studio.TileMap(320,320,1,{offsetX: 0, offsetY: 0});
 
-map.load('assets/thecurse.json','json');
+map.load('assets/dorm-lobby.json','json');
 
-var tt = new Studio.Sprite({width: 320, height: 320, x: stage.width/2, y: stage.height/2, image: map.cache})
+var tt = new Studio.Sprite({width: 480, height: 400, anchorX: 0, anchorY: 0, image: map.cache})
 stage.addChild(tt);
 
 
@@ -114,8 +114,8 @@ if(navigator.getGamepads){
 	stage.addEffect(GAMEPAD);
 }
 
-// stage.camera.bindTo(tt)
-// stage.camera.track(box)
+stage.camera.bindTo(tt)
+stage.camera.track(box)
 stage.addEffect(STATS,{
 	external: true, 
 	height: 50,
