@@ -18,10 +18,6 @@
 
 </style>
 <script>
-	
-var stage = new Studio.Stage("canvas",{fullscreen:2, resolution: 1, dur: 1000/60, interpolate: 0});
-	    stage.GAMEPAD_1 = {};
-	    stage.GAMEPAD_2 = {};
 
 var background = new Studio.Image('assets/classic_blue.png');
 var coin = new Studio.Image('assets/coin_16.png')
@@ -36,10 +32,22 @@ curse.addSlice({'Floating Rock Right':{x:32*2,y:32*2,width:32,height:32}})
 curse.addSlice({'Large Cloud':{x:32*0,y:32*5,width:32*7,height:68}})
 curse.addSlice({'Small Cloud 1':{x:0,y:(32*7)+8,width:70,height:24}})
 curse.addSlice({'Skyline':{x:224,y:0,width:8,height:256}})
-curse.addSlice({'Ground':{x:0,y:128,width:4,height:128}})
-var patt = new Studio.Pattern({width:stage.width,height:256,overflowX:96, overflowY: 0, image: curse, anchorX:0, anchorY:0, slice:'Skyline'},stage);
-stage.addChild(patt);
-// var ball_img = new Studio.Image('assets/ball3.png');
+curse.addSlice({'Water':{x:224,y:198,width:32,height:8}})
+curse.addSlice({'Water2':{x:224,y:200,width:32,height:8}})
+curse.addSlice({'Water3':{x:224,y:208,width:32,height:16}})
+curse.addSlice({'Water4':{x:224,y:224,width:32,height:24}})
+curse.addSlice({'Water5':{x:224,y:238,width:32,height:8}})
+curse.addSlice({'Water6':{x:224,y:242,width:32,height:8}})
+
+curse.addSlice({'food_0':{x:32*3+3,y:6,width:24,height:24}})
+curse.addSlice({'food_1':{x:32*4+3,y:6,width:24,height:24}})
+curse.addSlice({'soda_0':{x:32*5+2,y:0,width:16,height:32}})
+curse.addSlice({'soda_1':{x:32*5+16+2,y:0,width:16,height:32}})
+
+var stage = new Studio.Stage("canvas",{fullscreen:2, resolution: 1, dur: 1000/60, interpolate: 0});
+	    stage.GAMEPAD_1 = {};
+	    stage.GAMEPAD_2 = {};
+
 var chupe = new Studio.Image('assets/chupe.png');
 var right = {
 	pant: [[0,1],[1,1],[2,1],[3,1]],
@@ -52,8 +60,9 @@ var left = {
 	walk: [[0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[6,2],[7,2]],
 	jump: [[5,3],[5,3]]
 }
+var blocks = [];
 
-var makePhysicObject = function(who, world){
+var makePhysicObject = function Physics(who, world){
 	who.velocityY = 0;
 	who.velocityX = 0;
 	who.friction  = .9;
@@ -89,7 +98,6 @@ var makePhysicObject = function(who, world){
 	}
 }
 
-
 var Player = function(world){
 	this.width = 32;
 	this.height= 32; 
@@ -110,139 +118,194 @@ var Player = function(world){
 Studio.extend(Player,Studio.SpriteAnimation)
 
 Player.prototype.hit = function(){
-	stage.playTween(this._hitAnimation);
+	Game.playTween(this._hitAnimation);
 }
 
-var PLAYER_1 = new Player(stage);
-PLAYER_1.x =20
-var PLAYER_2 = new Player(stage);
-PLAYER_2.x=300
-PLAYER_2.offsetY= 4
-stage.gravity = .78;
+var Game = new Studio.Scene({
+	y: .5,
+	x: 0,
+	width: stage.width*1, 
+	height: stage.height*1,
+	colorHex: '#00ff00',
+	gravity: .78,
+	onActivate : function(){
+		stage.logic = GameLogic;
+	},
+	build: function (scene){
+		this.addChild(new Studio.Clip({
+			x:0,
+			y:0,
+			width: this.width,
+			height: this.height,
+			anchorX: 0,
+			anchorY: 0
+		}))
+		var patt = new Studio.Pattern({width:this.width,height:256, overflowX:96, overflowY: 0, image: curse, anchorX:0, anchorY:0, slice:'Skyline'}, this);
+		this.addChild(patt);
+
+		var water = new Studio.Pattern({
+			y:199,
+			width:this.width,
+			height:58, 
+			overflowX:32, 
+			overflowY: 0, 
+			image: curse, 
+			anchorX:0, anchorY:0, 
+			slice:'Water',
+			onEnterFrame: function(){
+				this.x-=.1;
+				this.checkOverflow();
+			}}, this);
+
+		this.addChild(water);
+
+		var water2 = new Studio.Pattern({y:202,width:this.width,height:58, overflowX:32, overflowY: 0, image: curse, anchorX:0, anchorY:0, slice:'Water2'}, this);
+		water2.onEnterFrame = function(){
+			this.x-=.2;
+			this.checkOverflow();
+		}
+		this.addChild(water2);
+
+		var water3 = new Studio.Pattern({y:210,width:this.width,height:58, overflowX:32, overflowY: 0, image: curse, anchorX:0, anchorY:0, slice:'Water3'}, this);
+		water3.onEnterFrame = function(){
+			this.x-=.25;
+			this.checkOverflow();
+		}
+		this.addChild(water3);
+
+		var water4 = new Studio.Pattern({y:216,width:this.width,height:58, overflowX:32, overflowY: 0, image: curse, anchorX:0, anchorY:0, slice:'Water4'}, this);
+		water4.onEnterFrame = function(){
+			this.x-=.3;
+			this.checkOverflow();
+		}
+		this.addChild(water4);
+
+		var water5 = new Studio.Pattern({y:228,width:this.width,height:58, overflowX:32, overflowY: 0, image: curse, anchorX:0, anchorY:0, slice:'Water5'}, this);
+		water5.onEnterFrame = function(){
+			this.x-=.4;
+			this.checkOverflow();
+		}
+		this.addChild(water5);
+
+		var water6 = new Studio.Pattern({y:248,width:this.width,height:100, overflowX:32, overflowY: 0, image: curse, anchorX:0, anchorY:0, slice:'Water6'}, this);
+		this.addChild(water6);
+
+		var cloud = new Studio.Sprite({x:64,y:16, width:32*7, height:68, image:curse, slice:'Large Cloud', borderlap: true, border: this})
+		this.addChild(cloud);
+		cloud.onEnterFrame = function(){
+			this.x-=.25;
+			if(this.x<0){
+				this.x = scene.width;
+			}
+		}
+
+		var small_cloud = new Studio.Sprite({x:400,y:100, width:70, height:24, image:curse, slice:'Small Cloud 1', borderlap: true, border: this})
+		this.addChild(small_cloud);
+		small_cloud.onEnterFrame = function(){
+			this.x-=.35;
+			if(this.x<0){
+				this.x = scene.width;
+			}
+		}
+
+		for (var i = 0; i != 2; i++){
+			var block = new Studio.Sprite({x: 16+(i*32), y: 32*7, height: 32, width: 32, image:curse, slice:'Floating Rock Center'})
+			blocks.push(block);
+			this.addChild(block);
+		}
+		block.slice = 'Floating Rock Right'
+
+		for (var i = 0; i != 22; i++){
+			var block = new Studio.Sprite({x: 0+(i*32), y: 32*11, height: 32, width: 32, image:curse, slice:'Rock'})
+			blocks.push(block);
+			this.addChild(block);
+		}
 
 
+		for (var i = 0; i != 2; i++){
+			var block = new Studio.Sprite({x: (this.width-16)-(i*32), y: 32*7, height: 32, width: 32, image:curse, slice:'Floating Rock Center'})
+			blocks.push(block);
+			this.addChild(block);
+		}
+
+		block.slice ='Floating Rock Left'
+
+		for (var i = 0; i != 6; i++){
+			var block = new Studio.Sprite({x: (this.width/2)-(i*32)+62, y: 32*10, height: 32, width: 32, image:curse})
+			if(i==0) {
+				block.slice = 'Rock Last';
+			}else if(i==5){
+				block.slice = 'Rock First';
+			}else{
+				block.slice = 'Rock';
+			}
+			blocks.push(block);
+			this.addChild(block);
+		}
+		for (var i = 0; i != 4; i++){
+			var block = new Studio.Sprite({x: (this.width/2)-(i*32)+32, y: 32*9, height: 32, width: 32, image:curse, slice:'Rock'})
+			if(i==0) {
+				block.slice = 'Rock Last';
+			}else if(i==3){
+				block.slice = 'Rock First';
+			}else{
+				block.slice = 'Rock';
+			}
+			blocks.push(block);
+			this.addChild(block);
+		}
+		for (var i = 0; i != 2; i++){
+			var block = new Studio.Sprite({x: (this.width/2)-(i*32), y: 32*8, height: 32, width: 32, image:curse, slice:'Rock'})
+			if(i==0) {
+				block.slice = 'Rock Last';
+			}else if(i==1){
+				block.slice = 'Rock First';
+			}else{
+				block.slice = 'Rock';
+			}
+			blocks.push(block);
+			this.addChild(block);
+		}
+
+		var movers = new Studio.DisplayObject();
+		movers.x = (this.width/2)-32
+		movers.y = 32*5;
+		var count = 0;
+		movers.onEnterFrame = function(){
+			this.velocityX = Math.sin(count)*2;
+			this.velocityY = Math.cos(count);
+			this.x += this.velocityX;
+			this.y += this.velocityY;
+			count+=.02;
+			for(var i = 0; i!= this.hasChildren; i++){
+				this.children[i].velocityX = this.velocityX;
+			}
+		}
+
+		var block = new Studio.Sprite({x: 0, y: 0, height: 32, width: 32, image:curse, slice:'Floating Rock Left'})
+		blocks.push(block);
+		movers.addChild(block);
+		var block = new Studio.Sprite({x: 32, y: 0, height: 32, width: 32, image:curse, slice:'Floating Rock Center'})
+		blocks.push(block);
+		movers.addChild(block);
+		var block = new Studio.Sprite({x: 64, y: 0, height: 32, width: 32, image:curse, slice:'Floating Rock Right'})
+		blocks.push(block);
+		movers.addChild(block);
+		this.addChild(movers)
 
 
-// RECT overlapdraw
-// t.draw = function(ctx){
-// 	this.setStyle(ctx);
-// 	this.setAlpha(ctx);
-// 	ctx.drawImage(this.image.image, this.rect.x, this.rect.y, this.rect.width, this.rect.height, this._dx - (this._world.width*this.anchorX), this._dy - (this._world.height*this.anchorY), this._world.width, this._world.height)
-// 	if(this._dx -  (this._world.width*this.anchorX) < 0){
-// 		ctx.drawImage(this.image.image, this.rect.x, this.rect.y, this.rect.width, this.rect.height, stage.width + this._dx - (this._world.width*this.anchorX), this._dy - (this._world.height*this.anchorY), this._world.width, this._world.height);
-// 		return;
-// 	}
-// 	if((this._dx + this._world.width) > stage.width){
-// 		ctx.drawImage(this.image.image, this.rect.x, this.rect.y, this.rect.width, this.rect.height, this._dx - (this._world.width*this.anchorX) -stage.width, this._dy - (this._world.height*this.anchorY), this._world.width, this._world.height);
-// 		return; 
-// 	}
-// }
-var cloud = new Studio.Sprite({x:64,y:16, width:32*7, height:68, image:curse, slice:'Large Cloud', borderlap: true, border: stage})
-stage.addChild(cloud);
-cloud.onEnterFrame = function(){
-	this.x-=.25;
-	if(this.x<0){
-		this.x = stage.width;
+		PLAYER_1 = new Player(this);
+		PLAYER_1.x =20
+		PLAYER_2 = new Player(this);
+		PLAYER_2.x=300
+		PLAYER_2.offsetY= 4
+		this.addChild(PLAYER_1)
+		this.addChild(PLAYER_2)
+		this.addChild(new Studio.Restore())
 	}
-}
+});
 
-var small_cloud = new Studio.Sprite({x:400,y:100, width:70, height:24, image:curse, slice:'Small Cloud 1', borderlap: true, border: stage})
-stage.addChild(small_cloud);
-small_cloud.onEnterFrame = function(){
-	this.x-=.35;
-	if(this.x<0){
-		this.x = stage.width;
-	}
-}
-
-
-var blocks = [];
-
-for (var i = 0; i != 2; i++){
-	var block = new Studio.Sprite({x: 16+(i*32), y: 32*7, height: 32, width: 32, image:curse, slice:'Floating Rock Center'})
-	blocks.push(block);
-	stage.addChild(block);
-}
-block.slice = 'Floating Rock Right'
-
-for (var i = 0; i != 22; i++){
-	var block = new Studio.Sprite({x: 0+(i*32), y: 32*11, height: 32, width: 32, image:curse, slice:'Rock'})
-	blocks.push(block);
-	stage.addChild(block);
-}
-
-
-for (var i = 0; i != 2; i++){
-	var block = new Studio.Sprite({x: (stage.width-16)-(i*32), y: 32*7, height: 32, width: 32, image:curse, slice:'Floating Rock Center'})
-	blocks.push(block);
-	stage.addChild(block);
-}
-
-block.slice ='Floating Rock Left'
-
-for (var i = 0; i != 6; i++){
-	var block = new Studio.Sprite({x: (stage.width/2)-(i*32)+62, y: 32*10, height: 32, width: 32, image:curse})
-	if(i==0) {
-		block.slice = 'Rock Last';
-	}else if(i==5){
-		block.slice = 'Rock First';
-	}else{
-		block.slice = 'Rock';
-	}
-	blocks.push(block);
-	stage.addChild(block);
-}
-for (var i = 0; i != 4; i++){
-	var block = new Studio.Sprite({x: (stage.width/2)-(i*32)+32, y: 32*9, height: 32, width: 32, image:curse, slice:'Rock'})
-	if(i==0) {
-		block.slice = 'Rock Last';
-	}else if(i==3){
-		block.slice = 'Rock First';
-	}else{
-		block.slice = 'Rock';
-	}
-	blocks.push(block);
-	stage.addChild(block);
-}
-for (var i = 0; i != 2; i++){
-	var block = new Studio.Sprite({x: (stage.width/2)-(i*32), y: 32*8, height: 32, width: 32, image:curse, slice:'Rock'})
-	if(i==0) {
-		block.slice = 'Rock Last';
-	}else if(i==1){
-		block.slice = 'Rock First';
-	}else{
-		block.slice = 'Rock';
-	}
-	blocks.push(block);
-	stage.addChild(block);
-}
-
-var movers = new Studio.DisplayObject();
-movers.x = (stage.width/2)-32
-movers.y = 32*5;
-var count = 0;
-movers.onEnterFrame = function(){
-	this.velocityX = Math.sin(count)*2;
-	this.velocityY = Math.cos(count);
-	this.x += this.velocityX;
-	this.y += this.velocityY;
-	count+=.02;
-	for(var i = 0; i!= this.hasChildren; i++){
-		this.children[i].velocityX = this.velocityX;
-	}
-}
-
-var block = new Studio.Sprite({x: 0, y: 0, height: 32, width: 32, image:curse, slice:'Floating Rock Left'})
-blocks.push(block);
-movers.addChild(block);
-var block = new Studio.Sprite({x: 32, y: 0, height: 32, width: 32, image:curse, slice:'Floating Rock Center'})
-blocks.push(block);
-movers.addChild(block);
-var block = new Studio.Sprite({x: 64, y: 0, height: 32, width: 32, image:curse, slice:'Floating Rock Right'})
-blocks.push(block);
-movers.addChild(block);
-stage.addChild(movers)
-
+var actionables = [PLAYER_1,PLAYER_2];
 
 var prizes = [];
 var prizemax = 7;
@@ -250,9 +313,33 @@ var prizegot = 0;
 for (var i = 0; i != prizemax; i++){
 	var block = new Studio.SpriteAnimation({x: 100+(i*60), loop:[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0]],y: 64+parseInt(Math.random()*5)*32, height: 16, width: 16, sheet:coin, rect :{x:0,y:0, width: 16, height: 16}})
 	prizes.push(block);
-	stage.addChild(block);
+	Game.addChild(block);
 }
 
+// var foods = []
+// var max_food = 3;
+// var food_got = 0;
+
+// for (var i = 0; i != max_food; i++){
+// 	var block = new Studio.Sprite({x: parseInt((Math.random()*18)+3)*32,y: 100, height: 24, width: 24, image:curse, slice: 'food_'+parseInt(Math.random()*2)})
+// 	foods.push(block);
+// 	makePhysicObject(block,Game)
+// 	Game.addChild(block);
+// 	actionables.push(block);
+	
+// }
+
+// var sodas = []
+// var max_soda = 3;
+// var soda_got = 0;
+
+// for (var i = 0; i != max_soda; i++){
+// 	var block = new Studio.Sprite({x: parseInt((Math.random()*18)+3)*32,y: 100, height: 32, width: 16, image:curse, slice: 'soda_'+parseInt(Math.random()*2)})
+// 	foods.push(block);
+// 	makePhysicObject(block,Game)
+// 	Game.addChild(block);
+// 	actionables.push(block)
+// }
 
 
 stage.gamepadInput = function(t, pad){
@@ -266,19 +353,19 @@ stage.gamepadInput = function(t, pad){
 		t.velocityX -= .51;
 		t.dir = left;
 	}
-	if(this.keys[32] || pad["B"]){
-		if(!ball.jumping){
-			ball.y=t.y;
-			ball.x = t.x;
-			ball.velocityY = 0;
-			ball.jumping = true;
-			if(t.dir==left){
-				ball.velocityX=-16;
-			}else{
-				ball.velocityX=16;
-			}
-		}
-	}
+	// if(this.keys[32] || pad["B"]){
+	// 	if(!ball.jumping){
+	// 		ball.y=t.y;
+	// 		ball.x = t.x;
+	// 		ball.velocityY = 0;
+	// 		ball.jumping = true;
+	// 		if(t.dir==left){
+	// 			ball.velocityX=-16;
+	// 		}else{
+	// 			ball.velocityX=16;
+	// 		}
+	// 	}
+	// }
 	if(this.keys[40] || pad["DOWN"]){
 		//t.velocityY += 4;
 	}
@@ -299,66 +386,63 @@ stage.gamepadInput = function(t, pad){
 	}
 }
 
-var ball = new Studio.Rect({x:200,y:200, height: 11, width: 11, color: Studio.BLUE})
-makePhysicObject(ball,stage)
-ball.velocityX = 12
-ball.friction = .95
-ball.maxVelocity = 10;
-ball.bounce = -.25
-stage.addChild(ball)
+// var ball = new Studio.Rect({x:200,y:200, height: 11, width: 11, color: Studio.BLUE})
+// makePhysicObject(ball,Game)
+// ball.velocityX = 12
+// ball.friction = .95
+// ball.maxVelocity = 10;
+// ball.bounce = -.25
+// Game.addChild(ball)
 
-var player_1_score = new Studio.TextBox(128,32,stage);
+var player_1_score = new Studio.TextBox(128,32,Game);
 player_1_score.x = 90;
 player_1_score.y = 32
 player_1_score.setText('Player 1: 0').finish();
-stage.addChild(player_1_score);
-var player_2_score = new Studio.TextBox(128,32,stage);
-player_2_score.x = stage.width-90;
+Game.addChild(player_1_score);
+var player_2_score = new Studio.TextBox(128,32,Game);
+player_2_score.x = Game.width-90;
 player_2_score.y = 32
 player_2_score.setText('Player 2: 0').finish();
-stage.addChild(player_2_score);
+Game.addChild(player_2_score);
 
 
-var actionables = [PLAYER_1,PLAYER_2,ball];
 
-stage.logic = function(){
 
+var GameLogic = function GameLogic(){
 	if(PLAYER_1){
-		this.gamepadInput(PLAYER_1, stage.GAMEPAD_1);
+		stage.gamepadInput(PLAYER_1, stage.GAMEPAD_1);
 	}
 	if(PLAYER_2){
-		this.gamepadInput(PLAYER_2, stage.GAMEPAD_2);
+		stage.gamepadInput(PLAYER_2, stage.GAMEPAD_2);
 	}
 
-	// PLAYER_1.velocityX=3
 
-
-	if(!PLAYER_1._hit && !PLAYER_2._hit){
-		if(PLAYER_1.hitbox.hitTestRect(PLAYER_2.hitbox)){
-			var dx = PLAYER_1.x-PLAYER_2.x;
-			var dy = PLAYER_1.y-PLAYER_2.y;
-			if(PLAYER_2.velocityY>10){
-				PLAYER_1._hit = true;
-				PLAYER_1.hit();
-				PLAYER_2.velocityY = -18;
-				PLAYER_2.jumping = true;
-			}
-			if(PLAYER_1.velocityY>10){
-				PLAYER_2._hit = true;
-				PLAYER_2.hit();
-				PLAYER_1.velocityY = -18;
-				PLAYER_1.jumping = true;
-			}
-		}
-	}
+	// if(!PLAYER_1._hit && !PLAYER_2._hit){
+	// 	if(PLAYER_1.hitbox.hitTestRect(PLAYER_2.hitbox)){
+	// 		var dx = PLAYER_1.x-PLAYER_2.x;
+	// 		var dy = PLAYER_1.y-PLAYER_2.y;
+	// 		if(PLAYER_2.velocityY>10){
+	// 			PLAYER_1._hit = true;
+	// 			PLAYER_1.hit();
+	// 			PLAYER_2.velocityY = -18;
+	// 			PLAYER_2.jumping = true;
+	// 		}
+	// 		if(PLAYER_1.velocityY>10){
+	// 			PLAYER_2._hit = true;
+	// 			PLAYER_2.hit();
+	// 			PLAYER_1.velocityY = -18;
+	// 			PLAYER_1.jumping = true;
+	// 		}
+	// 	}
+	// }
 
 	for (var i = 0; i != blocks.length; i++){
 		var block = blocks[i];
 		for(var j = 0; j!=actionables.length; j++){
 			var t = actionables[j];
-			if(block._world.x-32>t.x || block._world.x+32<t.x){
+			if(block._world.x-32>t._world.x || block._world.x+32<t._world.x){
 
-			}else if(block._world.y-32>t.y || block._world.y+32<t.y){
+			}else if(block._world.y-32>t._world.y || block._world.y+32<t._world.y){
 
 			}else if(t.hitbox.hitTestRect(block)){
 
@@ -420,31 +504,7 @@ stage.logic = function(){
 			}
 		}
 	}
-
-
 }
-
-// stage.enableTouchEvents();
-
-// stage.addButton(button);
-// stage.addButton(buttonRight);
-// stage.addButton(buttonLeft);
-stage.addChild(PLAYER_1)
-
-stage.addChild(PLAYER_2)
-// stage.addChildren(button, buttonRight, buttonLeft);
-
-// stage.addChild(button2)
-
-// stage.addEffect(Studio.Effect.Bloom);
-// stage.addEffect(Studio.Effect.BillAtkinsonDither_BW);
-// stage.addEffect(STATS,{
-// 	external: false, 
-// 	height: 60,
-// 	width: stage.width,
-// 	position: 0,
-// 	clear_mode:'cover'}
-// );
 
 stage.enableKeyboardInput();
 
@@ -498,6 +558,7 @@ if(navigator.getGamepads){
 	stage.addInput(GAMEPAD);
 }
 
+stage.setScene(Game)
 
 stage.snap=true
 stage.ready = true;
