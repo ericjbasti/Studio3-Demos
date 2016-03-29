@@ -22,7 +22,7 @@
 
 
 
-var stage = new Studio.Stage("canvas",{fullscreen:2, resolution: 1, dur: 1000/60, interpolate: 0});
+var stage = new Studio.Stage("canvas",{fullscreen:0, resolution: 1, dur: 1000/60, interpolate: 0});
 	stage.GAMEPAD_1 = {};
 	stage.GAMEPAD_2 = {};
 	stage.GAMEPAD_3 = {};
@@ -65,7 +65,10 @@ var makePhysicObject = function Physics(who, world){
 			this.x+=world.width;
 		}
 	}
+	gravitated.push(who);
 }
+
+var player_count = 1;
 
 var Player = function(world){
 	this.width = 32;
@@ -83,15 +86,37 @@ var Player = function(world){
 	this.dir = right;
 	this._hitAnimation = world.createTween(this,'bounceOut',{scaleY:.5, scaleX: 1.5}, 150);
 	this._hitAnimation.then('linear',{},200).then('elasticOut',{scaleY:1, scaleX:1}, 600, function(){this._hit=0}).last();
+	this.score_text = new Studio.TextBox(128,32,world);
+	this.score_text.font = "16px BigBreak"
+	this.score_text.color = '#fff'
+	this.score_text.shadowColor = '#777'
+	this.score_text.x = 18;
+	this.score_text.anchorX = 0
+	this.playerName = 'Player '+player_count;
+	if(player_count>2){
+		this.score_text.x = world.width-18;
+		this.score_text.anchorX = 1;
+	}
+	this.score_text.y = 32;
+	if(player_count==2 || player_count==4){
+		this.score_text.y = 48;
+	}
+	this.score_text.setText(this.playerName+': 0').finish();
+	player_count++;
+	world.addChild(this.score_text);
 }
 Studio.extend(Player,Studio.SpriteAnimation)
 
+Player.prototype.scoreUp = function(amount){
+	this.score+=amount;
+	this.score_text.setText(this.playerName+': '+this.score).finish();
+}
 Player.prototype.hit = function(){
 	Game.playTween(this._hitAnimation);
 }
 
 var prizes = [];
-var prizemax = 7;
+var prizemax = 8;
 var prizegot = 0;
 
 var foods = []
@@ -103,6 +128,7 @@ var max_soda = 3;
 var soda_got = 0;
 
 var actionables = [];
+var gravitated = [];
 
 var Game = new Studio.Scene({
 	y: .5,
@@ -112,7 +138,7 @@ var Game = new Studio.Scene({
 	colorHex: '#00ff00',
 	gravity: .78,
 	onActivate : function(stage){
-		stage.addTween(this,'chillInOut',{x:0},5000)
+		stage.addTween(this,'chillInOut',{x:0},500)
 		stage.logic = GameLogic;
 	},
 	build: function (scene){
@@ -310,7 +336,6 @@ var Game = new Studio.Scene({
 			foods.push(block);
 			makePhysicObject(block,this)
 			this.addChild(block);
-			actionables.push(block);
 		}
 
 		for (var i = 0; i != max_soda; i++){
@@ -318,7 +343,6 @@ var Game = new Studio.Scene({
 			foods.push(block);
 			makePhysicObject(block,this)
 			this.addChild(block);
-			actionables.push(block)
 		}
 
 		this.addChild(new Studio.Restore())
@@ -377,16 +401,7 @@ stage.gamepadInput = function(t, pad){
 // ball.bounce = -.25
 // Game.addChild(ball)
 
-var player_1_score = new Studio.TextBox(128,32,Game);
-player_1_score.x = 90;
-player_1_score.y = 32
-player_1_score.setText('Player 1: 0').finish();
-Game.addChild(player_1_score);
-var player_2_score = new Studio.TextBox(128,32,Game);
-player_2_score.x = Game.width-90;
-player_2_score.y = 32
-player_2_score.setText('Player 2: 0').finish();
-Game.addChild(player_2_score);
+
 
 
 
@@ -404,37 +419,34 @@ var GameLogic = function GameLogic(){
 	if(PLAYER_4){
 		stage.gamepadInput(PLAYER_4, stage.GAMEPAD_4);
 	}
-	// if(!PLAYER_1._hit && !PLAYER_2._hit){
-	// 	if(PLAYER_1.hitbox.hitTestRect(PLAYER_2.hitbox)){
-	// 		var dx = PLAYER_1.x-PLAYER_2.x;
-	// 		var dy = PLAYER_1.y-PLAYER_2.y;
-	// 		if(PLAYER_2.velocityY>10){
-	// 			PLAYER_1._hit = true;
-	// 			PLAYER_1.hit();
-	// 			PLAYER_2.velocityY = -18;
-	// 			PLAYER_2.jumping = true;
-	// 		}
-	// 		if(PLAYER_1.velocityY>10){
-	// 			PLAYER_2._hit = true;
-	// 			PLAYER_2.hit();
-	// 			PLAYER_1.velocityY = -18;
-	// 			PLAYER_1.jumping = true;
-	// 		}
-	// 	}
-	// }
+	if(!PLAYER_1._hit && !PLAYER_2._hit){
+		if(PLAYER_1.hitbox.hitTestRect(PLAYER_2.hitbox)){
+			var dx = PLAYER_1.x-PLAYER_2.x;
+			var dy = PLAYER_1.y-PLAYER_2.y;
+			if(PLAYER_2.velocityY>10){
+				PLAYER_1._hit = true;
+				PLAYER_1.hit();
+				PLAYER_2.velocityY = -18;
+				PLAYER_2.jumping = true;
+			}
+			if(PLAYER_1.velocityY>10){
+				PLAYER_2._hit = true;
+				PLAYER_2.hit();
+				PLAYER_1.velocityY = -18;
+				PLAYER_1.jumping = true;
+			}
+		}
+	}
 
 	for (var i = 0; i != blocks.length; i++){
 		var block = blocks[i];
-		for(var j = 0; j!=actionables.length; j++){
-			var t = actionables[j];
+		for(var j = 0; j!=gravitated.length; j++){
+			var t = gravitated[j];
 			if(block._world.x-32>t._world.x || block._world.x+32<t._world.x){
 
 			}else if(block._world.y-32>t._world.y || block._world.y+32<t._world.y){
 
 			}else if(t.hitbox.hitTestRect(block)){
-
-
-
 				var dx = t.x-block._world.x;
 				var dy = t.y-block._world.y;
 				t.platform = block;
@@ -465,13 +477,8 @@ var GameLogic = function GameLogic(){
 
 			}else if(t.hitbox.hitTestRect(block)){
 				block.got = true;
-				if(t==PLAYER_1){
-					PLAYER_1.score++;
-					player_1_score.setText('Player 1: '+PLAYER_1.score).finish();
-				}
-				if(t==PLAYER_2){
-					PLAYER_2.score++;
-					player_2_score.setText('Player 2: '+PLAYER_2.score).finish();
+				if(t.scoreUp){
+					t.scoreUp(1);
 				}
 				prizegot++;
 				stage.addTween(block,'quadOut', {scaleX: 2, scaleY: 2 , alpha: 0, rotation: 360}, 300 , function(){
@@ -544,6 +551,10 @@ var GAMEPAD = new Studio.Plugin({
 if(navigator.getGamepads){
 	stage.addInput(GAMEPAD);
 }
+
+var intro = new Studio.Scene({width:stage.width,height: stage.height, color: Studio.BLUE})
+
+
 
 stage.setScene(Game)
 
