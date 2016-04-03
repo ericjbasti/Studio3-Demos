@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+    <title>Studio3</title>
+	<meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1"/>
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<link rel="apple-touch-icon" href="icon.png" />
+</head>
+
+<body style="margin:0;background: #333">
+	<canvas id="canvas" height="64" width="64"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
+</body>
+<script src="../studio-compiled.js"></script>
+<script src="../stats.js"></script>
+<style>
+	canvas{image-rendering: -webkit-optimize-contrast;}
+</style>
+<script src="init.js"></script>
+<script src="assets.js"></script>
+<script src="player.js"></script>
+<script src="game.js"></script>
+<script>
+
+stage.setScene(Game)
+Studio.start();
+
+</script>
+</html>
+
