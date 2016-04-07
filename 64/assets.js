@@ -1,13 +1,13 @@
 var sheet_64 = new Studio.Image('images/64.png')
 
 var sheet_motion = {
-	ball: [[0,0],[1,0],[0,0]],
+	ball: [[0,0],[1,0],[2,0],[3,0]],
 	fallguy: [[0,1],[1,1],[2,1],[1,1]],
 	walkleft: [[0,2],[1,2],[2,2]],
 	walkright: [[0,3],[1,3],[2,3]],
 	stand: [[0,1]],
 	cloud: [[1,0],[2,0],[3,0]],
-	car: [[0,3],[1,3]],
+	splode: [[4,0],[5,0],[4,1],[5,1]],
 }
 
 var actionables = [];
