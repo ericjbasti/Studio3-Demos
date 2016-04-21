@@ -35,13 +35,15 @@ splosion.prototype = new Studio.SpriteAnimation({
 	sheet : sheet_64,
 	rect :{x:0,y:0, width: 16, height: 8},
 	loop : sheet_motion.splode,
-	fps: 12,
-	onLoopComplete: function(){
-		this.fps = 0;
-	}
+	fps: 12
 });
 splosion.prototype.constructor = splosion;
-splosion.setupPool(4);
+splosion.prototype.onLoopComplete= function(){
+	this.frame = 0;
+	Game.removeChild(this);
+	this.intoPool();
+}
+Studio.createPool(splosion);
 
 var Game = new Studio.Scene({
 	y: 0,
@@ -73,7 +75,7 @@ var Game = new Studio.Scene({
 			loop : sheet_motion.ball,
 			fps: 12,
 			velocityX: 1,
-			velocityY: 3
+			velocityY: 1
 		});
 		astroid.prototype.onEnterFrame = function(){
 			this.x+=this.velocityX;
@@ -85,13 +87,13 @@ var Game = new Studio.Scene({
 				this.x=stage.width;
 			}
 			if(this.y>stage.height){
-				Game.addChild(new splosion(this.x))
+				Game.addChild(splosion.fromPool({x:this.x}))
 				this.y=0;
 				this.velocityX= 1.5-(Math.random()*3)
-				this.velocityY= 4-this.velocityX;
+				// this.velocityY= this.velocityX;
 			}
 		}
-		var faller = new Studio.SpriteAnimation({
+		faller = new Studio.SpriteAnimation({
 			width: 8,
 			height: 8,
 			x: 16,
@@ -107,6 +109,7 @@ var Game = new Studio.Scene({
 		this.addChild(new astroid(0,3));
 		this.addChild(new astroid(2,2));
 		this.addChild(new astroid(1,-2));
+		this.addChild(new astroid(-1,3));
 		this.addChild(faller)
 		this.addChild(new cloud(5,5,1))
 		this.addChild(new cloud(45,15,1))

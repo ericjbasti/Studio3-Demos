@@ -50,6 +50,7 @@ var makePhysicObject = function Physics(who, world){
 	who.maxVelocity = who.height/2;
 	who.logic = function(){
 		// gravity is a constant force
+		// this.maxVelocity = this._world.height/2;
 		this.velocityY += world.gravity;
 
 		if(this.platform && ! this.jumping){

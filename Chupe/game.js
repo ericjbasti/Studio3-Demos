@@ -1,4 +1,5 @@
 var blocks = [];
+
 var prizes = [];
 var prizemax = 8;
 var prizegot = 0;
@@ -24,8 +25,9 @@ var Game = new Studio.Scene({
 	colorHex: '#00ff00',
 	gravity: .78,
 	onActivate : function(stage){
-		stage.addTween(this,'chillInOut',{x:0},500)
+		stage.addTween(this,'chillInOut',{x:0},1500)
 		stage.logic = GameLogic;
+		FOCUS_ENGINE.active = false;
 	},
 	build: function (scene){
 		this.addChild(new Studio.Clip({
@@ -235,6 +237,47 @@ var Game = new Studio.Scene({
 	}
 });
 
+stage.gamepadInput = function(t, pad){
+	
+	if((this.keys[38] || pad["UP"] || pad["A"])){
+		if(!t.jumping){
+			t.velocityY = -t._world.height/(t._world.height/16);
+			t.jumping = true;
+		}
+	}
+
+	if(this.keys[37] || pad["LEFT"]){
+		t.velocityX -= .51;
+		t.dir = left;
+	}
+
+	if(this.keys[40] || pad["DOWN"]){
+
+	}
+
+	if(this.keys[39] || pad["RIGHT"]){
+		t.velocityX += .51;
+		t.dir = right;
+	}
+
+	if (t.velocityY < 0){
+		t.loop = t.dir.jump;
+	}else{
+		if (t.velocityX > 1 || t.velocityX < -1){
+			t.loop = t.dir.walk;
+			t.fps = 12;
+		}else{
+			t.loop = t.dir.pant;
+			t.fps = 6
+		}
+	}
+	
+}
+
+var players = [PLAYER_1,PLAYER_2,PLAYER_3,PLAYER_4]
+
+PLAYER_1.height=PLAYER_1.width=16
+
 
 var GameLogic = function GameLogic(){
 	if(PLAYER_1){
@@ -249,41 +292,53 @@ var GameLogic = function GameLogic(){
 	if(PLAYER_4){
 		stage.gamepadInput(PLAYER_4, stage.GAMEPAD_4);
 	}
-	if(!PLAYER_1._hit && !PLAYER_2._hit){
-		if(PLAYER_1.hitbox.hitTestRect(PLAYER_2.hitbox)){
-			var dx = PLAYER_1.x-PLAYER_2.x;
-			var dy = PLAYER_1.y-PLAYER_2.y;
-			if(PLAYER_2.velocityY>10){
-				PLAYER_1._hit = true;
-				PLAYER_1.hit();
-				PLAYER_2.velocityY = -18;
-				PLAYER_2.jumping = true;
-			}
-			if(PLAYER_1.velocityY>10){
-				PLAYER_2._hit = true;
-				PLAYER_2.hit();
-				PLAYER_1.velocityY = -18;
-				PLAYER_1.jumping = true;
+
+	for(var i = 0; i !=players.length; i++){
+		for(var j=1; j!=players.length; j++){
+			if(j!=i){
+				if(players[i]._hit || players[j]._hit){
+
+				}else if(players[i].hitbox.hitTestRect(players[j].hitbox)){
+					var dx = players[i].x-players[j].x;
+					var dy = players[i].y-players[j].y;
+					players[i].height = players[j].height;
+					players[i].width = players[j].width;
+					if(players[j].velocityY>10){
+						players[i]._hit = true;
+						players[i].hit();
+						players[j].velocityY = -18;
+						players[j].jumping = true;
+					}
+					if(players[i].velocityY>10){
+						players[j]._hit = true;
+						players[j].hit();
+						players[i].velocityY = -18;
+						players[i].jumping = true;
+					}
+				}
 			}
 		}
+
 	}
 
 	for (var i = 0; i != blocks.length; i++){
 		var block = blocks[i];
 		for(var j = 0; j!=gravitated.length; j++){
 			var t = gravitated[j];
-			if(block._world.x-32>t._world.x || block._world.x+32<t._world.x){
+			if(block._world.x>t._world.x+32 || block._world.x<t._world.x-32){
 
-			}else if(block._world.y-32>t._world.y || block._world.y+32<t._world.y){
+			}else if(block._world.y>t._world.y+32 || block._world.y<t._world.y-32){
 
 			}else if(t.hitbox.hitTestRect(block)){
-				var dx = t.x-block._world.x;
-				var dy = t.y-block._world.y;
+				var dx = t._world.x-block._world.x;
+				var dy = t._world.y-block._world.y;
+				var dv = (block._world.height-t._world.height)/4
 				t.platform = block;
 				if(dy<-10 && t.velocityY>0){
-					if(t.y+(t.height*t.anchorY) < block._world.y){
+					if(t.y+(t._world.height*t.anchorY) < block._world.y){
 						t.velocityY *= t.bounce;
-						t.y = block._world.y-(block._world.height*block.anchorY)-(t._world.height*t.anchorY)-1;
+						// t.y = block._world.y-(block._world.height*block.anchorY)-(t._world.height*t.anchorY)-1;
+						t.y=(block._world.y-(block._world.height/2))+(dy/2)+dv;
 						t._snapback();
 						t.jumping = false;
 					}
