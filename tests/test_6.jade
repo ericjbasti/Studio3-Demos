@@ -1,0 +1,15 @@
+article
+	pre.
+		rect.blendmode='lighten'
+	canvas#test6
+		script.
+			var test6 = new Studio.Stage('test6',{color_hex:'#000080', resolution: 1})
+			test6.addChild(new Studio.Rect({x:100,y:75,width:100,height:100,color_hex:"#0c0", rotation: 25}));
+			test6.addChild(new Studio.Rect({x:135,y:72,width:100,height:100,color_hex:"#f00",blendmode:'lighten',rotation: 45}));
+			test6.addChild(new Studio.Rect({x:170,y:72,width:100,height:100,color_hex:"#00f",blendmode:'lighten',rotation: 33}));
+			test1.onExitFrame= function(){this.active=0}
+			test2.onExitFrame= function(){this.active=0}
+			test3.onExitFrame= function(){this.active=0}
+			test4.onExitFrame= function(){this.active=0}
+			test5.onExitFrame= function(){this.active=0}
+			test6.onExitFrame= function(){this.active=0}

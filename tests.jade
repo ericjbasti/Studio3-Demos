@@ -1,0 +1,29 @@
+doctype html5
+html
+	head
+		title Studio3
+		meta(name='viewport', content='width=device-width, user-scalable=0, maximum-scale=1')
+		meta(name='apple-mobile-web-app-capable', content='yes')
+		meta(name='apple-mobile-web-app-status-bar-style', content='black')
+		link(rel='apple-touch-icon', href='icon.png')
+		script(src='studio-compiled.js')
+		script(src='stats.js')
+	body(style='margin:0;background: #333')
+		style.
+			*{box-sizing:border-box}
+			canvas{border:1px solid #19f; max-width: 100%}
+			pre{color: #ddd;margin-bottom: 3px; font-size: 12px; width: 100%; overflow:scroll}
+			article{display: inline-block;padding: 1em; width: 33.3332%; text-align: center}
+			@media screen and (max-width: 1000px){article{width: 50%}}
+			@media screen and (max-width: 640px){article{width: 100%}}
+		include tests/test_1
+		include tests/test_2
+		include tests/test_3
+		include tests/test_4
+		include tests/test_5
+		include tests/test_6
+
+		
+	script.
+		Studio.start();
+		

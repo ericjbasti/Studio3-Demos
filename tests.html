@@ -1,0 +1,21 @@
+<!DOCTYPE html5><html><head><title>Studio3</title><meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black"/><link rel="apple-touch-icon" href="icon.png"/><script src="studio-compiled.js"></script><script src="stats.js"></script></head><body style="margin:0;background: #333"><style>*{box-sizing:border-box}
+canvas{border:1px solid #19f; max-width: 100%}
+pre{color: #ddd;margin-bottom: 3px; font-size: 12px; width: 100%; overflow:scroll}
+article{display: inline-block;padding: 1em; width: 33.3332%; text-align: center}
+@media screen and (max-width: 1000px){article{width: 50%}}
+@media screen and (max-width: 640px){article{width: 100%}}</style><article><pre>addChild(new Studio.Rect())        </pre><canvas id="test1"></canvas><script>var test1 = new Studio.Stage('test1')
+test1.addChild(new Studio.Rect({x:10,y:10,width:10,height:10,color:Studio.RED}));</script></article><article><pre>rect.rotation=25</pre><canvas id="test2"><script>var test2 = new Studio.Stage('test2')
+test2.addChild(new Studio.Rect({x:100,y:75,width:100,height:100,color:Studio.BLUE, rotation: 25}));</script></canvas></article><article><pre>Studio.Stage({resolution:.25})</pre><canvas id="test3"><script>var test3 = new Studio.Stage('test3',{resolution:.25})
+test3.addChild(new Studio.Rect({x:100,y:75,width:100,height:100,color:Studio.BLUE, rotation: 25}));</script></canvas></article><article><pre>new Studio.Stage('test4',{color:Studio.RED})</pre><canvas id="test4"><script>var test4 = new Studio.Stage('test4',{color:Studio.RED})
+test4.addChild(new Studio.Rect({x:100,y:75,width:100,height:100,color:Studio.YELLOW, rotation: 25}));</script></canvas></article><article><pre>new Studio.Stage('test5',{color_hex:"#40c"})</pre><canvas id="test5"><script>var test5 = new Studio.Stage('test5',{color_hex:'#40c'})
+test5.addChild(new Studio.Rect({x:100,y:75,width:100,height:100,color:Studio.YELLOW, rotation: 25}));
+test5.addChild(new Studio.Rect({x:120,y:22,width:30,height:30,color_hex:"#EEEEEEaa"}));</script></canvas></article><article><pre>rect.blendmode='lighten'</pre><canvas id="test6"><script>var test6 = new Studio.Stage('test6',{color_hex:'#000080', resolution: 1})
+test6.addChild(new Studio.Rect({x:100,y:75,width:100,height:100,color_hex:"#0c0", rotation: 25}));
+test6.addChild(new Studio.Rect({x:135,y:72,width:100,height:100,color_hex:"#f00",blendmode:'lighten',rotation: 45}));
+test6.addChild(new Studio.Rect({x:170,y:72,width:100,height:100,color_hex:"#00f",blendmode:'lighten',rotation: 33}));
+test1.onExitFrame= function(){this.active=0}
+test2.onExitFrame= function(){this.active=0}
+test3.onExitFrame= function(){this.active=0}
+test4.onExitFrame= function(){this.active=0}
+test5.onExitFrame= function(){this.active=0}
+test6.onExitFrame= function(){this.active=0}</script></canvas></article></body><script>Studio.start();</script></html>

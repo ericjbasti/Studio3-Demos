@@ -1,0 +1,8 @@
+article
+	pre.
+		new Studio.Stage('test5',{color_hex:"#40c"})
+	canvas#test5
+		script.
+			var test5 = new Studio.Stage('test5',{color_hex:'#40c'})
+			test5.addChild(new Studio.Rect({x:100,y:75,width:100,height:100,color:Studio.YELLOW, rotation: 25}));
+			test5.addChild(new Studio.Rect({x:120,y:22,width:30,height:30,color_hex:"#EEEEEEaa"}));
