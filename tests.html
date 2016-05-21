@@ -12,10 +12,34 @@ test5.addChild(new Studio.Rect({x:100,y:75,width:100,height:100,color:Studio.YEL
 test5.addChild(new Studio.Rect({x:120,y:22,width:30,height:30,color_hex:"#EEEEEEaa"}));</script></canvas></article><article><pre>rect.blendmode='lighten'</pre><canvas id="test6"><script>var test6 = new Studio.Stage('test6',{color_hex:'#000080', resolution: 1})
 test6.addChild(new Studio.Rect({x:100,y:75,width:100,height:100,color_hex:"#0c0", rotation: 25}));
 test6.addChild(new Studio.Rect({x:135,y:72,width:100,height:100,color_hex:"#f00",blendmode:'lighten',rotation: 45}));
-test6.addChild(new Studio.Rect({x:170,y:72,width:100,height:100,color_hex:"#00f",blendmode:'lighten',rotation: 33}));
-test1.onExitFrame= function(){this.active=0}
+test6.addChild(new Studio.Rect({x:170,y:72,width:100,height:100,color_hex:"#00f",blendmode:'lighten',rotation: 33}));</script></canvas></article><article><pre>rect.blendmode='lighten'</pre><canvas id="test7"><script>var test7 = new Studio.Stage('test7',{color_hex:'#FF0080', resolution: 1, 
+	dur:1000/4,
+	timeStep:Studio.timeStep.static_fixed
+})
+test7.addChild(new Studio.Rect({x:100,y:80,width:40,height:40, color_hex:'#FFFF00',
+	onEnterFrame:function(){this.rotation++;}
+}));
+test7.children[0].addChild(new Studio.Rect({
+	x:40,y:0,height:10, width: 10, color_hex:'#66CCFF',orbitSpeed:8,
+	onEnterFrame:function(){this.rotation++;}
+}))
+test7.children[0].children[0].addChild(new Studio.Rect({
+	x:10,y:0,height:5, width: 5, color_hex:'#8000FF',orbitSpeed:12,
+	onEnterFrame:function(){this.rotation++;}
+}))</script></canvas><br/><label>Throttle <input id="test7_throttle" type="checkbox" checked="checked"/><script>var t = document.getElementById('test7_throttle')
+t.onchange = function(input){
+	if(input.target.checked){
+		test7.dur = 1000/2
+		test7.timeStep = Studio.timeStep.static_fixed
+	}else{
+		test7.dur = 1000/2
+		test7.timeStep = Studio.timeStep.fixed
+	}
+}</script></label></article></body><script>test1.onExitFrame= function(){this.active=0}
 test2.onExitFrame= function(){this.active=0}
 test3.onExitFrame= function(){this.active=0}
 test4.onExitFrame= function(){this.active=0}
 test5.onExitFrame= function(){this.active=0}
-test6.onExitFrame= function(){this.active=0}</script></canvas></article></body><script>Studio.start();</script></html>
+test6.onExitFrame= function(){this.active=0}
+
+Studio.start();</script></html>

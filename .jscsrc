@@ -61,7 +61,7 @@
     },
     "disallowSpacesInsideObjectBrackets": "all",
     "disallowSpacesInsideArrayBrackets": "all",
-    "disallowSpacesInsideParentheses": true,
+    "disallowSpacesInside_parentheses": true,
 
     "disallowMultipleLineBreaks": true,
     "disallowNewlineBeforeBlockStatements": true,

@@ -37,7 +37,7 @@ canvas{
 		margin-left: 1em;
 		padding: .25em .5em;
 		box-shadow: inset 1px 1px 0px #fff, 1px 1px 0px #ccc;
-		background: transparent;
+		background: trans_parent;
 	}
 	#editor legend{
 		padding: 0 .5em 0 1.25em;
@@ -61,14 +61,14 @@ canvas{
 		appearance: none;
 		border-style: solid;
 		border-width: .44em 0 .44em .7em;
-		border-color: transparent transparent transparent #777;
+		border-color: trans_parent trans_parent trans_parent #777;
 		position: absolute;
 		top: -2px;
 		left: 2px;
 	}
 	#editor input[type="checkbox"]:checked{
 		border-width: .7em .44em 0 .44em;
-		border-color: #777 transparent transparent transparent;
+		border-color: #777 trans_parent trans_parent trans_parent;
 		top: 0px;
 		left: 0;
 	}

@@ -1,0 +1,35 @@
+article
+	pre.
+		rect.blendmode='lighten'
+	canvas#test7
+		script.
+			var test7 = new Studio.Stage('test7',{color_hex:'#FF0080', resolution: 1, 
+				dur:1000/4,
+				timeStep:Studio.timeStep.static_fixed
+			})
+			test7.addChild(new Studio.Rect({x:100,y:80,width:40,height:40, color_hex:'#FFFF00',
+				onEnterFrame:function(){this.rotation++;}
+			}));
+			test7.children[0].addChild(new Studio.Rect({
+				x:40,y:0,height:10, width: 10, color_hex:'#66CCFF',orbitSpeed:8,
+				onEnterFrame:function(){this.rotation++;}
+			}))
+			test7.children[0].children[0].addChild(new Studio.Rect({
+				x:10,y:0,height:5, width: 5, color_hex:'#8000FF',orbitSpeed:12,
+				onEnterFrame:function(){this.rotation++;}
+			}))
+	br
+	label Throttle 
+		input#test7_throttle(type='checkbox' checked)
+		script.
+			var t = document.getElementById('test7_throttle')
+			t.onchange = function(input){
+				if(input.target.checked){
+					test7.dur = 1000/2
+					test7.timeStep = Studio.timeStep.static_fixed
+				}else{
+					test7.dur = 1000/2
+					test7.timeStep = Studio.timeStep.fixed
+				}
+			}
+			

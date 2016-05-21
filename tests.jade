@@ -22,8 +22,15 @@ html
 		include tests/test_4
 		include tests/test_5
 		include tests/test_6
-
+		include tests/test_7
 		
 	script.
+		test1.onExitFrame= function(){this.active=0}
+		test2.onExitFrame= function(){this.active=0}
+		test3.onExitFrame= function(){this.active=0}
+		test4.onExitFrame= function(){this.active=0}
+		test5.onExitFrame= function(){this.active=0}
+		test6.onExitFrame= function(){this.active=0}
+
 		Studio.start();
 		

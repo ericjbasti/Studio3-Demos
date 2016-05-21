@@ -175,7 +175,7 @@ var Game = new Studio.Scene({
 			this.x += this.velocityX;
 			this.y += this.velocityY;
 			count+=.02;
-			for(var i = 0; i!= this.hasChildren; i++){
+			for(var i = 0; i!= this._hasChildren; i++){
 				this.children[i].velocityX = this.velocityX;
 			}
 		}
