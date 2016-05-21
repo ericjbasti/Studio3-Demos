@@ -27,7 +27,8 @@ cloud.prototype.onEnterFrame = function(){
 splosion = function(x){
 	this.x=x;	
 }
-splosion.prototype = new Studio.SpriteAnimation({
+
+Studio.extend( splosion, Studio.SpriteAnimation, {
 	width: 16,
 	height: 8,
 	x: 0,
@@ -36,8 +37,8 @@ splosion.prototype = new Studio.SpriteAnimation({
 	rect :{x:0,y:0, width: 16, height: 8},
 	loop : sheet_motion.splode,
 	fps: 12
-});
-splosion.prototype.constructor = splosion;
+})
+
 splosion.prototype.onLoopComplete= function(){
 	this.frame = 0;
 	Game.removeChild(this);

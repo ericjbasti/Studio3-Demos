@@ -20,9 +20,12 @@ var stage = new Studio.Stage('canvas',{
 	dur : 1000/60, 
 	fullscreen : 1, 
 	resolution : 1, 
-	interpolate : 1, 
-	_maxCount : 300
+	interpolate : 0, 
+	_maxCount : 5
 })
+
+var beep = new Studio.Sound('assets/909_1.mp3')
+
 
 var MAX = stage._maxCount/1 | 0
 var gravity = .4
@@ -80,6 +83,7 @@ BOXdrop.prototype.logic = function(){
 		this.velocityY *= -.8
 		this.hit--
 		this.y = stage.height-1
+		beep.play();
 	}
 }
 
