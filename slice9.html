@@ -48,7 +48,7 @@ Studio.Slice9 = function(attr) {
 	this.cache = new Studio.Cache(this.width*this.resolution, this.height*this.resolution,1)
 };
 
-Studio.extend(Studio.Slice9, Studio.Sprite);
+Studio.inherit(Studio.Slice9, Studio.Sprite);
 
 Studio.Slice9.prototype._drawStreched = function(ctx){
 	var a_w = this.innerRect.x - this.rect.x;

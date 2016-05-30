@@ -57,7 +57,7 @@ Star.prototype.onEnterFrame = function (){
 var Planet = function(attr){
 	this.height = earths;
 	this.color = 'green';
-	this.orbit_speed = 2
+	this.orbitSpeed = 2
 	this.inheritRotation = false;
 	this._world = new Studio.DisplayProperty();
 	this.orbit = Math.random()*3600;
@@ -70,14 +70,14 @@ var Planet = function(attr){
 Studio.buildAs(Planet,Star);
 
 Planet.prototype.onEnterFrame = function (){
-	this.rotation+= this._world.speed *this.orbit_speed;
+	this.rotation+= this._world.speed *this.orbitSpeed;
 }
 
 var Moon = function(attr){
 	this.height = .273 * earths;
 	this.color = '#999';
 	this.y = 2
-	this.orbit_speed = 2
+	this.orbitSpeed = 2
 	this._world = new Studio.DisplayProperty();
 	if(attr){
 		this.apply(attr);
@@ -91,7 +91,7 @@ Planet.prototype.addMoon = function(y,diamater,speed){
 	var temp = new Moon({
 							y : y,
 							height : diamater, 
-							orbit_speed : speed
+							orbitSpeed : speed
 						})
 	this.addChild(temp);
 	return temp;
@@ -104,10 +104,10 @@ var Asteroid = function(){
 	this.width = this.height*.75;
 	this.y = theSun.radius + AU * ((Math.random())+2.2);
 	this.orbit = Math.random()*3600;
-	this.orbit_speed = (Math.random()+1);
+	this.orbitSpeed = (Math.random()+1);
 	this.image = asteroid_img;
 }
-Studio.extend(Asteroid, Planet)
+Studio.inherit(Asteroid, Planet)
 
 
 
@@ -129,11 +129,11 @@ sun_layer2.onEnterFrame = function(){
 }
 sun_layer.addChild(sun_layer2)
 
-var mercury = new Planet({image:mercury_img, y: theSun.radius + AU*.387, orbit_speed : 1.607, height: earths * .383});
+var mercury = new Planet({image:mercury_img, y: theSun.radius + AU*.387, orbitSpeed : 1.607, height: earths * .383});
 
-var venus = new Planet({image: venus_img, y: theSun.radius + AU*.723, orbit_speed : -1.174 , height: earths * .949});
+var venus = new Planet({image: venus_img, y: theSun.radius + AU*.723, orbitSpeed : -1.174 , height: earths * .949});
 
-var earth = new Planet({image:earth_img, y: theSun.radius + AU*1, orbit_speed : 1.045 , height: earths});
+var earth = new Planet({image:earth_img, y: theSun.radius + AU*1, orbitSpeed : 1.045 , height: earths});
 
 	// the moon is an interesting one. In order for the planets to show up on the screen in a reasonable manner
 	// we need to set the scale of one earth to 100x the real earth
@@ -143,7 +143,7 @@ var earth = new Planet({image:earth_img, y: theSun.radius + AU*1, orbit_speed : 
 	// so hard to wrap our heads around.
 	//var theMoon = earth.addMoon( earth.radius + (AU * .00257) , earths * .2524, 2).apply({image:moon_img});
 	var theMoon = earth.addMoon( earth.radius + (earths * 15) , earths * .2524, 2).apply({image:moon_img});
-var mars = new Planet({image: mars_img, y: theSun.radius + AU*1.52, orbit_speed : .802 , height: earths * .532});
+var mars = new Planet({image: mars_img, y: theSun.radius + AU*1.52, orbitSpeed : .802 , height: earths * .532});
 
 
 for (var i = 0 ; i != 7000; i++){
@@ -153,16 +153,16 @@ var asteroids = new Asteroid();
 theSun.addChild(asteroids)
 
 
-var jupiter = new Planet({image: jupiter_img, y: theSun.radius + AU*5.2, orbit_speed : .434, height: earths * 11.21});
+var jupiter = new Planet({image: jupiter_img, y: theSun.radius + AU*5.2, orbitSpeed : .434, height: earths * 11.21});
 
-var saturn = new Planet({image: saturn_img, y: theSun.radius + AU*9.58, orbit_speed : .323, height: earths * 9.45});
+var saturn = new Planet({image: saturn_img, y: theSun.radius + AU*9.58, orbitSpeed : .323, height: earths * 9.45});
 var saturn_rings = new Studio.Sprite({image: saturn_rings_img, height: earths * 20, width: earths * 20});
 
 saturn.addChild(saturn_rings);
 
-var uranus = new Planet({image: uranus_img, y: theSun.radius + AU*19.2, orbit_speed : .228, height: earths * 4.01});
+var uranus = new Planet({image: uranus_img, y: theSun.radius + AU*19.2, orbitSpeed : .228, height: earths * 4.01});
 
-var neptune = new Planet({image: neptune_img, y: theSun.radius + AU*30.05, orbit_speed : .182, height: earths * 3.88});
+var neptune = new Planet({image: neptune_img, y: theSun.radius + AU*30.05, orbitSpeed : .182, height: earths * 3.88});
 
 stage.camera.track(theSun);
 

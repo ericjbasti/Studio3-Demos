@@ -2,7 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" >
     <title>Studio3</title>
-	<meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1"/>
+	<meta name="viewport" content="width=320, user-scalable=0, maximum-scale=1"/>
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-status-bar-style" content="black">
 	<link rel="apple-touch-icon" href="icon.png" />
@@ -14,21 +14,26 @@
 <script src="studio-compiled.js"></script>
 <script src="stats.js"></script>
 <script>
-	
+
+var ratio = 1;
+
 var stage = new Studio.Stage('canvas',{
 	webgl : 1, 
-	dur : 1000/60, 
+	dur : 1000/(60/ratio), 
 	fullscreen : 1, 
 	resolution : 1, 
-	interpolate : 0, 
-	_maxCount : 5
+	interpolate : 1, 
+	_maxCount : 16000,
+	timeStep : Studio.timeStep.static_fixed
 })
 
-var beep = new Studio.Sound('assets/909_1.mp3')
-
+// var beep = new Studio.Sound('assets/bend.mp3');
+// beep.addListener('ready',function(s){
+// 	alert('Yeah Im Ready : ' + s );
+// })
 
 var MAX = stage._maxCount/1 | 0
-var gravity = .4
+var gravity = .4*ratio
 
 var ball = new Studio.Image('assets/char.png',{
 	'head': {
@@ -45,30 +50,43 @@ var ball = new Studio.Image('assets/char.png',{
 	}
 })
 
+ball.addListener('ready',function(e){
+	alert('Character Image loaded : '+ e)
+})
+
+
+var globalMessageBox = function(a,type){
+	alert(type);
+
+}
 
 var BOXdrop = function(attr){
 	this.image = ball
-	this.slice = 'feet'
+	// this.slice = 'full'
 	this.color = new Studio.Color()
-
+	this.yoyo = new Studio.Messenger()
+	// this.rotation = 45
 	if(attr){
 		this.apply(attr)
 	}
 	this.color.set(Math.random()*510 ,Math.random()*510 ,Math.random()*510, 1)
-
 	// this.color.set(255,255,255,1)
+	this.yoyo.addListener('drop',globalMessageBox);
 }
+
+
+
 
 stage.onReady = function(){
 	if(this.webgl) stage.setTexture(ball, 1)
 }
 
-Studio.extend(BOXdrop, Studio.Sprite)
+Studio.inherit(BOXdrop, Studio.Sprite)
 
 BOXdrop.prototype.logic = function(){
 	this.velocityY += gravity
-	this.x += this.velocityX
-	this.y += this.velocityY
+	this.x += this.velocityX*ratio
+	this.y += this.velocityY*ratio
 	if(this.x > stage.width || this.x < 0){
 		this.velocityX *= -1
 	}
@@ -82,10 +100,12 @@ BOXdrop.prototype.logic = function(){
 	if(this.y>stage.height){
 		this.velocityY *= -.8
 		this.hit--
-		this.y = stage.height-1
-		beep.play();
+		this.y = stage.height-1;
+		// beep.play()
+		// this.yoyo.sendMessage('drop',true);
 	}
 }
+
 
 for (var i = 0; i!=MAX;i++){
 	var yy=new BOXdrop({
