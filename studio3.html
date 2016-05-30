@@ -48,7 +48,7 @@ var BlueMorpho = function(attr){
 	this.addChild(this.rightWing)
 	this.init();
 }
-Studio.extend(BlueMorpho, Studio.Sprite)
+Studio.inherit(BlueMorpho, Studio.Sprite)
 
 BlueMorpho.prototype.init = function(){
 	this.count = Math.random()*22;
@@ -98,7 +98,7 @@ var Monarch = function(attr){
 	this.init();
 }
 
-Studio.extend(Monarch, Studio.Sprite)
+Studio.inherit(Monarch, Studio.Sprite)
 
 Monarch.prototype.init = function(){
 	this.count = Math.random()*22;

@@ -28,6 +28,7 @@ var Game = new Studio.Scene({
 		stage.addTween(this,'chillInOut',{x:0},1500)
 		stage.logic = GameLogic;
 		FOCUS_ENGINE.active = false;
+		wind_snd.play();
 	},
 	build: function (scene){
 		this.addChild(new Studio.Clip({
@@ -243,6 +244,7 @@ stage.gamepadInput = function(t, pad){
 		if(!t.jumping){
 			t.velocityY = -t._world.height/(t._world.height/16);
 			t.jumping = true;
+			jump_snd.play()
 		}
 	}
 
@@ -364,6 +366,7 @@ var GameLogic = function GameLogic(){
 				block.got = true;
 				if(t.scoreUp){
 					t.scoreUp(1);
+					coin_snd.play();
 				}
 				prizegot++;
 				stage.addTween(block,'quadOut', {scaleX: 2, scaleY: 2 , alpha: 0, rotation: 360}, 300 , function(){

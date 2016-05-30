@@ -35,7 +35,7 @@ var block = function(){
 	this.width = 8;
 	this.height = 10;
 }
-Studio.extend(block,Studio.Rect);
+Studio.inherit(block,Studio.Rect);
 
 block.prototype.onEnterFrame = function(){
 	this.y += 3;

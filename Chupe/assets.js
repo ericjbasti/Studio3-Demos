@@ -23,6 +23,11 @@ var curse = new Studio.Image('images/chupe_slices.png', {
 	"soda_1":{ x: 178, y: 0, width: 16, height: 32}
 })
 
+var coin_snd = new Studio.Sound('sounds/coin.mp3')
+var jump_snd = new Studio.Sound('sounds/jump.mp3')
+var wind_snd = new Studio.Sound('sounds/wind.mp3')
+wind_snd.snd.loop=true
+
 var chupe = new Studio.Image('images/chupe.png');
 
 var right = {

@@ -33,7 +33,7 @@ var Player = function(world){
 	player_count++;
 	world.addChild(this.score_text);
 }
-Studio.extend(Player,Studio.SpriteAnimation)
+Studio.inherit(Player,Studio.SpriteAnimation)
 
 Player.prototype.scoreUp = function(amount){
 	this.score+=amount;

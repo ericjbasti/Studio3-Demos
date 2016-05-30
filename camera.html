@@ -1,0 +1,239 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+    <title>Studio3</title>
+	<meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1"/>
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<link rel="apple-touch-icon" href="icon.png" />
+</head>
+
+<body style="margin:0;background: #333">
+	<canvas id="canvas" height="300" width="800"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #111;"></canvas>
+	<canvas id="canvas2" height="300" width="800"  style=" cursor:pointer;margin: 0 auto;display: block;outline:1px solid #909;"></canvas>
+</body>
+<script src="studio-compiled.js"></script>
+<script>
+	
+var stage = new Studio.Stage("canvas",{webgl:1});
+stage.color.setFromHex('#222')
+
+var stage2 = new Studio.Stage("canvas2",{webgl:0});
+
+// var easeBox = function(type,y){
+// 	this.x = 100;
+// 	this.y = y;
+// 	this.width = 20;
+// 	this.height = 20;
+// 	this.color.setFromHex('#00FF00');
+
+// 	stage.addChild(this);
+// 	stage.addTween(this, type , {x: 700}, 5000).to(type,{y:100}, 5000);
+// }
+// Studio.inherit(easeBox, Studio.Rect);
+
+
+// stage.addChild(new easeBox('linear', 20))
+// stage.addChild(new easeBox('quadIn', 60))
+// stage.addChild(new easeBox('quadOut', 100))
+// stage.addChild(new easeBox('quadInOut', 140))
+// stage.addChild(new easeBox('snap', 180))
+// stage.addChild(new easeBox('backOut', 220))
+// stage.addChild(new easeBox('bounceOut', 260))
+// stage.addChild(new easeBox('elasticOut', 300))
+// stage.addChild(new easeBox('chillInOut', 340))
+
+var rect = new Studio.Rect({x:20,y:20, width:15, height: 15})
+rect.color = new Studio.Color(155,0,250,1)
+
+var circle = new Studio.Circle({x:20, y: 120, width: 10, height: 10})
+circle.color = new Studio.Color(255,100,0,1)
+
+stage.addChildren(rect,circle);
+
+
+// First we need to create a tween object that can be reused.
+// By making it a variable we can refrence it in multiple ways.
+var TweenChain = stage.createTween(rect,'linear',{x:500}, 4000);
+
+// Now we can start building a chain.
+
+TweenChain.then("bounceOut",{y:100}, 1000).then("quadOut",{x: 20},1000);
+
+TweenChain.next.next.then("chillInOut",{y: 20},1000);
+
+TweenChain.last().completeLoop(TweenChain);
+
+stage.playTween(TweenChain);
+
+
+var circle_tween = stage.createTween(circle,'chillInOut',{x:200},1000)
+circle_tween.then('snap',{x:200},200).then("bounceOut",{y:280},500).then('chillInOut',{x:20},2000).then('bounceOut',{y:120},500).last().completeLoop(circle_tween)
+
+var Rockster_image = new Studio.Image("assets/rockster.png")
+
+Rockster_image.addSlice({
+	Shoulder: {
+		x: 0,
+		y:0, 
+		width: 56, 
+		height: 56
+	},
+	Arm: {
+		x: 60,
+		y:12,
+		width: 48,
+		height: 57
+	},
+	Forarm: {
+		x: 9,
+		y:73,
+		width: 54,
+		height: 57
+	},
+	Fist: {
+		x: 6,
+		y: 138,
+		width: 50,
+		height: 51
+	},
+	Abs: {
+		x: 310,
+		y: 14,
+		width: 61,
+		height: 48
+	},
+	Head: {
+		x: 80,
+		y: 137,
+		width: 71,
+		height: 67
+	},
+	Jaw: {
+		x: 81,
+		y: 206,
+		width: 68,
+		height: 36
+	},
+	Pelvis: {
+		x: 310,
+		y: 81,
+		width: 58,
+		height: 49
+	}
+
+});
+
+
+var Rockster = new Studio.Sprite({	
+		image: Rockster_image,
+		x: 100, 
+		y: 100,
+		width: 61,
+		height: 48,
+		slice: 'Abs'
+	}
+)
+
+
+var jaw = new Studio.Sprite({
+	image: Rockster_image,
+	width: 68,
+	height: 36,
+	slice: 'Jaw',
+	anchorY: 0,
+	anchorX: .2,
+	y: 15,
+	x: -15,
+})
+
+var head = new Studio.Sprite({
+	image: Rockster_image,
+	width: 71,
+	height: 67,
+	slice: 'Head',
+	y: -60,
+	x: 0,
+})
+
+
+Rockster.addChild(head)
+head.addChild(jaw)
+
+
+
+var shoulder = new Studio.Rect({x: -40, y: -30, width: 1, height: 1, color: Studio.RED});
+
+Rockster.addChild(shoulder)
+
+var arm = new Studio.Sprite({
+	image: Rockster_image,
+	x: -4,
+	y: 10,
+	anchorY: -.1,
+	anchorX: .6,
+	width: 48,
+	height: 57,
+	slice: 'Arm',
+})
+
+shoulder.addChild(arm)
+
+var should_top = new Studio.Sprite({
+	image: Rockster_image,
+	width: 56,
+	height: 56,
+	slice: 'Shoulder'
+})
+shoulder.addChild(should_top)
+
+var forarm = new Studio.Sprite({
+	image: Rockster_image,
+	width: 54,
+	height: 57,
+	slice: 'Forarm',
+	anchorY: 0,
+	anchorX: .25,
+	y: 50,
+	x: 0,
+	rotation: 0
+})
+
+var fist = new Studio.Sprite({
+	image: Rockster_image,
+	width: 50,
+	height: 51,
+	slice: 'Fist',
+	anchorY: 0,
+	anchorX: .5,
+	y: 30,
+	x: 38,
+})
+
+arm.addChild(forarm)
+forarm.addChild(fist)
+
+
+stage.addTween(shoulder,'quadInOut',{rotation: 25}, 1000).loop();
+stage.addTween(arm,'chillInOut',{rotation: 30}, 2000).loop();
+stage.addTween(forarm,'chillInOut',{rotation: 30}, 2000).loop();
+stage.addTween(fist,'chillInOut',{rotation: -10}, 2000).loop();
+stage.addTween(head,'bounceOut',{rotation: -5, y:-55, x: 10}, 2000).loop();
+stage.addTween(jaw,'chillInOut',{rotation: -15}, 1000).loop();
+Rockster.bob = stage.createTween(Rockster,'bounceOut',{y:110, x: 630},20000).loop(true).reflect(false)
+
+stage.onReady = function(){
+	if(this.webgl) stage.setTexture(Rockster_image, 1)
+}
+
+
+stage.addChild(Rockster);
+// stage.playTween(Rockster.bob)
+// stage.playTween(circle_tween)
+// stage.addChildren(rect,circle);
+stage2.watch(stage);
+// stage2.camera.scaleX = stage2.camera.scaleY = .5
+Studio.start();
+</script>
+</html>
+
