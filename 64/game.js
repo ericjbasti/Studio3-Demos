@@ -28,7 +28,7 @@ splosion = function(x){
 	this.x=x;	
 }
 
-Studio.extend( splosion, Studio.SpriteAnimation, {
+Studio.inherit( splosion, Studio.SpriteAnimation, {
 	width: 16,
 	height: 8,
 	x: 0,

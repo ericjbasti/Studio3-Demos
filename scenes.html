@@ -346,7 +346,7 @@ var home = new Studio.Scene({
 	y: -stage.height,
 	build : function(){
 		var back = new Studio.DisplayObject();
-		var patt = new Studio.Pattern({width:stage.width,height:stage.height,overflowX:96, overflowY: 96, image: background, anchorX:0, anchorY:0, slice:'Full'},stage);
+		var patt = this.pattern = new Studio.Pattern({width:stage.width,height:stage.height,overflowX:96, overflowY: 96, image: background, anchorX:0, anchorY:0, slice:'Full'},stage);
 		
 		var back_clip = new Studio.Clip({width:this.width, height:this.height, anchorX: 0, anchorY: 0})
 		this.addChild(back_clip);
@@ -454,7 +454,7 @@ stage.addButton(button3)
 stage.addChildren(button3)
 
 stage.onReady = function(){
-	// home.children[0].setPattern(96,96)
+	home.pattern.setPattern(96,96)
 }
 
 stage.addInput(FOCUS_ENGINE,{});

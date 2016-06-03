@@ -13,7 +13,6 @@ Studio.buildAs = function(a,b){
 	a.prototype.constructor = a;
 }
 
-Studio.tick = Studio.capped;
 
 var Sun_image = new Studio.Image('imgs/sun_x1.png');
 var Sun_image_2 = new Studio.Image('imgs/sun_layer_x1.png');

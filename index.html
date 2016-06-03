@@ -51,7 +51,7 @@ var ball = new Studio.Image('assets/char.png',{
 })
 
 ball.addListener('ready',function(e){
-	alert('Character Image loaded : '+ e)
+	// alert('Character Image loaded : '+ e)
 })
 
 
@@ -65,6 +65,7 @@ var BOXdrop = function(attr){
 	// this.slice = 'full'
 	this.color = new Studio.Color()
 	this.yoyo = new Studio.Messenger()
+	// this.rotation = 45
 	// this.rotation = 45
 	if(attr){
 		this.apply(attr)
@@ -87,6 +88,7 @@ BOXdrop.prototype.logic = function(){
 	this.velocityY += gravity
 	this.x += this.velocityX*ratio
 	this.y += this.velocityY*ratio
+	this.rotation+=this.velocityX*2
 	if(this.x > stage.width || this.x < 0){
 		this.velocityX *= -1
 	}
@@ -121,13 +123,13 @@ for (var i = 0; i!=MAX;i++){
 }
 
 
-stage.addEffect( STATS ,{
-	external : true, 
-	height : 50,
-	width : stage.width,
-	position : 0,
-	clear_mode :'erase'
-})
+// stage.addEffect( STATS ,{
+// 	external : true, 
+// 	height : 50,
+// 	width : stage.width,
+// 	position : 0,
+// 	clear_mode :'erase'
+// })
 
 Studio.start()
 
