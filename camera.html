@@ -44,7 +44,7 @@ var stage2 = new Studio.Stage("canvas2",{webgl:0});
 // stage.addChild(new easeBox('chillInOut', 340))
 
 var rect = new Studio.Rect({x:20,y:20, width:15, height: 15})
-rect.color = new Studio.Color(155,0,250,1)
+rect.color = new Studio.Color(155,0,250,.5)
 
 var circle = new Studio.Circle({x:20, y: 120, width: 10, height: 10})
 circle.color = new Studio.Color(255,100,0,1)
@@ -220,7 +220,7 @@ stage.addTween(forarm,'chillInOut',{rotation: 30}, 2000).loop();
 stage.addTween(fist,'chillInOut',{rotation: -10}, 2000).loop();
 stage.addTween(head,'bounceOut',{rotation: -5, y:-55, x: 10}, 2000).loop();
 stage.addTween(jaw,'chillInOut',{rotation: -15}, 1000).loop();
-Rockster.bob = stage.createTween(Rockster,'bounceOut',{y:110, x: 630},20000).loop(true).reflect(false)
+Rockster.bob = stage.createTween(Rockster,'bounceOut',{y:110, x: 630,alpha:.2},6000).loop(true).reflect(false)
 
 stage.onReady = function(){
 	if(this.webgl) stage.setTexture(Rockster_image, 1)
@@ -228,7 +228,7 @@ stage.onReady = function(){
 
 
 stage.addChild(Rockster);
-// stage.playTween(Rockster.bob)
+stage.playTween(Rockster.bob)
 // stage.playTween(circle_tween)
 // stage.addChildren(rect,circle);
 stage2.watch(stage);

@@ -20,10 +20,12 @@ var ratio = 1;
 var stage = new Studio.Stage('canvas',{
 	webgl : 1, 
 	dur : 1000/(60/ratio), 
-	fullscreen : 1, 
+	// fullscreen : 1, 
 	resolution : 1, 
-	interpolate : 1, 
-	_maxCount : 16000,
+	interpolate : 0, 
+	// _maxCount : 16383,
+	_maxCount : 14,
+	smoothing: false,
 	timeStep : Studio.timeStep.static_fixed
 })
 
@@ -47,12 +49,17 @@ var ball = new Studio.Image('assets/char.png',{
 		y : 10, 
 		width : 12, 
 		height : 11
+	},
+	'body':{
+		x:0,y:0,
+		width: 12,
+		height: 21
 	}
 })
 
-ball.addListener('ready',function(e){
-	alert('Character Image loaded : '+ e)
-})
+// ball.addListener('ready',function(e){
+// 	alert('Character Image loaded : '+ e)
+// })
 
 
 var globalMessageBox = function(a,type){
@@ -62,14 +69,15 @@ var globalMessageBox = function(a,type){
 
 var BOXdrop = function(attr){
 	this.image = ball
-	// this.slice = 'full'
+	this.slice = 'body'
 	this.color = new Studio.Color()
 	this.yoyo = new Studio.Messenger()
 	// this.rotation = 45
 	if(attr){
 		this.apply(attr)
 	}
-	this.color.set(Math.random()*510 ,Math.random()*510 ,Math.random()*510, 1)
+	// this.color= Studio.WHITE
+	this.color.set(Math.random()*510 ,Math.random()*510 ,Math.random()*510, .8)
 	// this.color.set(255,255,255,1)
 	this.yoyo.addListener('drop',globalMessageBox);
 }
@@ -87,6 +95,7 @@ BOXdrop.prototype.logic = function(){
 	this.velocityY += gravity
 	this.x += this.velocityX*ratio
 	this.y += this.velocityY*ratio
+	this.rotation+=this.velocityX*3
 	if(this.x > stage.width || this.x < 0){
 		this.velocityX *= -1
 	}
@@ -111,8 +120,8 @@ for (var i = 0; i!=MAX;i++){
 	var yy=new BOXdrop({
 		x : stage.width/2 ,
 		y : Math.random()*120,
-		width : 24,
-		height : 24,
+		width : 12*2,
+		height : 21*2,
 		velocityX : 2-(Math.random()*4),
 		velocityY : -10+(Math.random()*6),
 		hit : 10
@@ -128,6 +137,18 @@ stage.addEffect( STATS ,{
 	position : 0,
 	clear_mode :'erase'
 })
+
+var yy=new BOXdrop({
+		x : stage.width/2 ,
+		y : Math.random()*120,
+		width : 12*6,
+		height : 21*6,
+		velocityX : 2-(Math.random()*4),
+		velocityY : -10+(Math.random()*6),
+		hit : 10
+	});
+	stage.addChild(yy)
+
 
 Studio.start()
 

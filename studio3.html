@@ -15,13 +15,13 @@
 <script src="stats.js"></script>
 <script>
 
-var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/60, fullscreen:1, resolution: 2})
+var stage = new Studio.Stage('canvas',{webgl:1, dur:1000/60, fullscreen:1, resolution: 2})
 stage.color.setFromHex("#333")
 var butter_sheet = new Studio.Image('assets/butterfly.png');
 
-var grass = new Studio.Image('assets/grass.jpg')
-var background = new Studio.Pattern({width:stage.width,height:stage.height, image: grass, anchorX:0, anchorY:0})
+var background = new Studio.Pattern({width:stage.width,height:stage.height, image: butter_sheet, slice: "Grass", anchorX:0, anchorY:0})
 
+// var background = new Studio.Sprite({x:0,y:0,height: 512, width: 512,image: butter_sheet, slice: "Grass",anchorX:0, anchorY:0})
 stage.addChild(background);
 
 butter_sheet.addSlice({
@@ -29,7 +29,8 @@ butter_sheet.addSlice({
 	Blue_Left_Wing: {x:0, y:0, height: 194, width: 122},
 	Blue_Right_Wing: {x:122, y:0, height: 194, width: 122},
 	Monarch_Left_Wing: {x:246, y:96, height: 159, width: 114},
-	Monarch_Right_Wing: {x:246+114, y:96, height: 159, width: 114}
+	Monarch_Right_Wing: {x:246+114, y:96, height: 159, width: 114},
+	Grass: {x:0, y:256, width: 512, height: 512}
 });
 
 var BlueMorpho = function(attr){
@@ -47,8 +48,13 @@ var BlueMorpho = function(attr){
 	this.addChild(this.leftWing)
 	this.addChild(this.rightWing)
 	this.init();
+
 }
 Studio.inherit(BlueMorpho, Studio.Sprite)
+
+stage.onReady = function(){
+	if(this.webgl) stage.setTexture(butter_sheet, 1)
+}
 
 BlueMorpho.prototype.init = function(){
 	this.count = Math.random()*22;
@@ -130,12 +136,12 @@ Monarch.prototype.onEnterFrame = function(){
 	this.boundsCheck();
 }
 
-for (var i = 0; i != 150 ; i++){
+for (var i = 0; i != 15 ; i++){
 	var a = new BlueMorpho({x: Math.random() * stage.width, y: Math.random() * stage.height});
 	stage.addChild(a);
 	// stage.addChild(b);
 }
-for (var i = 0; i != 50 ; i++){
+for (var i = 0; i != 5 ; i++){
 	var b = new Monarch({x: Math.random() * stage.width, y: Math.random() * stage.height});
 	stage.addChild(b);
 }
@@ -143,7 +149,7 @@ for (var i = 0; i != 50 ; i++){
 // stage.enableTouchEvents();
 // stage.addEffect(Studio.Effect.Replicator,{x:3,y:3});
 stage.addEffect(STATS,{
-	external: false, 
+	external: true, 
 	height: 50,
 	width: stage.width,
 	position: 0,
