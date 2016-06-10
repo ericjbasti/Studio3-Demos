@@ -19,9 +19,9 @@ var stage = new Studio.Stage('canvas',{webgl:1, dur:1000/60, fullscreen:1, resol
 stage.color.setFromHex("#333")
 var butter_sheet = new Studio.Image('assets/butterfly.png');
 
-var background = new Studio.Pattern({width:stage.width,height:stage.height, image: butter_sheet, slice: "Grass", anchorX:0, anchorY:0})
+// var background = new Studio.Pattern({width:stage.width,height:stage.height, image: butter_sheet, slice: "Grass", anchorX:0, anchorY:0})
 
-// var background = new Studio.Sprite({x:0,y:0,height: 512, width: 512,image: butter_sheet, slice: "Grass",anchorX:0, anchorY:0})
+var background = new Studio.Sprite({x:0,y:0,height: 512, width: 512,image: butter_sheet, slice: "Grass",anchorX:0, anchorY:0})
 stage.addChild(background);
 
 butter_sheet.addSlice({

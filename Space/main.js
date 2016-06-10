@@ -1,4 +1,4 @@
-var stage = new Studio.Stage("stage",{fullscreen: 1, dur:1000/30})
+var stage = new Studio.Stage("stage",{fullscreen: 1, dur:1000/30, webgl: 1})
 stage.color.setFromHex("#000").alpha(.18).build()
 
 var AU = 92.960 // ~distance of Earth from Sun in millions of miles 92,956,050 miles  scale = 
@@ -12,8 +12,6 @@ Studio.buildAs = function(a,b){
 	a.prototype = new b();
 	a.prototype.constructor = a;
 }
-
-Studio.tick = Studio.capped;
 
 var Sun_image = new Studio.Image('imgs/sun_x1.png');
 var Sun_image_2 = new Studio.Image('imgs/sun_layer_x1.png');
