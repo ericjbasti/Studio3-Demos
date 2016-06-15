@@ -2,14 +2,14 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" >
     <title>Studio3</title>
-	<meta name="viewport" content="width=320, user-scalable=0, maximum-scale=1"/>
+	<meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1"/>
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-status-bar-style" content="black">
 	<link rel="apple-touch-icon" href="icon.png" />
 </head>
 
 <body style="margin:0;background: #333">
-	<canvas id="canvas" height="600" width="800"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
+	<canvas id="canvas" height="480" width="320"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
 </body>
 <script src="studio-compiled.js"></script>
 <script src="stats.js"></script>
@@ -19,11 +19,11 @@ var ratio = 1;
 
 var stage = new Studio.Stage('canvas',{
 	webgl : 1, 
-	dur : 1000/(60/ratio), 
+	dur : 1000/(60), 
 	// fullscreen : 1, 
-	// resolution : 1, 
+	resolution : 1, 
 	// interpolate : 0, 
-	_maxCount : 1600,
+	_maxCount : 1500,
 	// _maxCount : 3000,
 	// _maxCount : 1400,
 	// smoothing: false,
@@ -40,6 +40,18 @@ var gravity = .4*ratio
 
 var cursor = new Studio.Image('assets/cursor.png')
 
+var chupe = new Studio.Image('assets/chupe.png',{
+	'first':{
+		x:0, y:0,
+		width: 32, height: 32
+	}
+})
+var chupes = new Studio.Image('assets/Chupe_slices.png',{
+	'first':{
+		x:5*32, y:0,
+		width: 16, height: 32
+	}
+})
 var ball = new Studio.Image('assets/char.png',{
 	'head': {
 		x : 0, 
@@ -83,6 +95,8 @@ var BOXdrop = function(attr){
 	// this.color.set(255,255,255,1)
 }
 
+// stage.addChild(new Studio.Rect({x:100, y:100, width: 500, height: 500, color: Studio.RED}))
+
 
 Studio.inherit(BOXdrop, Studio.Sprite)
 
@@ -90,7 +104,7 @@ BOXdrop.prototype.logic = function(){
 	this.velocityY += gravity
 	this.x += this.velocityX*ratio
 	this.y += this.velocityY*ratio
-	this.rotation+=this.velocityX*3
+	// this.rotation+=this.velocityX*3
 	if(this.x > stage.width || this.x < 0){
 		this.velocityX *= -1
 	}
@@ -102,7 +116,7 @@ BOXdrop.prototype.logic = function(){
 		this._snapback()
 	}
 	if(this.y>stage.height){
-		this.velocityY *= -.8
+		this.velocityY *= -.98
 		this.hit--
 		this.y = stage.height-1;
 		// beep.play()
@@ -149,8 +163,37 @@ for (var i = 0; i!=MAX;i++){
 	stage.addChild(yy)
 }
 
+for (var i = 0; i!=MAX;i++){
+	var yy=new BOXdrop({
+		x : stage.width/2 ,
+		y : Math.random()*480,
+		width : 16,
+		height : 16,
+		velocityX : 2-(Math.random()*4),
+		velocityY : -5+(Math.random()*2),
+		hit : 10,
+		slice: 'first',
+		image: chupe
+	});
+	yy.color.a=.2
+	stage.addChild(yy)
+}
 
-
+for (var i = 0; i!=MAX;i++){
+	var yy=new BOXdrop({
+		x : stage.width/2 ,
+		y : Math.random()*480,
+		width : 8,
+		height : 16,
+		velocityX : 2-(Math.random()*4),
+		velocityY : -5+(Math.random()*2),
+		hit : 10,
+		slice: 'first',
+		image: chupes
+	});
+	yy.color.a=1
+	stage.addChild(yy)
+}
 Studio.start()
 
 </script>
