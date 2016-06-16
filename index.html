@@ -2,7 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" >
     <title>Studio3</title>
-	<meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1"/>
+	<meta name="viewport" content="width=320, user-scalable=1, maximum-scale=1"/>
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-status-bar-style" content="black">
 	<link rel="apple-touch-icon" href="icon.png" />
@@ -20,10 +20,10 @@ var ratio = 1;
 var stage = new Studio.Stage('canvas',{
 	webgl : 1, 
 	dur : 1000/(60), 
-	// fullscreen : 1, 
+	fullscreen : 1, 
 	resolution : 1, 
 	// interpolate : 0, 
-	_maxCount : 1500,
+	_maxCount : 1000,
 	// _maxCount : 3000,
 	// _maxCount : 1400,
 	// smoothing: false,
@@ -104,7 +104,7 @@ BOXdrop.prototype.logic = function(){
 	this.velocityY += gravity
 	this.x += this.velocityX*ratio
 	this.y += this.velocityY*ratio
-	// this.rotation+=this.velocityX*3
+	this.rotation+=this.velocityX*3
 	if(this.x > stage.width || this.x < 0){
 		this.velocityX *= -1
 	}
@@ -183,8 +183,8 @@ for (var i = 0; i!=MAX;i++){
 	var yy=new BOXdrop({
 		x : stage.width/2 ,
 		y : Math.random()*480,
-		width : 8,
-		height : 16,
+		width : 4,
+		height : 8,
 		velocityX : 2-(Math.random()*4),
 		velocityY : -5+(Math.random()*2),
 		hit : 10,

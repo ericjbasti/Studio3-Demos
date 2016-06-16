@@ -52,10 +52,6 @@ var BlueMorpho = function(attr){
 }
 Studio.inherit(BlueMorpho, Studio.Sprite)
 
-stage.onReady = function(){
-	if(this.webgl) stage.setTexture(butter_sheet, 1)
-}
-
 BlueMorpho.prototype.init = function(){
 	this.count = Math.random()*22;
 	this.speed = .7+ Math.random()
@@ -136,12 +132,12 @@ Monarch.prototype.onEnterFrame = function(){
 	this.boundsCheck();
 }
 
-for (var i = 0; i != 15 ; i++){
+for (var i = 0; i != 1050 ; i++){
 	var a = new BlueMorpho({x: Math.random() * stage.width, y: Math.random() * stage.height});
 	stage.addChild(a);
 	// stage.addChild(b);
 }
-for (var i = 0; i != 5 ; i++){
+for (var i = 0; i != 500 ; i++){
 	var b = new Monarch({x: Math.random() * stage.width, y: Math.random() * stage.height});
 	stage.addChild(b);
 }
