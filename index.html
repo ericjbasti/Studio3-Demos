@@ -203,10 +203,14 @@ textbox.setText('Hilo world! Lorem ipsum dolor sit amet, ac amet sit lorem, veli
 textbox.x = stage.width/2;
 textbox.y = 300;
 
-stage.addTween(textbox,'bounceOut',{scaleX:.5, scaleY: .5, rotation: 90},5000).loop()
+
+stage.addTween(textbox,'bounceOut',{scaleX:.5, scaleY: .5, rotation: 0},5000).loop()
 
 stage.addChild(textbox);
 
+stage.addChild(new Studio.Sprite({
+	x: stage.width/2, y: 200, width: 33, height: 66, image: ball,	slice : 'body'
+}));
 
 Studio.start()
 

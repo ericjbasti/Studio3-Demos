@@ -1,4 +1,4 @@
-var stage = new Studio.Stage("canvas",{fullscreen:2, resolution: 1, dur: 1000/60, interpolate: 0, snap: true});
+var stage = new Studio.Stage("canvas",{webgl:1, fullscreen:0, resolution: 4, dur: 1000/60, interpolate: 0, snap: true});
 
 var GAMEPAD = new Studio.Plugin({
 	options: {
@@ -90,7 +90,7 @@ Studio.UIButton = function(attr, stage){
 	this.hoverIn_tween = stage.createTween(this, 'quadInOut', {scaleX: 1.2, scaleY: 1.2}, 300).loop(true).reflect(true);
 	this.hoverOut_tween = stage.createTween(this, 'quadOut', {scaleX: 1, scaleY: 1}, 300);
 }
-Studio.UIButton.prototype = new Studio.DisplayObject();
+Studio.UIButton.prototype = new Studio.Rect();
 Studio.UIButton.prototype.constructor = Studio.UIButton;
 
 Studio.UIButton.prototype.onTap = Studio.UIButton.prototype.onHoverStart = function(a){

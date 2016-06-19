@@ -15,7 +15,7 @@
 <script src="stats.js"></script>
 <script>
 
-var stage = new Studio.Stage('canvas',{webgl:1, dur:1000/60, fullscreen:1, resolution: 2})
+var stage = new Studio.Stage('canvas',{webgl:0, dur:1000/60, fullscreen:1, resolution: 2})
 stage.color.setFromHex("#333")
 var butter_sheet = new Studio.Image('assets/butterfly.png');
 
@@ -132,12 +132,12 @@ Monarch.prototype.onEnterFrame = function(){
 	this.boundsCheck();
 }
 
-for (var i = 0; i != 1050 ; i++){
+for (var i = 0; i != 150 ; i++){
 	var a = new BlueMorpho({x: Math.random() * stage.width, y: Math.random() * stage.height});
 	stage.addChild(a);
 	// stage.addChild(b);
 }
-for (var i = 0; i != 500 ; i++){
+for (var i = 0; i != 50 ; i++){
 	var b = new Monarch({x: Math.random() * stage.width, y: Math.random() * stage.height});
 	stage.addChild(b);
 }

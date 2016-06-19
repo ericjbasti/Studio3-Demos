@@ -45,7 +45,7 @@ Studio.Slice9 = function(attr) {
 	if (attr) {
 		this.apply(attr);
 	}
-	this.cache = new Studio.Cache(this.width*this.resolution, this.height*this.resolution,1)
+	this.image = new Studio.Cache(this.width*this.resolution, this.height*this.resolution,1)
 };
 
 Studio.inherit(Studio.Slice9, Studio.Sprite);
@@ -58,21 +58,21 @@ Studio.Slice9.prototype._drawStreched = function(ctx){
 	var g_h = this.rect.height - this.innerRect.height -a_h;
 	var d_h = this.height*this.resolution - ( g_h + a_h );
 
-	ctx.drawImage(this.borders.image, this.rect.x, this.rect.y, this.innerRect.x, this.innerRect.y, 0, 0, a_w, a_h);
-	ctx.drawImage(this.borders.image, this.innerRect.x, this.rect.y, this.innerRect.width, a_h, a_w, 0, b_w, a_h);
-	ctx.drawImage(this.borders.image, this.innerRect.x + this.innerRect.width, this.rect.y, c_w, a_h, a_w + b_w, 0, c_w, a_h);
+	ctx.drawImage(this.borders.bitmap, this.rect.x, this.rect.y, this.innerRect.x, this.innerRect.y, 0, 0, a_w, a_h);
+	ctx.drawImage(this.borders.bitmap, this.innerRect.x, this.rect.y, this.innerRect.width, a_h, a_w, 0, b_w, a_h);
+	ctx.drawImage(this.borders.bitmap, this.innerRect.x + this.innerRect.width, this.rect.y, c_w, a_h, a_w + b_w, 0, c_w, a_h);
 
-	ctx.drawImage(this.borders.image, this.rect.x, this.innerRect.y, a_w, this.innerRect.height, 0, a_h, a_w, d_h);
-	ctx.drawImage(this.borders.image, this.innerRect.x, this.innerRect.y, this.innerRect.width, this.innerRect.height, a_w, a_h, b_w, d_h);
-	ctx.drawImage(this.borders.image, this.innerRect.x + this.innerRect.width, this.innerRect.y, c_w, this.innerRect.height,  a_w + b_w, a_h, c_w, d_h);
+	ctx.drawImage(this.borders.bitmap, this.rect.x, this.innerRect.y, a_w, this.innerRect.height, 0, a_h, a_w, d_h);
+	ctx.drawImage(this.borders.bitmap, this.innerRect.x, this.innerRect.y, this.innerRect.width, this.innerRect.height, a_w, a_h, b_w, d_h);
+	ctx.drawImage(this.borders.bitmap, this.innerRect.x + this.innerRect.width, this.innerRect.y, c_w, this.innerRect.height,  a_w + b_w, a_h, c_w, d_h);
 
-	ctx.drawImage(this.borders.image, this.rect.x, this.innerRect.y + this.innerRect.height, a_w, g_h, 0, a_h + d_h, a_w, g_h);
-	ctx.drawImage(this.borders.image, this.innerRect.x, this.innerRect.y + this.innerRect.height, this.innerRect.width, g_h, a_w, a_h + d_h, b_w, g_h);
-	ctx.drawImage(this.borders.image, this.innerRect.x + this.innerRect.width, this.innerRect.y + this.innerRect.height, c_w, g_h, a_w + b_w , a_h + d_h, c_w, g_h);
+	ctx.drawImage(this.borders.bitmap, this.rect.x, this.innerRect.y + this.innerRect.height, a_w, g_h, 0, a_h + d_h, a_w, g_h);
+	ctx.drawImage(this.borders.bitmap, this.innerRect.x, this.innerRect.y + this.innerRect.height, this.innerRect.width, g_h, a_w, a_h + d_h, b_w, g_h);
+	ctx.drawImage(this.borders.bitmap, this.innerRect.x + this.innerRect.width, this.innerRect.y + this.innerRect.height, c_w, g_h, a_w + b_w , a_h + d_h, c_w, g_h);
 }
 Studio.Slice9.prototype.updateCache = function(){
-	this._drawStreched(this.cache.ctx);
-	this.cache.ready = true;
+	this._drawStreched(this.image.ctx);
+	this.image.ready = true;
 }
 
 
@@ -85,14 +85,14 @@ Studio.Slice9.prototype.updateCache = function(){
 // 		return;
 // 	}
 // 	this.setAlpha(ctx);
-// 	ctx.drawImage(this.cache.image, this.innerRect.x + this.innerRect.width, this.innerRect.y + this.innerRect.height, c_w, g_h, a_w + b_w , a_h + d_h, c_w, g_h);
-// 	// this._drawStreched(this.cache.buffer, 0,0);
+// 	ctx.drawImage(this.image.bitmap, this.innerRect.x + this.innerRect.width, this.innerRect.y + this.innerRect.height, c_w, g_h, a_w + b_w , a_h + d_h, c_w, g_h);
+// 	// this._drawStreched(this.image.buffer, 0,0);
 // };
 
 Studio.Slice9.prototype.drawAngled = function(ctx) {
 	ctx.save();
 	this.prepAngled(ctx);
-	ctx.drawImage(this.cache.image, 0, 0, this.cache.image.width, this.cache.image.height, -(this.width * this.anchorX), -(this.height * this.anchorY), this.width, this.height);
+	ctx.drawImage(this.image.bitmap, 0, 0, this.image.bitmap.width, this.image.bitmap.height, -(this.width * this.anchorX), -(this.height * this.anchorY), this.width, this.height);
 	ctx.restore();
 };
 
@@ -100,7 +100,7 @@ Studio.Slice9.prototype.draw = function(ctx) {
 	if (!this.borders) {
 		return;
 	}
-	if (!this.cache.ready) {
+	if (!this.image.ready) {
 		this.updateCache();
 		return;
 	}
@@ -108,7 +108,7 @@ Studio.Slice9.prototype.draw = function(ctx) {
 	if (this.angle) {
 		this.drawAngled(ctx);
 	} else {
-		ctx.drawImage(this.cache.image, 0, 0, this.cache.image.width, this.cache.image.height, this._dx - (this._world.width * this.anchorX), this._dy - (this._world.height * this.anchorY), this._world.width, this._world.height);
+		ctx.drawImage(this.image.bitmap, 0, 0, this.image.bitmap.width, this.image.bitmap.height, this._dx - (this._world.width * this.anchorX), this._dy - (this._world.height * this.anchorY), this._world.width, this._world.height);
 	}
 };
 
