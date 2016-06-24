@@ -33,7 +33,7 @@ var Player = function(world){
 	player_count++;
 	world.addChild(this.score_text);
 }
-Studio.inherit(Player,Studio.Sprite)
+Studio.inherit(Player,Studio.SpriteAnimation)
 
 Player.prototype.scoreUp = function(amount){
 	this.score+=amount;
@@ -44,19 +44,3 @@ Player.prototype.hit = function(){
 }
 
 
-Player.prototype.buildElement = function(stage, ratio, interpolate) {
-	console.log('hilo')
-	if(!stage.buffers[this.image.path]){
-		stage.buffers[this.image.path] = new Studio.BufferGL(this.image,0,stage.ctx);
-	}
-	stage.draws++
-
-	if (interpolate) {
-		this._delta(ratio)
-	} else {
-		this._dset()
-	}
-	this._boundingBox.get_bounds(this)
-	
-	this.verts(this._boundingBox, stage.buffers[this.image.path], this.image.sliceGL[this.slice])
-}

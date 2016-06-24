@@ -9,11 +9,9 @@
 </head>
 
 <body style="margin:0;background: #333">
-	<canvas id="canvas" height="360" width="640"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
+	<canvas id="canvas" height="600" width="640"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
 </body>
 <script src="studio-compiled.js"></script>
-<script src="stats.js"></script>
-<script src="focus_engine.js"></script>
 <style>
 	canvas{image-rendering: -webkit-optimize-contrast;}
 
@@ -21,175 +19,17 @@
 <script>
 	
 
-var stage = new Studio.Stage("canvas",{fullscreen:0, resolution: 2, dur: 1000/60, interpolate: 1});
+var stage = new Studio.Stage("canvas",{webgl:1, fullscreen:0, resolution: 2, dur: 1000/60, interpolate: 1});
 
+var textbox = new Studio.TextBox(512,512,stage);
+textbox.lineHeight = 16
+textbox.setText('Hilo world! Lorem ipsum dolor sit amet, ac amet sit lorem, velit quam. Condimentum vitae maecenas tristique ante leo, dui bibendum nam ut, in laoreet, et dui justo, sed vestibulum. Vel vitae sed ac, pellentesque conubia lorem, faucibus fringilla duis quis justo fringilla mauris, nibh sit augue dui, tortor vestibulum euismod a. Tempor sollicitudin in at fusce. Quam ut, enim dignissim vehicula consectetuer, mauris risus nostra, fermentum vel enim leo posuere sed nulla, erat quis tristique. Volutpat consectetuer suspendisse, nec tincidunt pellentesque. Porttitor magna, sit sed eleifend nam ante elit scelerisque, lorem pede proin eros, commodo nulla at sed quis, in faucibus auctor laoreet. Aliquet sapien orci maecenas pharetra, parturient duis praesent mi et ipsum, ac nulla, adipiscing habitasse nullam nullam viverra, feugiat curabitur. Nec commodo ut pulvinar sollicitudin pellentesque, donec in per vulputate id maecenas, tristique in nunc. Dolor et morbi. Id nunc non diam sollicitudin dictum, morbi urna, et ultricies non blandit imperdiet conubia hendrerit, erat pellentesque, nunc amet aliquet in.').finish()
+textbox.x = 300;
+textbox.y = 300;
+stage.addChild(textbox);
 
-var scene2 = new Studio.Scene({color: Studio.BLUE, width: 320, height: 300, x: 322})
-
-
-var scene = new Studio.Scene({color:Studio.RED, width: 320, height: 300, x: 1})
-
-
-
-scene.onActivate = scene2.onActivate = function(){
-	stage.addTween(this,'linear',{x:1, alpha:1}, 500);
-}
-scene.onDeactivate = scene2.onDeactivate = function(){
-	stage.addTween(this,'linear',{x:322, alpha: 0}, 500, function(){
-		this.close();
-	});
-}
-
-var box = new Studio.Rect({y:200, x: 20, height: 10, width: 10, color: Studio.YELLOW});
-box.velocityX = 2;
-box.onEnterFrame = function(){
-	this.x+=this.velocityX;
-
-	if(this.x>100 || this.x<0){
-		this.velocityX*=-1;
-	}
-}
-
-
-stage.addChild(box)
-stage.setScene(scene)
-
-
-
-Studio.UIButton = function(attr, stage){
-	this.hovered = false;
-	this.text = 'Button';
-	if (attr) {
-		this.apply(attr);
-	}
-	this.back = new Studio.Rect({height: this.height, width: this.width});
-	this.back.color.setFromHex("#FF00FF")
-	this.front = new Studio.Rect({height: this.height-4, width: this.width-4});
-	this.front.color.set(0,0,0,.8);
-	this.textBox = new Studio.TextBox(this.width-10, this.height, stage).apply({
-		x: 0 , 
-		y: 0 , 
-		font: '16px BigBreak',
-		lineHeight: 14 | 0 , 
-		vertical_align: Studio.MIDDLE, 
-		horizontal_align: 0.5,
-		shadowColor: '#FF0080'
-	})
-	this.front.color.set(0,0,0,.8);
-	this.textBox.setText(this.text).finish();
-	this.addChildren(this.back,this.front,this.textBox);
-	this.hoverIn_tween = stage.createTween(this, 'quadInOut', {scaleX: 1.2, scaleY: 1.2}, 300).loop(true).reflect(true);
-	this.hoverOut_tween = stage.createTween(this, 'quadOut', {scaleX: 1, scaleY: 1}, 300);
-}
-Studio.UIButton.prototype = new Studio.DisplayObject();
-Studio.UIButton.prototype.constructor = Studio.UIButton;
-
-Studio.UIButton.prototype.onTap = Studio.UIButton.prototype.onHoverStart = function(a){
-	if(this.hover){
-		this.hover(a);
-	}
-}
-Studio.UIButton.prototype.onTapOutside = Studio.UIButton.prototype.onHoverEnd = function(a){
-	if(this.reset){
-		this.reset(a);
-	}
-}
-
-Studio.UIButton.prototype.onRelease = function(a){
-	if(this.action){
-		this.action(a);
-	}
-	if(this.reset){
-		this.reset(a);
-	}
-}
-
-var button = new Studio.UIButton({x:160,y:150, height: 24, width: 120, text:'Scene 1'},stage);
-
-button.hover = function(a){
-	stage.stopTween(this.hoverOut_tween)
-	stage.playTween(this.hoverIn_tween)
-	this.back.color.setFromHex("#FF0080")
-	this.textBox.setColor('#FFFF66').finish()
-}
-
-button.reset = function(a){
-	stage.stopTween(this.hoverIn_tween);
-	stage.playTween(this.hoverOut_tween)
-	this.back.color.setFromHex("#FF00FF")
-	this.textBox.setColor('#FFFFFF').finish()
-}
-
-button.action = function(a){
-	stage.setScene(scene2)
-}
-
-var button2 = new Studio.UIButton({x:160,y:190, height: 24, width: 120, text:'Scene 2'},stage);
-
-button2.hover = function(a){
-	stage.stopTween(this.hoverOut_tween)
-	stage.playTween(this.hoverIn_tween)
-	this.back.color.setFromHex("#FF0080")
-	this.textBox.setColor('#FFFF66').finish()
-}
-
-button2.reset = function(a){
-	stage.stopTween(this.hoverIn_tween);
-	stage.playTween(this.hoverOut_tween)
-	this.back.color.setFromHex("#FF00FF")
-	this.textBox.setColor('#FFFFFF').finish()
-}
-
-button2.action = function(a){
-	stage.setScene(scene)
-}
-
-var button3 = new Studio.UIButton({x:160,y:230, height: 24, width: 120, text:'Stage'},stage);
-
-button3.hover = function(a){
-	stage.stopTween(this.hoverOut_tween)
-	stage.playTween(this.hoverIn_tween)
-	this.back.color.setFromHex("#FF0080")
-	this.textBox.setColor('#FFFF66').finish()
-}
-
-button3.reset = function(a){
-	stage.stopTween(this.hoverIn_tween);
-	stage.playTween(this.hoverOut_tween)
-	this.back.color.setFromHex("#FF00FF")
-	this.textBox.setColor('#FFFFFF').finish()
-}
-
-button3.action = function(a){
-	if(stage.activeScene){
-		stage.clearScene();
-	}else{
-		stage.setScene(scene);
-	}
-}
-
-stage.enableTouchEvents();
-
-scene.addChildren(button)
-scene.addButton(button)
-
-
-scene2.addButton(button2)
-scene2.addChildren(button2)
-
-stage.addButton(button3)
-stage.addChildren(button3)
-
-
-var homeMenu = new LinkedList();
-homeMenu.add(button);
-homeMenu.add(button2);
-homeMenu.add(button3);
-
-stage.addInput(FOCUS_ENGINE,{});
-FOCUS_ENGINE.setCurrentMenu(homeMenu);
-stage.snap=false
 Studio.start();
+
 
 </script>
 </html>

@@ -216,7 +216,7 @@ var Game = new Studio.Scene({
 		actionables.push(PLAYER_3);
 		actionables.push(PLAYER_4);
 		for (var i = 0; i != prizemax; i++){
-			var block = new Studio.SpriteAnimation({x: 100+(i*60), loop:[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0]],y: 64+parseInt(Math.random()*5)*32, height: 16, width: 16, sheet:coin, rect :{x:0,y:0, width: 16, height: 16}})
+			var block = new Studio.SpriteAnimation({x: 100+(i*60), loop:[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0]],y: 64+parseInt(Math.random()*5)*32, height: 16, width: 16, image:coin, rect :{x:0,y:0, width: 16, height: 16}})
 			prizes.push(block);
 			this.addChild(block);
 		}
