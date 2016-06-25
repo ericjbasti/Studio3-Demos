@@ -208,9 +208,30 @@ stage.addTween(textbox,'bounceOut',{scaleX:.5, scaleY: .5, rotation: 0},5000).lo
 
 stage.addChild(textbox);
 
-stage.addChild(new Studio.Sprite({
-	x: stage.width/2, y: 200, width: 33, height: 66, image: ball,	slice : 'body'
-}));
+var temp = new Studio.Image('assets/char.png',{
+	'head': {
+		x : 0, 
+		y : 0, 
+		width : 12, 
+		height : 10
+	},
+	'feet': {
+		x : 0, 
+		y : 10, 
+		width : 12, 
+		height : 11
+	},
+	'body':{
+		x:0,y:0,
+		width: 12,
+		height: 21
+	}
+})
+
+var tttt = new Studio.Sprite({
+	x: stage.width/2, y: 200, width: 33, height: 66, image: temp, slice : 'body'
+})
+stage.addChild(tttt);
 
 Studio.start()
 
