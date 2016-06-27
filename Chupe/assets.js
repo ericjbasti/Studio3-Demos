@@ -1,26 +1,28 @@
 
-var coin = new Studio.Image('images/coin_16.png')
+var coin = new Studio.Image('images/coin_16.png',{
+	"0":{ x: 0, y: 0, width: 15, height: 15}
+})
 
-var curse = new Studio.Image('images/chupe_slices.png', {
-	"Rock":{ x: 32, y: 0, width: 32, height: 32},
-	"Rock First":{ x: 0, y: 0, width: 32, height: 32},
-	"Rock Last":{ x: 64, y: 0, width: 32, height: 32},
-	"Floating Rock Center":{ x: 32, y: 64, width: 32, height: 32},
-	"Floating Rock Left":{ x: 0, y: 64, width: 32, height: 32},
-	"Floating Rock Right":{ x: 64, y: 64, width: 32, height: 32},
-	"Large Cloud":{ x: 0, y: 160, width: 224, height: 68},
-	"Small Cloud 1":{ x: 0, y: 232, width: 70, height: 24},
-	"Skyline":{ x: 224, y: 0, width: 8, height: 256},
-	"Water":{ x: 224, y: 198, width: 32, height: 8},
-	"Water2":{ x: 224, y: 200, width: 32, height: 8},
-	"Water3":{ x: 224, y: 208, width: 32, height: 16},
-	"Water4":{ x: 224, y: 224, width: 32, height: 24},
-	"Water5":{ x: 224, y: 238, width: 32, height: 8},
-	"Water6":{ x: 224, y: 242, width: 32, height: 8},
-	"food_0":{ x: 99, y: 6, width: 24, height: 24},
-	"food_1":{ x: 131, y: 6, width: 24, height: 24},
-	"soda_0":{ x: 162, y: 0, width: 16, height: 32},
-	"soda_1":{ x: 178, y: 0, width: 16, height: 32}
+var curse = new Studio.Image('images/chupe.png', {
+	"Rock":{ x: 32, y: 256, width: 32, height: 32},
+	"Rock First":{ x: 0, y: 256, width: 32, height: 32},
+	"Rock Last":{ x: 64, y: 256, width: 32, height: 32},
+	"Floating Rock Center":{ x: 32, y: 256+64, width: 32, height: 32},
+	"Floating Rock Left":{ x: 0, y: 256+64, width: 32, height: 32},
+	"Floating Rock Right":{ x: 64, y: 256+64, width: 32, height: 32},
+	"Large Cloud":{ x: 0, y: 256+160, width: 224, height: 68},
+	"Small Cloud 1":{ x: 0, y: 256+232, width: 70, height: 24},
+	"Skyline":{ x: 224, y: 256, width: 8, height: 256},
+	"Water":{ x: 224, y: 256+198, width: 32, height: 8},
+	"Water2":{ x: 224, y: 256+200, width: 32, height: 8},
+	"Water3":{ x: 224, y: 256+208, width: 32, height: 16},
+	"Water4":{ x: 224, y: 256+224, width: 32, height: 24},
+	"Water5":{ x: 224, y: 256+238, width: 32, height: 8},
+	"Water6":{ x: 224, y: 256+242, width: 32, height: 8},
+	"food_0":{ x: 99, y: 256+6, width: 24, height: 24},
+	"food_1":{ x: 131, y: 256+6, width: 24, height: 24},
+	"soda_0":{ x: 162, y: 256, width: 16, height: 32},
+	"soda_1":{ x: 178, y: 256, width: 16, height: 32}
 })
 
 var coin_snd = new Studio.Sound('sounds/coin.mp3')
@@ -28,7 +30,7 @@ var jump_snd = new Studio.Sound('sounds/jump.mp3')
 var wind_snd = new Studio.Sound('sounds/wind.mp3')
 wind_snd.snd.loop=true
 
-var chupe = new Studio.Image('images/chupe.png');
+// var chupe = new Studio.Image('images/chupe.png');
 
 var right = {
 	pant: [[0,1],[1,1],[2,1],[3,1]],

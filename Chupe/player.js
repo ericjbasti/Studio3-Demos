@@ -1,7 +1,7 @@
 var Player = function(world){
 	this.width = 32;
 	this.height= 32; 
-	this.image = chupe;
+	this.image = curse;
 	this.rect ={x:0,y:0, width: 32, height: 32};
 	this.loop = right.walk;
 	this.hitbox = new Studio.DisplayObject({height: 32, width: 20});
@@ -41,6 +41,22 @@ Player.prototype.scoreUp = function(amount){
 }
 Player.prototype.hit = function(){
 	Game.playTween(this._hitAnimation);
+
 }
 
+
+var Coin = function(i){
+	this.x = 100+(i*60)
+	this.y = 64+parseInt(Math.random()*5)*32
+	this.loop = [[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0]]
+	this.height = 16
+	this.width = 16
+	this.image = coin
+	this.slice = 0
+	this.rect={x:0,y:0, width: 16, height: 15}
+}
+
+Studio.inherit(Coin, Studio.SpriteAnimation)
+
+Studio.createPool(Coin, 32)
 

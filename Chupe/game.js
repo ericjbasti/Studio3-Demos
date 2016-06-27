@@ -216,30 +216,32 @@ var Game = new Studio.Scene({
 		actionables.push(PLAYER_3);
 		actionables.push(PLAYER_4);
 		for (var i = 0; i != prizemax; i++){
-			var block = new Studio.SpriteAnimation({x: 100+(i*60), loop:[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0]],y: 64+parseInt(Math.random()*5)*32, height: 16, width: 16, image:coin, rect :{x:0,y:0, width: 16, height: 16}})
+			var block = Coin.fromPool({x:128+(i*64)})
 			prizes.push(block);
 			this.addChild(block);
 		}
-		for (var i = 0; i != max_food; i++){
-			var block = new Studio.Sprite({x: parseInt((Math.random()*18)+3)*32,y: 100, height: 24, width: 24, image:curse, slice: 'food_'+parseInt(Math.random()*2)})
-			foods.push(block);
-			makePhysicObject(block,this)
-			this.addChild(block);
-		}
+		// for (var i = 0; i != max_food; i++){
+		// 	var block = new Studio.Sprite({x: parseInt((Math.random()*18)+3)*32,y: 100, height: 24, width: 24, image:curse, slice: 'food_'+parseInt(Math.random()*2)})
+		// 	foods.push(block);
+		// 	makePhysicObject(block,this)
+		// 	this.addChild(block);
+		// }
 
-		for (var i = 0; i != max_soda; i++){
-			var block = new Studio.Sprite({x: parseInt((Math.random()*18)+3)*32,y: 100, height: 32, width: 16, image:curse, slice: 'soda_'+parseInt(Math.random()*2)})
-			foods.push(block);
-			makePhysicObject(block,this)
-			this.addChild(block);
-		}
+		// for (var i = 0; i != max_soda; i++){
+		// 	var block = new Studio.Sprite({x: parseInt((Math.random()*18)+3)*32,y: 100, height: 32, width: 16, image:curse, slice: 'soda_'+parseInt(Math.random()*2)})
+		// 	foods.push(block);
+		// 	makePhysicObject(block,this)
+		// 	this.addChild(block);
+		// }
 
 		this.addChild(new Studio.Restore())
 	}
 });
 
 stage.gamepadInput = function(t, pad){
-	
+	if(pad["MENU"]){
+		stage.setScene(Intro)
+	}
 	if((this.keys[38] || pad["UP"] || pad["A"])){
 		if(!t.jumping){
 			t.velocityY = -t._world.height/(t._world.height/16);
@@ -278,8 +280,51 @@ stage.gamepadInput = function(t, pad){
 
 var players = [PLAYER_1,PLAYER_2,PLAYER_3,PLAYER_4]
 
-PLAYER_1.height=PLAYER_1.width=16
+// PLAYER_1.height=PLAYER_1.width=16
 
+
+
+
+var AI = function(pad, time){
+	pad.ai_time+=Studio.delta
+	pad["UP"]=0;
+	if(pad.ai_time>time){
+		var key = parseInt(Math.random()*6)
+		switch (key){
+			case 0 : pad["RIGHT"]=0
+					 pad["LEFT"]=1
+					 break
+			case 1 : pad["RIGHT"]=1
+					 pad["LEFT"]=0
+					 break
+			case 2 : pad["UP"]=1
+					 break
+			case 3 : pad["RIGHT"]=0
+					 pad["LEFT"]=0
+					 break
+			case 4 : pad["UP"]=1
+					 break
+			case 5 : pad["UP"]=1
+					 break
+		}
+		pad.ai_time = 0
+	}
+}
+stage.GAMEPAD_2.ai_time = 0;
+stage.GAMEPAD_3.ai_time = 0;
+stage.GAMEPAD_4.ai_time = 0;
+
+PLAYER_2.onEnterFrame = function(){
+	AI(stage.GAMEPAD_2, 500)
+};
+
+PLAYER_3.onEnterFrame = function(){
+	AI(stage.GAMEPAD_3, 1000)
+};
+
+PLAYER_4.onEnterFrame = function(){
+	AI(stage.GAMEPAD_4, 300)
+};
 
 var GameLogic = function GameLogic(){
 	if(PLAYER_1){

@@ -1,4 +1,4 @@
-var stage = new Studio.Stage("canvas",{webgl:1, fullscreen:0, resolution: 4, dur: 1000/60, interpolate: 0, snap: true});
+var stage = new Studio.Stage("canvas",{webgl:1, fullscreen:0, resolution: 1, dur: 1000/60, interpolate: 0, snap: true});
 
 var GAMEPAD = new Studio.Plugin({
 	options: {
@@ -22,7 +22,7 @@ var GAMEPAD = new Studio.Plugin({
 	        // its very possible to not have one at some point in the index.
 
 	        if(this.gamepads[i]){ 
-
+	        	// console.log(this.gamepads[i])
 	            this.gamepad = this.gamepads[i];
 	            
 	            pad = stage['GAMEPAD_'+(i+1)];
@@ -42,7 +42,7 @@ var GAMEPAD = new Studio.Plugin({
 	            pad['LEFT'] = this.gamepad.buttons[14].value; // Left
 	            pad['RIGHT'] = this.gamepad.buttons[15].value; // Right
 
-	            //stage.keys['MENU'] = this.gamepad.buttons[16].value; // Menu
+	            pad['MENU'] = this.gamepad.buttons[9].value; // Menu
 
 	            // drawAnalogStick(gamepad.axes[0], gamepad.axes[1], 540, 416); // left stick
 	            // drawAnalogStick(gamepad.axes[2], gamepad.axes[3], 736, 416); // right stick
