@@ -22,7 +22,7 @@ var Game = new Studio.Scene({
 	x: -stage.width,
 	width: stage.width*1, 
 	height: stage.height*1,
-	colorHex: '#00ff00',
+	color_hex: '#66CCFF',
 	gravity: .78,
 	onActivate : function(stage){
 		stage.addTween(this,'chillInOut',{x:0},1500)
@@ -31,17 +31,24 @@ var Game = new Studio.Scene({
 		wind_snd.play();
 	},
 	build: function (scene){
-		this.addChild(new Studio.Clip({
-			x:0,
-			y:0,
-			width: this.width,
-			height: this.height,
-			anchorX: 0,
-			anchorY: 0
-		}))
+		// this.addChild(new Studio.Clip({
+		// 	x:0,
+		// 	y:0,
+		// 	width: this.width,
+		// 	height: this.height,
+		// 	anchorX: 0,
+		// 	anchorY: 0
+		// }))
 		// var patt = new Studio.Pattern({width:this.width,height:256, overflowX:96, overflowY: 0, image: curse, anchorX:0, anchorY:0, slice:'Skyline'}, this);
-		// this.addChild(patt);
+		// // this.addChild(patt);
 
+		// water = new Studio.Sprite({image: patt.image,
+		// 	y:199,
+		// 	width:this.width,
+		// 	height:58, 
+		// 	anchorX:0, anchorY:0
+		// })
+		// this.addChild(water);
 		// var water = new Studio.Pattern({
 		// 	y:199,
 		// 	width:this.width,
@@ -106,6 +113,23 @@ var Game = new Studio.Scene({
 				this.x = scene.width;
 			}
 		}
+
+
+		vtextBox = new Studio.TextBox(this.width-10, this.height, stage).apply({
+			x: 18 , 
+			y: 18 , 
+			anchorX:0, 
+			anchorY: 0,
+			font: '16px BigBreak',
+			lineHeight: 14 | 0 , 
+			vertical_align: Studio.MIDDLE, 
+			horizontal_align: 0.5,
+			shadowColor: '#FF0080'
+		})
+
+		vtextBox.setText('THI si s a text').finish()
+
+		this.addChild(vtextBox)
 
 		for (var i = 0; i != 2; i++){
 			var block = new Studio.Sprite({x: 16+(i*32), y: 32*7, height: 32, width: 32, image:curse, slice:'Floating Rock Center'})
@@ -211,6 +235,9 @@ var Game = new Studio.Scene({
 		this.addChild(PLAYER_2)
 		this.addChild(PLAYER_3)
 		this.addChild(PLAYER_4)
+
+		this.addChild(PLAYER_1.score_text);
+		
 		actionables.push(PLAYER_1);
 		actionables.push(PLAYER_2);
 		actionables.push(PLAYER_3);
@@ -234,7 +261,7 @@ var Game = new Studio.Scene({
 		// 	this.addChild(block);
 		// }
 
-		this.addChild(new Studio.Restore())
+		// this.addChild(new Studio.Restore())
 	}
 });
 
