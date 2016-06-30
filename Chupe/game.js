@@ -39,55 +39,55 @@ var Game = new Studio.Scene({
 			anchorX: 0,
 			anchorY: 0
 		}))
-		var patt = new Studio.Pattern({width:this.width,height:256, overflowX:96, overflowY: 0, image: curse, anchorX:0, anchorY:0, slice:'Skyline'}, this);
-		this.addChild(patt);
+		// var patt = new Studio.Pattern({width:this.width,height:256, overflowX:96, overflowY: 0, image: curse, anchorX:0, anchorY:0, slice:'Skyline'}, this);
+		// this.addChild(patt);
 
-		var water = new Studio.Pattern({
-			y:199,
-			width:this.width,
-			height:58, 
-			overflowX:32, 
-			overflowY: 0, 
-			image: curse, 
-			anchorX:0, anchorY:0, 
-			slice:'Water',
-			onEnterFrame: function(){
-				this.x-=.1;
-				this.checkOverflow();
-			}}, this);
+		// var water = new Studio.Pattern({
+		// 	y:199,
+		// 	width:this.width,
+		// 	height:58, 
+		// 	overflowX:32, 
+		// 	overflowY: 0, 
+		// 	image: curse, 
+		// 	anchorX:0, anchorY:0, 
+		// 	slice:'Water',
+		// 	onEnterFrame: function(){
+		// 		this.x-=.1;
+		// 		this.checkOverflow();
+		// 	}}, this);
 
-		this.addChild(water);
+		// this.addChild(water);
 
-		var water2 = new Studio.Pattern({y:202,width:this.width,height:58, overflowX:32, overflowY: 0, image: curse, anchorX:0, anchorY:0, slice:'Water2'}, this);
-		water2.onEnterFrame = function(){
-			this.x-=.2;
-			this.checkOverflow();
-		}
-		this.addChild(water2);
+		// var water2 = new Studio.Pattern({y:202,width:this.width,height:58, overflowX:32, overflowY: 0, image: curse, anchorX:0, anchorY:0, slice:'Water2'}, this);
+		// water2.onEnterFrame = function(){
+		// 	this.x-=.2;
+		// 	this.checkOverflow();
+		// }
+		// this.addChild(water2);
 
-		var water3 = new Studio.Pattern({y:210,width:this.width,height:58, overflowX:32, overflowY: 0, image: curse, anchorX:0, anchorY:0, slice:'Water3'}, this);
-		water3.onEnterFrame = function(){
-			this.x-=.25;
-			this.checkOverflow();
-		}
-		this.addChild(water3);
+		// var water3 = new Studio.Pattern({y:210,width:this.width,height:58, overflowX:32, overflowY: 0, image: curse, anchorX:0, anchorY:0, slice:'Water3'}, this);
+		// water3.onEnterFrame = function(){
+		// 	this.x-=.25;
+		// 	this.checkOverflow();
+		// }
+		// this.addChild(water3);
 
-		var water4 = new Studio.Pattern({y:216,width:this.width,height:58, overflowX:32, overflowY: 0, image: curse, anchorX:0, anchorY:0, slice:'Water4'}, this);
-		water4.onEnterFrame = function(){
-			this.x-=.3;
-			this.checkOverflow();
-		}
-		this.addChild(water4);
+		// var water4 = new Studio.Pattern({y:216,width:this.width,height:58, overflowX:32, overflowY: 0, image: curse, anchorX:0, anchorY:0, slice:'Water4'}, this);
+		// water4.onEnterFrame = function(){
+		// 	this.x-=.3;
+		// 	this.checkOverflow();
+		// }
+		// this.addChild(water4);
 
-		var water5 = new Studio.Pattern({y:228,width:this.width,height:58, overflowX:32, overflowY: 0, image: curse, anchorX:0, anchorY:0, slice:'Water5'}, this);
-		water5.onEnterFrame = function(){
-			this.x-=.4;
-			this.checkOverflow();
-		}
-		this.addChild(water5);
+		// var water5 = new Studio.Pattern({y:228,width:this.width,height:58, overflowX:32, overflowY: 0, image: curse, anchorX:0, anchorY:0, slice:'Water5'}, this);
+		// water5.onEnterFrame = function(){
+		// 	this.x-=.4;
+		// 	this.checkOverflow();
+		// }
+		// this.addChild(water5);
 
-		var water6 = new Studio.Pattern({y:248,width:this.width,height:100, overflowX:32, overflowY: 0, image: curse, anchorX:0, anchorY:0, slice:'Water6'}, this);
-		this.addChild(water6);
+		// var water6 = new Studio.Pattern({y:248,width:this.width,height:100, overflowX:32, overflowY: 0, image: curse, anchorX:0, anchorY:0, slice:'Water6'}, this);
+		// this.addChild(water6);
 
 		var cloud = new Studio.Sprite({x:64,y:16, width:32*7, height:68, image:curse, slice:'Large Cloud', borderlap: true, border: this})
 		this.addChild(cloud);
