@@ -23,7 +23,7 @@ var stage = new Studio.Stage('canvas',{
 	fullscreen : 1, 
 	resolution : 1, 
 	// interpolate : 0, 
-	_maxCount : 1000,
+	_maxCount : 100,
 	// _maxCount : 3000,
 	// _maxCount : 1400,
 	// smoothing: false,
@@ -196,12 +196,12 @@ for (var i = 0; i!=MAX;i++){
 }
 
 var textbox = new Studio.TextBox(512,256,stage);
-textbox.apply({anchorX: 0.5, anchorY: 0})
+textbox.apply({anchorX: 0, anchorY: 0})
 textbox.lineHeight = 24
 textbox.setFont('16px Arial');
 textbox.setText('Hilo world! Lorem ipsum dolor sit amet, ac amet sit lorem, velit quam. Condimentum vitae maecenas tristique ante leo, dui bibendum nam ut, in laoreet, et dui justo, sed vestibulum. Vel vitae sed ac, pellentesque conubia lorem, faucibus fringilla duis quis justo fringilla mauris, nibh sit augue dui, tortor vestibulum euismod a. Tempor sollicitudin in at fusce. Quam ut, enim dignissim vehicula consectetuer, mauris risus nostra, fermentum vel enim leo posuere sed nulla, erat quis tristique. Volutpat consectetuer suspendisse, nec tincidunt pellentesque. Porttitor magna, sit sed eleifend nam ante elit scelerisque, lorem pede proin eros, commodo nulla at sed quis, in faucibus auctor laoreet. Aliquet sapien orci maecenas pharetra, parturient duis praesent mi et ipsum, ac nulla, adipiscing habitasse nullam nullam viverra, feugiat curabitur. Nec commodo ut pulvinar sollicitudin pellentesque, donec in per vulputate id maecenas, tristique in nunc. Dolor et morbi. Id nunc non diam sollicitudin dictum, morbi urna, et ultricies non blandit imperdiet conubia hendrerit, erat pellentesque, nunc amet aliquet in.').finish()
-textbox.x = stage.width/2;
-textbox.y = 300;
+textbox.x = 100;
+textbox.y = 100;
 
 
 stage.addTween(textbox,'bounceOut',{scaleX:.5, scaleY: .5, rotation: 0},5000).loop()
@@ -229,9 +229,29 @@ var temp = new Studio.Image('assets/char.png',{
 })
 
 var tttt = new Studio.Sprite({
-	x: stage.width/2, y: 200, width: 33, height: 66, image: temp, slice : 'body'
+	x: 100, y: 50, width: 40, height: 66, image: temp, slice : 'body',
+	velocityX: 3, velocityY: 3
 })
-stage.addChild(tttt);
+
+tttt.onEnterFrame= function(){
+	this.rotation+=this.velocityX
+	this.x+=this.velocityX
+	this.y+=this.velocityY
+
+	if(this.x>textbox.width){
+		this.velocityX *= -1
+	}
+	if(this.y>textbox.height){
+		this.velocityY *= -1
+	}
+	if(this.x<0){
+		this.velocityX *= -1
+	}
+	if(this.y<0){
+		this.velocityY *= -1
+	}
+}
+textbox.addChild(tttt);
 
 Studio.start()
 
