@@ -9,7 +9,7 @@
 </head>
 
 <body style="margin:0;background: #333">
-	<canvas id="canvas" height="342" width="512"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
+	<canvas id="canvas" height="600" width="640"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
 </body>
 <script src="studio-compiled.js"></script>
 <style>
@@ -19,31 +19,15 @@
 <script>
 	
 
-var stage = new Studio.Stage("canvas",{webgl:0, fullscreen:0, resolution: 1, dur: 1000/1, interpolate: 1});
+var stage = new Studio.Stage("canvas",{webgl:1, fullscreen:0, resolution: 2, dur: 1000/60, interpolate: 1});
 
 var textbox = new Studio.TextBox(512,512,stage);
-textbox.lineHeight = 28
-textbox.setFont('28px Times New Roman')
-textbox.shadow = 6
-textbox.fontColor = '#fff'
+textbox.lineHeight = 16
 textbox.setText('Hilo world! Lorem ipsum dolor sit amet, ac amet sit lorem, velit quam. Condimentum vitae maecenas tristique ante leo, dui bibendum nam ut, in laoreet, et dui justo, sed vestibulum. Vel vitae sed ac, pellentesque conubia lorem, faucibus fringilla duis quis justo fringilla mauris, nibh sit augue dui, tortor vestibulum euismod a. Tempor sollicitudin in at fusce. Quam ut, enim dignissim vehicula consectetuer, mauris risus nostra, fermentum vel enim leo posuere sed nulla, erat quis tristique. Volutpat consectetuer suspendisse, nec tincidunt pellentesque. Porttitor magna, sit sed eleifend nam ante elit scelerisque, lorem pede proin eros, commodo nulla at sed quis, in faucibus auctor laoreet. Aliquet sapien orci maecenas pharetra, parturient duis praesent mi et ipsum, ac nulla, adipiscing habitasse nullam nullam viverra, feugiat curabitur. Nec commodo ut pulvinar sollicitudin pellentesque, donec in per vulputate id maecenas, tristique in nunc. Dolor et morbi. Id nunc non diam sollicitudin dictum, morbi urna, et ultricies non blandit imperdiet conubia hendrerit, erat pellentesque, nunc amet aliquet in.').finish()
-textbox.x = 256;
-textbox.y = 256;
+textbox.x = 300;
+textbox.y = 300;
 stage.addChild(textbox);
 
-stage.color.setFromHex('#FFFF00')
-
-
-// Studio.Effect.BillAtkinsonDither_BW.action(textbox.image)
-// 
-Studio.Effect.Blur.init()
-// textbox.image.applyEffect(Studio.Effect.Blur)
-
-
-
-
-
-// stage.addEffect(Studio.Effect.BillAtkinsonDither_BW)
 Studio.start();
 
 

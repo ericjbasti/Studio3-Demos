@@ -3,43 +3,81 @@ canvas{border:1px solid #19f; max-width: 100%}
 pre{color: #ddd;margin-bottom: 3px; font-size: 12px; width: 100%; overflow:scroll}
 article{display: inline-block;padding: 1em; width: 33.3332%; text-align: center}
 @media screen and (max-width: 1000px){article{width: 50%}}
-@media screen and (max-width: 640px){article{width: 100%}}</style><article><pre>addChild(new Studio.Rect())        </pre><canvas id="test1"></canvas><script>var test1 = new Studio.Stage('test1')
-test1.addChild(new Studio.Rect({x:10,y:10,width:10,height:10,color:Studio.RED}));</script></article><article><pre>rect.rotation=25</pre><canvas id="test2"><script>var test2 = new Studio.Stage('test2')
-test2.addChild(new Studio.Rect({x:100,y:75,width:100,height:100,color:Studio.BLUE, rotation: 25}));</script></canvas></article><article><pre>Studio.Stage({resolution:.25})</pre><canvas id="test3"><script>var test3 = new Studio.Stage('test3',{resolution:.25})
-test3.addChild(new Studio.Rect({x:100,y:75,width:100,height:100,color:Studio.BLUE, rotation: 25}));</script></canvas></article><article><pre>new Studio.Stage('test4',{color:Studio.RED})</pre><canvas id="test4"><script>var test4 = new Studio.Stage('test4',{color:Studio.RED})
-test4.addChild(new Studio.Rect({x:100,y:75,width:100,height:100,color:Studio.YELLOW, rotation: 25}));</script></canvas></article><article><pre>new Studio.Stage('test5',{color_hex:"#40c"})</pre><canvas id="test5"><script>var test5 = new Studio.Stage('test5',{color_hex:'#40c'})
-test5.addChild(new Studio.Rect({x:100,y:75,width:100,height:100,color:Studio.YELLOW, rotation: 25}));
-test5.addChild(new Studio.Rect({x:120,y:22,width:30,height:30,color_hex:"#EEEEEEaa"}));</script></canvas></article><article><pre>rect.blendmode='lighten'</pre><canvas id="test6"><script>var test6 = new Studio.Stage('test6',{color_hex:'#000080', resolution: 1})
-test6.addChild(new Studio.Rect({x:100,y:75,width:100,height:100,color_hex:"#0c0", rotation: 25}));
-test6.addChild(new Studio.Rect({x:135,y:72,width:100,height:100,color_hex:"#f00",blendmode:'lighten',rotation: 45}));
-test6.addChild(new Studio.Rect({x:170,y:72,width:100,height:100,color_hex:"#00f",blendmode:'lighten',rotation: 33}));</script></canvas></article><article><pre>rect.blendmode='lighten'</pre><canvas id="test7"><script>var test7 = new Studio.Stage('test7',{color_hex:'#FF0080', resolution: 1, 
-	dur:1000/4,
-	timeStep:Studio.timeStep.static_fixed
-})
-test7.addChild(new Studio.Rect({x:100,y:80,width:40,height:40, color_hex:'#FFFF00',
-	onEnterFrame:function(){this.rotation++;}
-}));
-test7.children[0].addChild(new Studio.Rect({
-	x:40,y:0,height:10, width: 10, color_hex:'#66CCFF',orbitSpeed:8,
-	onEnterFrame:function(){this.rotation++;}
-}))
-test7.children[0].children[0].addChild(new Studio.Rect({
-	x:10,y:0,height:5, width: 5, color_hex:'#8000FF',orbitSpeed:12,
-	onEnterFrame:function(){this.rotation++;}
-}))</script></canvas><br/><label>Throttle <input id="test7_throttle" type="checkbox" checked="checked"/><script>var t = document.getElementById('test7_throttle')
-t.onchange = function(input){
-	if(input.target.checked){
-		test7.dur = 1000/2
-		test7.timeStep = Studio.timeStep.static_fixed
-	}else{
-		test7.dur = 1000/2
-		test7.timeStep = Studio.timeStep.fixed
-	}
-}</script></label></article></body><script>test1.onExitFrame= function(){this.active=0}
-test2.onExitFrame= function(){this.active=0}
-test3.onExitFrame= function(){this.active=0}
-test4.onExitFrame= function(){this.active=0}
-test5.onExitFrame= function(){this.active=0}
-test6.onExitFrame= function(){this.active=0}
+@media screen and (max-width: 640px){article{width: 100%}}
+</style><canvas id="canvas"></canvas></body><script>//- test1.onExitFrame= function(){this.active=0}
+//- test2.onExitFrame= function(){this.active=0}
+//- test3.onExitFrame= function(){this.active=0}
+//- test4.onExitFrame= function(){this.active=0}
+//- test5.onExitFrame= function(){this.active=0}
+//- test6.onExitFrame= function(){this.active=0}
 
-Studio.start();</script></html>
+//- Studio.start();
+
+var stage = new Studio.Stage('canvas')
+
+var textbox  = new Studio.TextBox(256,256,stage)
+textbox.anchorX=0
+textbox.anchorY=0
+textbox.fontcolor = 'red'
+textbox.setText('Person Name: \n<bold> First\n<italic> Last </italic> \nHi </bold>').finish()
+stage.addChild(textbox)
+
+
+Studio.start();
+
+Studio.Font = function(){
+	this.size = ''
+	this.family = ''
+	this.weight = ''
+	this.style = ''
+	this.varient = ''
+}
+
+Studio.Font.prototype = {
+	constructor : Studio.Font,
+	build: function(){
+		return (this.varient + this.style + this.weight + this.size + this.family)
+	}
+}
+
+//- var styles = { 
+//- 	'bold': {
+//- 		activate : function(me){
+//- 			console.log('bold start')
+//- 			//- me.font.weight = 'bold'
+
+//- 		},
+//- 		terminate : function(me){
+//- 			//- me.font.weight = 'normal'
+//- 			console.log('bold end')
+//- 		}
+
+//- 	}
+//- }
+
+//- for(var n = 0; n!= words.length; n++){
+//- 	var word = words[n];
+//- 	if(word[0]==='<' && word[word.length-1]==='>'){
+//- 		var start = 1;
+//- 		if(word[1]=='/'){
+//- 			start = 2;
+//- 		}
+//- 		var tag = word.slice(start,word.length-1);
+//- 		if(styles[tag]){
+//- 			if(start === 1){
+//- 				styles[tag].activate()
+//- 			}else{
+//- 				styles[tag].terminate()
+//- 			}
+//- 		}
+//- 	}
+
+
+//- }
+
+
+
+//- for (var i = 0; i!= tags.length; i++){
+//- 	var exp = new RegExp('<'+tags[i]+'>(.*?)<\/'+tags[i]+'>', 'g')
+//- 	console.log(myTEXT.match(exp))
+//- }</script></html>

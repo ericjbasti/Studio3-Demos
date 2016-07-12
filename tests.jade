@@ -16,21 +16,93 @@ html
 			article{display: inline-block;padding: 1em; width: 33.3332%; text-align: center}
 			@media screen and (max-width: 1000px){article{width: 50%}}
 			@media screen and (max-width: 640px){article{width: 100%}}
-		include tests/test_1
-		include tests/test_2
-		include tests/test_3
-		include tests/test_4
-		include tests/test_5
-		include tests/test_6
-		include tests/test_7
+
+		canvas#canvas
+		//- include tests/test_1
+		//- include tests/test_2
+		//- include tests/test_3
+		//- include tests/test_4
+		//- include tests/test_5
+		//- include tests/test_6
+		//- include tests/test_7
 		
 	script.
-		test1.onExitFrame= function(){this.active=0}
-		test2.onExitFrame= function(){this.active=0}
-		test3.onExitFrame= function(){this.active=0}
-		test4.onExitFrame= function(){this.active=0}
-		test5.onExitFrame= function(){this.active=0}
-		test6.onExitFrame= function(){this.active=0}
+		//- test1.onExitFrame= function(){this.active=0}
+		//- test2.onExitFrame= function(){this.active=0}
+		//- test3.onExitFrame= function(){this.active=0}
+		//- test4.onExitFrame= function(){this.active=0}
+		//- test5.onExitFrame= function(){this.active=0}
+		//- test6.onExitFrame= function(){this.active=0}
+
+		//- Studio.start();
+
+		var stage = new Studio.Stage('canvas')
+
+		var textbox  = new Studio.TextBox(256,256,stage)
+		textbox.anchorX=0
+		textbox.anchorY=0
+		textbox.fontcolor = 'red'
+		textbox.setText('Person Name: \n<bold> First\n<italic> Last </italic> \nHi </bold>').finish()
+		stage.addChild(textbox)
+
 
 		Studio.start();
+
+		Studio.Font = function(){
+			this.size = ''
+			this.family = ''
+			this.weight = ''
+			this.style = ''
+			this.varient = ''
+		}
+
+		Studio.Font.prototype = {
+			constructor : Studio.Font,
+			build: function(){
+				return (this.varient + this.style + this.weight + this.size + this.family)
+			}
+		}
+
+		//- var styles = { 
+		//- 	'bold': {
+		//- 		activate : function(me){
+		//- 			console.log('bold start')
+		//- 			//- me.font.weight = 'bold'
+
+		//- 		},
+		//- 		terminate : function(me){
+		//- 			//- me.font.weight = 'normal'
+		//- 			console.log('bold end')
+		//- 		}
+
+		//- 	}
+		//- }
+
+		//- for(var n = 0; n!= words.length; n++){
+		//- 	var word = words[n];
+		//- 	if(word[0]==='<' && word[word.length-1]==='>'){
+		//- 		var start = 1;
+		//- 		if(word[1]=='/'){
+		//- 			start = 2;
+		//- 		}
+		//- 		var tag = word.slice(start,word.length-1);
+		//- 		if(styles[tag]){
+		//- 			if(start === 1){
+		//- 				styles[tag].activate()
+		//- 			}else{
+		//- 				styles[tag].terminate()
+		//- 			}
+		//- 		}
+		//- 	}
+
+
+		//- }
+		
+
+
+		//- for (var i = 0; i!= tags.length; i++){
+		//- 	var exp = new RegExp('<'+tags[i]+'>(.*?)<\/'+tags[i]+'>', 'g')
+		//- 	console.log(myTEXT.match(exp))
+		//- }
+
 		

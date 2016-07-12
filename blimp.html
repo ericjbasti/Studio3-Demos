@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+    <title>Studio3</title>
+	<meta name="viewport" content="width=320, user-scalable=1, maximum-scale=1"/>
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<link rel="apple-touch-icon" href="icon.png" />
+</head>
+
+<body style="margin:0;background: #333">
+	<canvas id="canvas" height="480" width="320"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
+</body>
+<script src="studio-compiled.js"></script>
+<script>
+
+
+var stage = new Studio.Stage('canvas',{
+	webgl : 0, 
+	dur : 1000/60, 
+	resolution : 1, 
+})
+
+var blimp = new Studio.Rect({
+	y: 400,
+	x: stage.width/2,
+	height: 32,
+	width: 64,
+	color_hex: '#00FFFF',
+	velocityX: 1,
+	velocityY: 0,
+	gravity: .9,
+	thrust: .90001
+})
+
+blimp.onTap = function(){
+	this.thrust+=.001
+	stage.addChild(person.fromPool({x:this.x, y: this.y, velocityY: 1, width: 8, height: 16}));
+}
+
+blimp.logic = function(){
+	this.x+=this.velocityX;
+
+	this.velocityY+=this.gravity;
+	this.velocityY-=this.thrust;
+
+	this.y+=this.velocityY;
+	if(this.x>stage.width-(this.width/2)){
+		this.velocityX*=-1;
+	}
+	if(this.x<+(this.width/2)){
+		this.velocityX*=-1;
+	}
+	if(this.y<this.height/2){
+		this.y = this.height/2
+	}
+	if(this.y>stage.height-this.height/2){
+		this.y = stage.height-this.height/2
+	}
+}
+
+var truck = function(){
+	this.width = 48
+	this.height = 16
+	this.color = new Studio.Color(0,255,0,1)
+	this.y = stage.height-10
+}
+Studio.inherit(truck,Studio.Rect)
+truck.prototype.logic = function(){
+	this.x+=4
+	if(this.x>stage.width+this.width) this.x = -32
+}
+
+
+var person = function(){
+	this.height= 16
+	this.width= 8
+	this.anchorY=1
+	this.color = new Studio.Color(255,50,50,1)
+	this.velocityY = 1
+	this.y = 50
+	this.x = 50
+}
+Studio.inherit(person,Studio.Rect)
+
+person.prototype.logic = function(){
+	this.y+=this.velocityY
+	this.velocityY+=.2
+	if(this.y>stage.height){
+		this.y=stage.height;
+		this.width = 16
+		this.height = 4
+		this.intoPool()
+		stage.removeChild(this)
+	}
+	if(this.y>stage.height-truck.height){
+		if(this.x>truck.x-16 && this.x<truck.x+16){
+			this.color.setFromHex('#FFFF00')
+		}
+	}
+}
+
+Studio.createPool(person,4)
+
+stage.addChild(blimp)
+stage.enableTouchEvents();
+stage.addButton(blimp)
+var truck = new truck()
+stage.addChild(truck)
+
+Studio.start()
+
+</script>
+
+
+</html>
+
+
