@@ -1,83 +1,89 @@
-<!DOCTYPE html5><html><head><title>Studio3</title><meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black"/><link rel="apple-touch-icon" href="icon.png"/><script src="studio-compiled.js"></script><script src="stats.js"></script></head><body style="margin:0;background: #333"><style>*{box-sizing:border-box}
-canvas{border:1px solid #19f; max-width: 100%}
-pre{color: #ddd;margin-bottom: 3px; font-size: 12px; width: 100%; overflow:scroll}
-article{display: inline-block;padding: 1em; width: 33.3332%; text-align: center}
-@media screen and (max-width: 1000px){article{width: 50%}}
-@media screen and (max-width: 640px){article{width: 100%}}
-</style><canvas id="canvas"></canvas></body><script>//- test1.onExitFrame= function(){this.active=0}
-//- test2.onExitFrame= function(){this.active=0}
-//- test3.onExitFrame= function(){this.active=0}
-//- test4.onExitFrame= function(){this.active=0}
-//- test5.onExitFrame= function(){this.active=0}
-//- test6.onExitFrame= function(){this.active=0}
-
-//- Studio.start();
-
-var stage = new Studio.Stage('canvas')
-
-var textbox  = new Studio.TextBox(256,256,stage)
-textbox.anchorX=0
-textbox.anchorY=0
-textbox.fontcolor = 'red'
-textbox.setText('Person Name: \n<bold> First\n<italic> Last </italic> \nHi </bold>').finish()
-stage.addChild(textbox)
-
-
-Studio.start();
-
-Studio.Font = function(){
-	this.size = ''
-	this.family = ''
-	this.weight = ''
-	this.style = ''
-	this.varient = ''
-}
-
-Studio.Font.prototype = {
-	constructor : Studio.Font,
-	build: function(){
-		return (this.varient + this.style + this.weight + this.size + this.family)
-	}
-}
-
-//- var styles = { 
-//- 	'bold': {
-//- 		activate : function(me){
-//- 			console.log('bold start')
-//- 			//- me.font.weight = 'bold'
-
-//- 		},
-//- 		terminate : function(me){
-//- 			//- me.font.weight = 'normal'
-//- 			console.log('bold end')
-//- 		}
-
-//- 	}
-//- }
-
-//- for(var n = 0; n!= words.length; n++){
-//- 	var word = words[n];
-//- 	if(word[0]==='<' && word[word.length-1]==='>'){
-//- 		var start = 1;
-//- 		if(word[1]=='/'){
-//- 			start = 2;
-//- 		}
-//- 		var tag = word.slice(start,word.length-1);
-//- 		if(styles[tag]){
-//- 			if(start === 1){
-//- 				styles[tag].activate()
-//- 			}else{
-//- 				styles[tag].terminate()
-//- 			}
-//- 		}
-//- 	}
-
-
-//- }
-
-
-
-//- for (var i = 0; i!= tags.length; i++){
-//- 	var exp = new RegExp('<'+tags[i]+'>(.*?)<\/'+tags[i]+'>', 'g')
-//- 	console.log(myTEXT.match(exp))
-//- }</script></html>
+<!DOCTYPE html5>
+<html>
+  <head>
+    <title>Studio3</title>
+    <meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+    <link rel="apple-touch-icon" href="icon.png"/>
+    <script src="studio-compiled.js"></script>
+    <script src="stats.js"></script>
+  </head>
+  <body style="margin:0;background: #333">
+    <style>
+      *{box-sizing:border-box}
+      canvas{border:1px solid #19f; max-width: 100%}
+      pre{color: #ddd;margin-bottom: 3px; font-size: 12px; width: 100%; overflow:scroll}
+      article{display: inline-block;padding: 1em; width: 33.3332%; text-align: center}
+      @media screen and (max-width: 1000px){article{width: 50%}}
+      @media screen and (max-width: 640px){article{width: 100%}}
+      
+    </style>
+    <canvas id="canvas" width="256" height="256"></canvas>
+  </body>
+  <script>
+    //- test1.onExitFrame= function(){this.active=0}
+    //- test2.onExitFrame= function(){this.active=0}
+    //- test3.onExitFrame= function(){this.active=0}
+    //- test4.onExitFrame= function(){this.active=0}
+    //- test5.onExitFrame= function(){this.active=0}
+    //- test6.onExitFrame= function(){this.active=0}
+    
+    //- Studio.start();
+    
+    var stage = new Studio.Stage('canvas')
+    
+    var textbox  = new Studio.TextBox(256,256,stage)
+    textbox.anchorX=0
+    textbox.anchorY=0
+    textbox.fontcolor = 'red'
+    textbox.setText('Person <b> Name: </b> <i> First </i> Last Hi Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a <b> galley </b> of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was <i> popularised in the 1960s with the release of Letraset sheets containing </i> Lorem Ipsum passages, and more recently with desktop publishing <b> software </b> like Aldus PageMaker including versions of Lorem Ipsum.').finish()
+    stage.addChild(textbox)
+    
+    
+    Studio.start();
+    
+    
+    //- var styles = { 
+    //- 	'bold': {
+    //- 		activate : function(me){
+    //- 			console.log('bold start')
+    //- 			//- me.font.weight = 'bold'
+    
+    //- 		},
+    //- 		terminate : function(me){
+    //- 			//- me.font.weight = 'normal'
+    //- 			console.log('bold end')
+    //- 		}
+    
+    //- 	}
+    //- }
+    
+    //- for(var n = 0; n!= words.length; n++){
+    //- 	var word = words[n];
+    //- 	if(word[0]==='<' && word[word.length-1]==='>'){
+    //- 		var start = 1;
+    //- 		if(word[1]=='/'){
+    //- 			start = 2;
+    //- 		}
+    //- 		var tag = word.slice(start,word.length-1);
+    //- 		if(styles[tag]){
+    //- 			if(start === 1){
+    //- 				styles[tag].activate()
+    //- 			}else{
+    //- 				styles[tag].terminate()
+    //- 			}
+    //- 		}
+    //- 	}
+    
+    
+    //- }
+    
+    
+    
+    //- for (var i = 0; i!= tags.length; i++){
+    //- 	var exp = new RegExp('<'+tags[i]+'>(.*?)<\/'+tags[i]+'>', 'g')
+    //- 	console.log(myTEXT.match(exp))
+    //- }
+  </script>
+</html>

@@ -17,7 +17,7 @@ html
 			@media screen and (max-width: 1000px){article{width: 50%}}
 			@media screen and (max-width: 640px){article{width: 100%}}
 
-		canvas#canvas
+		canvas#canvas(width='256' height='256')
 		//- include tests/test_1
 		//- include tests/test_2
 		//- include tests/test_3
@@ -42,26 +42,12 @@ html
 		textbox.anchorX=0
 		textbox.anchorY=0
 		textbox.fontcolor = 'red'
-		textbox.setText('Person Name: \n<bold> First\n<italic> Last </italic> \nHi </bold>').finish()
+		textbox.setText('Person <b> Name: </b> <i> First </i> Last Hi Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a <b> galley </b> of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was <i> popularised in the 1960s with the release of Letraset sheets containing </i> Lorem Ipsum passages, and more recently with desktop publishing <b> software </b> like Aldus PageMaker including versions of Lorem Ipsum.').finish()
 		stage.addChild(textbox)
 
 
 		Studio.start();
 
-		Studio.Font = function(){
-			this.size = ''
-			this.family = ''
-			this.weight = ''
-			this.style = ''
-			this.varient = ''
-		}
-
-		Studio.Font.prototype = {
-			constructor : Studio.Font,
-			build: function(){
-				return (this.varient + this.style + this.weight + this.size + this.family)
-			}
-		}
 
 		//- var styles = { 
 		//- 	'bold': {
