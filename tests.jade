@@ -37,12 +37,13 @@ html
 		//- Studio.start();
 
 		var stage = new Studio.Stage('canvas')
-
+		stage.onExitFrame= function(){this.active=0}
 		var textbox  = new Studio.TextBox(256,256,stage)
 		textbox.anchorX=0
 		textbox.anchorY=0
-		textbox.fontcolor = 'red'
-		textbox.setText('Person <b> Name: </b> <i> First </i> Last Hi Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a <b> galley </b> of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was <i> popularised in the 1960s with the release of Letraset sheets containing </i> Lorem Ipsum passages, and more recently with desktop publishing <b> software </b> like Aldus PageMaker including versions of Lorem Ipsum.').finish()
+		textbox.setText('Person <b> Name: </> <i> First </> Last Hi <b> Lorem </> Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a <b> galley </> of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised <i> in the </> <bi> 1960s with the release of Letraset sheets containing </> Lorem Ipsum passages, and more recently with desktop publishing <b> software </> like Aldus PageMaker including versions of Lorem Ipsum.').finish()
+
+		//- textbox.setText('Person First Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.').finish()
 		stage.addChild(textbox)
 
 
