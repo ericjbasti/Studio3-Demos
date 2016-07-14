@@ -17,7 +17,7 @@ html
 			@media screen and (max-width: 1000px){article{width: 50%}}
 			@media screen and (max-width: 640px){article{width: 100%}}
 
-		canvas#canvas(width='256' height='256')
+		canvas#canvas(width='800' height='600')
 		//- include tests/test_1
 		//- include tests/test_2
 		//- include tests/test_3
@@ -35,13 +35,15 @@ html
 		//- test6.onExitFrame= function(){this.active=0}
 
 		//- Studio.start();
+		var image = new Studio.Image('assets/classic_blue.png')
 
 		var stage = new Studio.Stage('canvas')
 		stage.onExitFrame= function(){this.active=0}
-		var textbox  = new Studio.TextBox(256,256,stage)
+		var textbox  = new Studio.TextBox(512,512,stage)
 		textbox.anchorX=0
 		textbox.anchorY=0
-		textbox.setText('Person <b> Name: </> <i> First </> Last Hi <b> Lorem </> Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a <b> galley </> of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised <i> in the </> <bi> 1960s with the release of Letraset sheets containing </> Lorem Ipsum passages, and more recently with desktop publishing <b> software </> like Aldus PageMaker including versions of Lorem Ipsum.').finish()
+		//- textbox.horizontal_align = 1
+		textbox.setText('<h1> Title Here </>\n<h2> Person Name: </>\n<i> First </> Last Hi <b> Lorem </> Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a <b> galley </> of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised <i> in the </> <bi> 1960s with the release of Letraset sheets containing </> Lorem Ipsum passages, and more recently with desktop publishing <b> software </> like Aldus PageMaker including versions of Lorem Ipsum.\n\n<h1> Title Two Here </>\nConvallis vehicula, velit praesent a. Rutrum maecenas aliquet. Et luctus nibh, semper feugiat lobortis. Urna ultrices ante quis, ultrices sollicitudin nulla eros, diam ligula massa in, id blandit velit perspiciatis risus in aenean, rutrum et pellentesque odio. Quis massa augue etiam libero integer inceptos, quis volutpat lacus, placerat libero nunc. Est justo. Imperdiet vel, quis ultricies amet, vulputate placerat est interdum vitae lacus taciti, et mauris rutrum ullamcorper, id blandit ad nibh commodo. Ipsum justo rutrum risus lorem per suspendisse, viverra ante platea, sem leo est facilisis odio vel aliquam. Aliquam cras egestas faucibus ullamcorper elit. Tristique pellentesque hac, vestibulum augue et ut accumsan felis donec, est mi nunc risus nunc qui ac.\n\n<h1> Title Three </>\nEget ac malesuada libero arcu dictumst, quis tristique, porttitor dui assumenda imperdiet dolor ultricies, sem wisi vivamus et nostra sagittis diam, tincidunt egestas ac nulla a amet. Lacus conubia, sed massa fermentum. Lectus diam cras sodales suspendisse tortor, amet suspendisse ipsum potenti, ante metus tristique lacinia et faucibus, eget pharetra commodo et nec ut. Odio urna suspendisse lectus nam. Purus sagittis a, consequat nec arcu felis fringilla curabitur, arcu nulla pede fermentum justo lorem venenatis, nascetur labore hac, eu integer vel elementum sed lorem ut.').finish()
 
 		//- textbox.setText('Person First Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.').finish()
 		stage.addChild(textbox)
