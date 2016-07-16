@@ -14,9 +14,9 @@ var Player = function(world){
 	this.dir = right;
 	this._hitAnimation = world.createTween(this,'bounceOut',{height: 16, width: 48}, 150);
 	this._hitAnimation.then('linear',{},200).then('elasticOut',{height:32,width:32}, 600, function(){this._hit=0}).last();
-	this.score_text = new Studio.TextBox(128,128,world);
-	this.score_text.font = "16px BigBreak"
-	this.score_text.color = '#fff'
+	this.score_text = new Studio.TextBox(128,32,stage);
+	this.score_text.font = new Studio.Font("BigBreak", 16)
+	this.score_text.fontColor = '#fff'
 	this.score_text.shadowColor = '#777'
 	this.score_text.x = 18;
 	this.score_text.anchorX = 0
@@ -31,6 +31,7 @@ var Player = function(world){
 	}
 	this.score_text.setText(this.playerName+': 0').finish();
 	player_count++;
+	world.addChild(this.score_text)
 }
 Studio.inherit(Player,Studio.SpriteAnimation)
 

@@ -49,6 +49,7 @@ canvas{
 		margin-right: 1em;
 		border: 1px solid #ddd;
 		background: none;
+		padding: 3px;
 	}
 	#editor input:focus, #editor textarea:focus{
 		border: 1px solid #d0f;
@@ -61,14 +62,15 @@ canvas{
 		appearance: none;
 		border-style: solid;
 		border-width: .44em 0 .44em .7em;
-		border-color: trans_parent trans_parent trans_parent #777;
+		border-color: transparent transparent transparent #777;
 		position: absolute;
 		top: -2px;
 		left: 2px;
+		padding: 0;
 	}
 	#editor input[type="checkbox"]:checked{
 		border-width: .7em .44em 0 .44em;
-		border-color: #777 trans_parent trans_parent trans_parent;
+		border-color: #777 transparent transparent transparent;
 		top: 0px;
 		left: 0;
 	}

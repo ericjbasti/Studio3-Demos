@@ -37,9 +37,18 @@ html
 		//- Studio.start();
 		var image = new Studio.Image('assets/classic_blue.png')
 
-		var stage = new Studio.Stage('canvas')
+		var stage = new Studio.Stage('canvas',{color_hex:'#777'})
 		stage.onExitFrame= function(){this.active=0}
 		var textbox  = new Studio.TextBox(512,512,stage)
+		textbox.live = true
+		textbox.font.set({family:'Georgia'})
+
+		stage.addTween(textbox.styles.h1,'linear',{size:30},1000)
+
+		stage.addTween(textbox,'chillInOut',{horizontal_align: .5}, 1000, function(){
+			this.live = false;
+		});
+		textbox.columns = 2
 		textbox.anchorX=0
 		textbox.anchorY=0
 		//- textbox.horizontal_align = 1
