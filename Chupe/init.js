@@ -1,4 +1,4 @@
-var stage = new Studio.Stage("canvas",{webgl:1, fullscreen:2, resolution: 1, dur: 1000/60, interpolate: 0, snap: true});
+var stage = new Studio.Stage("canvas",{webgl:0, fullscreen:2, resolution: 1, dur: 1000/60, interpolate: 0, snap: true});
 
 var GAMEPAD = new Studio.Plugin({
 	options: {
@@ -77,12 +77,13 @@ Studio.UIButton = function(attr, stage){
 	this.textBox = new Studio.TextBox(this.width-10, this.height, stage).apply({
 		x: 0 , 
 		y: 0 , 
-		font: '16px BigBreak',
+		font: new Studio.Font('BigBreak', 16),
 		lineHeight: 14 | 0 , 
 		vertical_align: Studio.MIDDLE, 
 		horizontal_align: 0.5,
 		shadowColor: '#FF0080'
 	})
+	console.log(this.textBox)
 	this.front.color.set(0,0,0,.8);
 	this.textBox.setText(this.text).finish();
 	this.addChildren(this.back,this.front,this.textBox);
@@ -123,7 +124,6 @@ button.hover = button.focus = function(a){
 	stage.playTween(this.hoverIn_tween)
 	this.back.color.setFromHex("#FF0080")
 	this.textBox.setColor('#FFFF66').finish()
-	console.log('button')
 }
 
 button.reset = function(a){
