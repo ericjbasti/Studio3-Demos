@@ -7,7 +7,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
     <link rel="apple-touch-icon" href="icon.png"/>
     <script src="studio-compiled.js"></script>
-    <script src="stats.js"></script>
   </head>
   <body style="margin:0;background: #333">
     <style>
@@ -20,33 +19,126 @@
       
     </style>
     <canvas id="canvas" width="800" height="600"></canvas>
+    <article>
+      <pre>addChild(new Studio.Rect())        </pre>
+      <canvas id="test1"></canvas>
+      <script>
+        var test1 = new Studio.Stage('test1')
+        test1.addChild(new Studio.Rect({x:10,y:10,width:10,height:10,color:Studio.RED}));
+      </script>
+    </article>
+    <article>
+      <pre>rect.rotation=25</pre>
+      <canvas id="test2">
+        <script>
+          var test2 = new Studio.Stage('test2')
+          test2.addChild(new Studio.Rect({x:100,y:75,width:100,height:100,color:Studio.BLUE, rotation: 25}));
+        </script>
+      </canvas>
+    </article>
+    <article>
+      <pre>Studio.Stage({resolution:.25})</pre>
+      <canvas id="test3">
+        <script>
+          var test3 = new Studio.Stage('test3',{resolution:.25})
+          test3.addChild(new Studio.Rect({x:100,y:75,width:100,height:100,color:Studio.BLUE, rotation: 25}));
+        </script>
+      </canvas>
+    </article>
+    <article>
+      <pre>new Studio.Stage('test4',{color:Studio.RED})</pre>
+      <canvas id="test4">
+        <script>
+          var test4 = new Studio.Stage('test4',{color:Studio.RED})
+          test4.addChild(new Studio.Rect({x:100,y:75,width:100,height:100,color:Studio.YELLOW, rotation: 25}));
+        </script>
+      </canvas>
+    </article>
+    <article>
+      <pre>new Studio.Stage('test5',{color_hex:"#40c"})</pre>
+      <canvas id="test5">
+        <script>
+          var test5 = new Studio.Stage('test5',{color_hex:'#40c'})
+          test5.addChild(new Studio.Rect({x:100,y:75,width:100,height:100,color:Studio.YELLOW, rotation: 25}));
+          test5.addChild(new Studio.Rect({x:120,y:22,width:30,height:30,color_hex:"#EEEEEEaa"}));
+        </script>
+      </canvas>
+    </article>
+    <article>
+      <pre>rect.blendmode='lighten'</pre>
+      <canvas id="test6">
+        <script>
+          var test6 = new Studio.Stage('test6',{color_hex:'#000080', resolution: 1})
+          test6.addChild(new Studio.Rect({x:100,y:75,width:100,height:100,color_hex:"#0c0", rotation: 25}));
+          test6.addChild(new Studio.Rect({x:135,y:72,width:100,height:100,color_hex:"#f00",blendmode:'lighten',rotation: 45}));
+          test6.addChild(new Studio.Rect({x:170,y:72,width:100,height:100,color_hex:"#00f",blendmode:'lighten',rotation: 33}));
+        </script>
+      </canvas>
+    </article>
+    <article>
+      <pre>rect.blendmode='lighten'</pre>
+      <canvas id="test7">
+        <script>
+          var test7 = new Studio.Stage('test7',{color_hex:'#FF0080', resolution: 1, 
+          	dur:1000/4,
+          	timeStep:Studio.timeStep.static_fixed
+          })
+          test7.addChild(new Studio.Rect({x:100,y:80,width:40,height:40, color_hex:'#FFFF00',
+          	onEnterFrame:function(){this.rotation++;}
+          }));
+          test7.children[0].addChild(new Studio.Rect({
+          	x:40,y:0,height:10, width: 10, color_hex:'#66CCFF',orbitSpeed:8,
+          	onEnterFrame:function(){this.rotation++;}
+          }))
+          test7.children[0].children[0].addChild(new Studio.Rect({
+          	x:10,y:0,height:5, width: 5, color_hex:'#8000FF',orbitSpeed:12,
+          	onEnterFrame:function(){this.rotation++;}
+          }))
+        </script>
+      </canvas><br/>
+      <label>Throttle 
+        <input id="test7_throttle" type="checkbox" checked="checked"/>
+        <script>
+          var t = document.getElementById('test7_throttle')
+          t.onchange = function(input){
+          	if(input.target.checked){
+          		test7.dur = 1000/2
+          		test7.timeStep = Studio.timeStep.static_fixed
+          	}else{
+          		test7.dur = 1000/2
+          		test7.timeStep = Studio.timeStep.fixed
+          	}
+          }
+        </script>
+      </label>
+    </article>
   </body>
   <script>
-    //- test1.onExitFrame= function(){this.active=0}
-    //- test2.onExitFrame= function(){this.active=0}
-    //- test3.onExitFrame= function(){this.active=0}
-    //- test4.onExitFrame= function(){this.active=0}
-    //- test5.onExitFrame= function(){this.active=0}
-    //- test6.onExitFrame= function(){this.active=0}
+    test1.onExitFrame= function(){this.active=0}
+    test2.onExitFrame= function(){this.active=0}
+    test3.onExitFrame= function(){this.active=0}
+    test4.onExitFrame= function(){this.active=0}
+    test5.onExitFrame= function(){this.active=0}
+    test6.onExitFrame= function(){this.active=0}
     
-    //- Studio.start();
+    
     var image = new Studio.Image('assets/classic_blue.png')
     
-    var stage = new Studio.Stage('canvas',{color_hex:'#777'})
-    stage.onExitFrame= function(){this.active=0}
+    var stage = new Studio.Stage('canvas')
+    //- stage.onExitFrame= function(){this.active=0}
     var textbox  = new Studio.TextBox(512,512,stage)
+    textbox.x=20
+    textbox.y = 20
+    //- textbox.justify = true
     textbox.live = true
-    textbox.font.set({family:'Georgia'})
+    textbox.font.set({family:'YanoneKaffeesatz-ExtraLight'})
     
-    stage.addTween(textbox.styles.h1,'linear',{size:30},1000)
+    //- stage.addTween(textbox.styles.h1,'linear',{size:30},1000)
     
-    stage.addTween(textbox,'chillInOut',{horizontal_align: .5}, 1000, function(){
-    	this.live = false;
-    });
-    textbox.columns = 2
-    textbox.anchorX=0
-    textbox.anchorY=0
-    //- textbox.horizontal_align = 1
+    stage.addTween(textbox,'chillInOut',{horizontal_align: 1}, 3000).loop().reflect(true)
+    textbox.columns = 3
+    textbox.anchorX = 0
+    textbox.anchorY = 0
     textbox.setText('<h1> Title Here </>\n<h2> Person Name: </>\n<i> First </> Last Hi <b> Lorem </> Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a <b> galley </> of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised <i> in the </> <bi> 1960s with the release of Letraset sheets containing </> Lorem Ipsum passages, and more recently with desktop publishing <b> software </> like Aldus PageMaker including versions of Lorem Ipsum.\n\n<h1> Title Two Here </>\nConvallis vehicula, velit praesent a. Rutrum maecenas aliquet. Et luctus nibh, semper feugiat lobortis. Urna ultrices ante quis, ultrices sollicitudin nulla eros, diam ligula massa in, id blandit velit perspiciatis risus in aenean, rutrum et pellentesque odio. Quis massa augue etiam libero integer inceptos, quis volutpat lacus, placerat libero nunc. Est justo. Imperdiet vel, quis ultricies amet, vulputate placerat est interdum vitae lacus taciti, et mauris rutrum ullamcorper, id blandit ad nibh commodo. Ipsum justo rutrum risus lorem per suspendisse, viverra ante platea, sem leo est facilisis odio vel aliquam. Aliquam cras egestas faucibus ullamcorper elit. Tristique pellentesque hac, vestibulum augue et ut accumsan felis donec, est mi nunc risus nunc qui ac.\n\n<h1> Title Three </>\nEget ac malesuada libero arcu dictumst, quis tristique, porttitor dui assumenda imperdiet dolor ultricies, sem wisi vivamus et nostra sagittis diam, tincidunt egestas ac nulla a amet. Lacus conubia, sed massa fermentum. Lectus diam cras sodales suspendisse tortor, amet suspendisse ipsum potenti, ante metus tristique lacinia et faucibus, eget pharetra commodo et nec ut. Odio urna suspendisse lectus nam. Purus sagittis a, consequat nec arcu felis fringilla curabitur, arcu nulla pede fermentum justo lorem venenatis, nascetur labore hac, eu integer vel elementum sed lorem ut.').finish()
     
     //- textbox.setText('Person First Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.').finish()
@@ -54,48 +146,5 @@
     
     
     Studio.start();
-    
-    
-    //- var styles = { 
-    //- 	'bold': {
-    //- 		activate : function(me){
-    //- 			console.log('bold start')
-    //- 			//- me.font.weight = 'bold'
-    
-    //- 		},
-    //- 		terminate : function(me){
-    //- 			//- me.font.weight = 'normal'
-    //- 			console.log('bold end')
-    //- 		}
-    
-    //- 	}
-    //- }
-    
-    //- for(var n = 0; n!= words.length; n++){
-    //- 	var word = words[n];
-    //- 	if(word[0]==='<' && word[word.length-1]==='>'){
-    //- 		var start = 1;
-    //- 		if(word[1]=='/'){
-    //- 			start = 2;
-    //- 		}
-    //- 		var tag = word.slice(start,word.length-1);
-    //- 		if(styles[tag]){
-    //- 			if(start === 1){
-    //- 				styles[tag].activate()
-    //- 			}else{
-    //- 				styles[tag].terminate()
-    //- 			}
-    //- 		}
-    //- 	}
-    
-    
-    //- }
-    
-    
-    
-    //- for (var i = 0; i!= tags.length; i++){
-    //- 	var exp = new RegExp('<'+tags[i]+'>(.*?)<\/'+tags[i]+'>', 'g')
-    //- 	console.log(myTEXT.match(exp))
-    //- }
   </script>
 </html>

@@ -50,7 +50,10 @@
 	}
 </style>
 <script>
-var background = new Studio.Image('assets/classic_blue.png');
+var background = new Studio.Image('assets/classic_blue.png',{
+	blue: {x:0,y:0, width: 96, height: 96},
+	grid: {x:96,y:0, width: 96, height: 96}
+});
 background.addSlice({'Pyramid':{x:13,y:13,width:22,height:22}})
 
 
@@ -232,9 +235,9 @@ Studio.UIButton = function(attr, stage){
 	this.textBox = new Studio.TextBox(this.width-10, this.height, stage).apply({
 		x: 0 , 
 		y: 0 , 
-		font: '16px BigBreak',
+		font: new Studio.Font('BigBreak', 16),
 		lineHeight: 14 | 0 , 
-		vertical_align: Studio.MIDDLE, 
+		vertical_align: Studio.BOTTOM, 
 		horizontal_align: 0.5,
 		shadowColor: '#FF0080'
 	})
@@ -269,7 +272,7 @@ Studio.UIButton.prototype.onRelease = function(a){
 }
 
 
-var stage = new Studio.Stage("canvas",{fullscreen:0, resolution: 1, dur: 1000/60, interpolate: 1, smoothing: false, webgl: 1});
+var stage = new Studio.Stage("canvas",{fullscreen:0, resolution: 2, dur: 1000/60, interpolate: 1, smoothing: false});
 
 var button3 = new Studio.UIButton({x:160,y:230, height: 24, width: 120, text:'Stage'},stage);
 
@@ -321,13 +324,17 @@ var home = new Studio.Scene({
 	color: Studio.RED,
 	build : function(){
 		var back = new Studio.DisplayObject();
-		var patt = new Studio.Pattern({width:stage.width,height:stage.height,overflowX:96, overflowY: 96, image: background, anchorX:0, anchorY:0, slice:'Full'},stage);
+		var patt = new Studio.Pattern({width:stage.width,height:stage.height,overflowX:96, overflowY: 96, image: background, anchorX:0, anchorY:0, slice:'blue'},stage);
 		
+		var patt2 = new Studio.Pattern({width:stage.width,height:stage.height,overflowX:96, overflowY: 96, image: background, anchorX:0, anchorY:0, slice:'grid'},stage);
+
 		var back_clip = new Studio.Clip({width:this.width, height:this.height, anchorX: 0, anchorY: 0})
 		this.addChild(back_clip);
 		this.addChild(back);
 		this.addChild(new Studio.Restore());
 		back.addChild(patt);
+		back.addChild(patt2);
+		patt2.alpha = .2
 		var count = 0;
 		patt.onEnterFrame = function(){
 			this.x-=Math.sin(count);
@@ -335,6 +342,13 @@ var home = new Studio.Scene({
 			this.y-=2;
 			this.checkOverflow();
 		}
+
+		patt2.onEnterFrame = function(){
+			this.x-=Math.cos(count*5);
+			this.y-=10;
+			this.checkOverflow();
+		}
+
 		var centerH = this.width/2;
 		var centerV = this.height/3;
 		this.addChild(new Studio.Sprite({image: _parts, slice: 'shadow', width: 276, height: 158, x: 0 +centerH, y: -6+centerV}));
@@ -429,7 +443,7 @@ stage.addButton(button3)
 stage.addChildren(button3)
 
 stage.onReady = function(){
-	// home.children[0].setPattern(96,96)
+	
 }
 
 stage.addInput(FOCUS_ENGINE,{});

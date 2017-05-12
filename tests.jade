@@ -7,7 +7,7 @@ html
 		meta(name='apple-mobile-web-app-status-bar-style', content='black')
 		link(rel='apple-touch-icon', href='icon.png')
 		script(src='studio-compiled.js')
-		script(src='stats.js')
+		//- script(src='stats.js')
 	body(style='margin:0;background: #333')
 		style.
 			*{box-sizing:border-box}
@@ -18,40 +18,40 @@ html
 			@media screen and (max-width: 640px){article{width: 100%}}
 
 		canvas#canvas(width='800' height='600')
-		//- include tests/test_1
-		//- include tests/test_2
-		//- include tests/test_3
-		//- include tests/test_4
-		//- include tests/test_5
-		//- include tests/test_6
-		//- include tests/test_7
+		include tests/test_1
+		include tests/test_2
+		include tests/test_3
+		include tests/test_4
+		include tests/test_5
+		include tests/test_6
+		include tests/test_7
 		
 	script.
-		//- test1.onExitFrame= function(){this.active=0}
-		//- test2.onExitFrame= function(){this.active=0}
-		//- test3.onExitFrame= function(){this.active=0}
-		//- test4.onExitFrame= function(){this.active=0}
-		//- test5.onExitFrame= function(){this.active=0}
-		//- test6.onExitFrame= function(){this.active=0}
+		test1.onExitFrame= function(){this.active=0}
+		test2.onExitFrame= function(){this.active=0}
+		test3.onExitFrame= function(){this.active=0}
+		test4.onExitFrame= function(){this.active=0}
+		test5.onExitFrame= function(){this.active=0}
+		test6.onExitFrame= function(){this.active=0}
 
-		//- Studio.start();
+		
 		var image = new Studio.Image('assets/classic_blue.png')
 
-		var stage = new Studio.Stage('canvas',{color_hex:'#777'})
-		stage.onExitFrame= function(){this.active=0}
+		var stage = new Studio.Stage('canvas')
+		//- stage.onExitFrame= function(){this.active=0}
 		var textbox  = new Studio.TextBox(512,512,stage)
+		textbox.x=20
+		textbox.y = 20
+		//- textbox.justify = true
 		textbox.live = true
-		textbox.font.set({family:'Georgia'})
+		textbox.font.set({family:'YanoneKaffeesatz-ExtraLight'})
 
-		stage.addTween(textbox.styles.h1,'linear',{size:30},1000)
+		//- stage.addTween(textbox.styles.h1,'linear',{size:30},1000)
 
-		stage.addTween(textbox,'chillInOut',{horizontal_align: .5}, 1000, function(){
-			this.live = false;
-		});
-		textbox.columns = 2
-		textbox.anchorX=0
-		textbox.anchorY=0
-		//- textbox.horizontal_align = 1
+		stage.addTween(textbox,'chillInOut',{horizontal_align: 1}, 3000).loop().reflect(true)
+		textbox.columns = 3
+		textbox.anchorX = 0
+		textbox.anchorY = 0
 		textbox.setText('<h1> Title Here </>\n<h2> Person Name: </>\n<i> First </> Last Hi <b> Lorem </> Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a <b> galley </> of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised <i> in the </> <bi> 1960s with the release of Letraset sheets containing </> Lorem Ipsum passages, and more recently with desktop publishing <b> software </> like Aldus PageMaker including versions of Lorem Ipsum.\n\n<h1> Title Two Here </>\nConvallis vehicula, velit praesent a. Rutrum maecenas aliquet. Et luctus nibh, semper feugiat lobortis. Urna ultrices ante quis, ultrices sollicitudin nulla eros, diam ligula massa in, id blandit velit perspiciatis risus in aenean, rutrum et pellentesque odio. Quis massa augue etiam libero integer inceptos, quis volutpat lacus, placerat libero nunc. Est justo. Imperdiet vel, quis ultricies amet, vulputate placerat est interdum vitae lacus taciti, et mauris rutrum ullamcorper, id blandit ad nibh commodo. Ipsum justo rutrum risus lorem per suspendisse, viverra ante platea, sem leo est facilisis odio vel aliquam. Aliquam cras egestas faucibus ullamcorper elit. Tristique pellentesque hac, vestibulum augue et ut accumsan felis donec, est mi nunc risus nunc qui ac.\n\n<h1> Title Three </>\nEget ac malesuada libero arcu dictumst, quis tristique, porttitor dui assumenda imperdiet dolor ultricies, sem wisi vivamus et nostra sagittis diam, tincidunt egestas ac nulla a amet. Lacus conubia, sed massa fermentum. Lectus diam cras sodales suspendisse tortor, amet suspendisse ipsum potenti, ante metus tristique lacinia et faucibus, eget pharetra commodo et nec ut. Odio urna suspendisse lectus nam. Purus sagittis a, consequat nec arcu felis fringilla curabitur, arcu nulla pede fermentum justo lorem venenatis, nascetur labore hac, eu integer vel elementum sed lorem ut.').finish()
 
 		//- textbox.setText('Person First Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.').finish()
@@ -59,48 +59,3 @@ html
 
 
 		Studio.start();
-
-
-		//- var styles = { 
-		//- 	'bold': {
-		//- 		activate : function(me){
-		//- 			console.log('bold start')
-		//- 			//- me.font.weight = 'bold'
-
-		//- 		},
-		//- 		terminate : function(me){
-		//- 			//- me.font.weight = 'normal'
-		//- 			console.log('bold end')
-		//- 		}
-
-		//- 	}
-		//- }
-
-		//- for(var n = 0; n!= words.length; n++){
-		//- 	var word = words[n];
-		//- 	if(word[0]==='<' && word[word.length-1]==='>'){
-		//- 		var start = 1;
-		//- 		if(word[1]=='/'){
-		//- 			start = 2;
-		//- 		}
-		//- 		var tag = word.slice(start,word.length-1);
-		//- 		if(styles[tag]){
-		//- 			if(start === 1){
-		//- 				styles[tag].activate()
-		//- 			}else{
-		//- 				styles[tag].terminate()
-		//- 			}
-		//- 		}
-		//- 	}
-
-
-		//- }
-		
-
-
-		//- for (var i = 0; i!= tags.length; i++){
-		//- 	var exp = new RegExp('<'+tags[i]+'>(.*?)<\/'+tags[i]+'>', 'g')
-		//- 	console.log(myTEXT.match(exp))
-		//- }
-
-		

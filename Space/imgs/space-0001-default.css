@@ -1,0 +1,84 @@
+.sprite {
+    display: inline-block;
+    overflow: hidden;
+    background-repeat: no-repeat;
+    background-image: url(space-0001-default.png);
+}
+.sprite.asteroid {
+    width: 365.0px;
+    height: 298.0px;
+    background-position: -1475.0px -2.0px;
+    background-size: 365.0px 298.0px;
+}
+.sprite.earth {
+    width: 256.0px;
+    height: 256.0px;
+    background-position: -873.0px -604.0px;
+    background-size: 256.0px 256.0px;
+}
+.sprite.jupiter {
+    width: 600.0px;
+    height: 600.0px;
+    background-position: -1306.0px -862.0px;
+    background-size: 600.0px 600.0px;
+}
+.sprite.made-with-zwoptex {
+    width: 228.0px;
+    height: 228.0px;
+    background-position: -1647.0px -560.0px;
+    background-size: 228.0px 228.0px;
+}
+.sprite.mars {
+    width: 600.0px;
+    height: 600.0px;
+    background-position: -704.0px -873.0px;
+    background-size: 600.0px 600.0px;
+}
+.sprite.mercury {
+    width: 128.0px;
+    height: 128.0px;
+    background-position: -1842.0px -132.0px;
+    background-size: 128.0px 128.0px;
+}
+.sprite.moon {
+    width: 128.0px;
+    height: 128.0px;
+    background-position: -1842.0px -2.0px;
+    background-size: 128.0px 128.0px;
+}
+.sprite.sun {
+    width: 700.0px;
+    height: 700.0px;
+    background-position: -2.0px -873.0px;
+    background-size: 700.0px 700.0px;
+}
+.sprite.sun {
+    width: 869.0px;
+    height: 869.0px;
+    background-position: -2.0px -2.0px;
+    background-size: 869.0px 869.0px;
+}
+.sprite.sun_layer2_x1 {
+    width: 256.0px;
+    height: 256.0px;
+    background-position: -1131.0px -604.0px;
+    background-size: 256.0px 256.0px;
+}
+.sprite.sun_layer_x1 {
+    width: 256.0px;
+    height: 256.0px;
+    background-position: -1647.0px -302.0px;
+    background-size: 256.0px 256.0px;
+}
+.sprite.sun_x1 {
+    width: 256.0px;
+    height: 256.0px;
+    background-position: -1389.0px -604.0px;
+    background-size: 256.0px 256.0px;
+}
+.sprite.venus {
+    width: 600.0px;
+    height: 600.0px;
+    background-position: -873.0px -2.0px;
+    background-size: 600.0px 600.0px;
+}

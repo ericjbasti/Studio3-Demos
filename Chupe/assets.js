@@ -3,7 +3,8 @@ var coin = new Studio.Image('images/coin_16.png',{
 	"0":{ x: 0, y: 0, width: 15, height: 15}
 })
 
-var curse = new Studio.Image('images/chupe.png', {
+var curse = new Studio.Image('images/chupe.png')
+curse.addSlice({
 	"Rock":{ x: 32, y: 256, width: 32, height: 32},
 	"Rock First":{ x: 0, y: 256, width: 32, height: 32},
 	"Rock Last":{ x: 64, y: 256, width: 32, height: 32},
@@ -13,6 +14,7 @@ var curse = new Studio.Image('images/chupe.png', {
 	"Large Cloud":{ x: 0, y: 256+160, width: 224, height: 68},
 	"Small Cloud 1":{ x: 0, y: 256+232, width: 70, height: 24},
 	"Skyline":{ x: 224, y: 256, width: 8, height: 256},
+	"WaterAll":{ x: 224, y: 256+198, width: 32, height: 64},
 	"Water":{ x: 224, y: 256+198, width: 32, height: 8},
 	"Water2":{ x: 224, y: 256+200, width: 32, height: 8},
 	"Water3":{ x: 224, y: 256+208, width: 32, height: 16},

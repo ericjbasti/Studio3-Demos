@@ -15,13 +15,12 @@
 <script src="stats.js"></script>
 <script>
 
-var stage = new Studio.Stage('canvas',{webgl:1, dur:1000/60, fullscreen:1, resolution: 2})
+var stage = new Studio.Stage('canvas',{webgl:1, dur:1000/60, fullscreen:1})
 stage.color.setFromHex("#333")
 var butter_sheet = new Studio.Image('assets/butterfly.png');
 
-// var background = new Studio.Pattern({width:stage.width,height:stage.height, image: butter_sheet, slice: "Grass", anchorX:0, anchorY:0})
+var background = new Studio.Pattern({width:stage.width,height:stage.height, image: butter_sheet, slice: "Grass", anchorX:0, anchorY:0})
 
-var background = new Studio.Sprite({x:0,y:0,height: 512, width: 512,image: butter_sheet, slice: "Grass",anchorX:0, anchorY:0})
 stage.addChild(background);
 
 butter_sheet.addSlice({
@@ -132,7 +131,7 @@ Monarch.prototype.onEnterFrame = function(){
 	this.boundsCheck();
 }
 
-for (var i = 0; i != 150 ; i++){
+for (var i = 0; i != 50 ; i++){
 	var a = new BlueMorpho({x: Math.random() * stage.width, y: Math.random() * stage.height});
 	stage.addChild(a);
 	// stage.addChild(b);
@@ -142,8 +141,6 @@ for (var i = 0; i != 50 ; i++){
 	stage.addChild(b);
 }
 
-// stage.enableTouchEvents();
-// stage.addEffect(Studio.Effect.Replicator,{x:3,y:3});
 stage.addEffect(STATS,{
 	external: true, 
 	height: 50,
@@ -151,7 +148,6 @@ stage.addEffect(STATS,{
 	position: 0,
 	clear_mode:'cover'}
 );
-// stage.addEffect(Replicator);
 
 Studio.start();
 

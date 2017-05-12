@@ -1,4 +1,4 @@
-var stage = new Studio.Stage("canvas",{webgl:0, fullscreen:2, resolution: 1, dur: 1000/60, interpolate: 0, snap: true});
+var stage = new Studio.Stage("canvas",{webgl:1, fullscreen:2, resolution: 1, dur: 1000/60, interpolate: 0, snap: true});
 
 var GAMEPAD = new Studio.Plugin({
 	options: {
@@ -78,9 +78,9 @@ Studio.UIButton = function(attr, stage){
 		x: 0 , 
 		y: 0 , 
 		font: new Studio.Font('BigBreak', 16),
-		lineHeight: 14 | 0 , 
-		vertical_align: Studio.MIDDLE, 
-		horizontal_align: 0.5,
+		lineHeight: 12 | 0 , 
+		vertical_align: 1, 
+		horizontal_align: Studio.CENTER,
 		shadowColor: '#FF0080'
 	})
 	console.log(this.textBox)

@@ -45,23 +45,29 @@ var Game = new Studio.Scene({
 			anchorX: 0,
 			anchorY: 0
 		}))
-		var patt = new Studio.Pattern({width:this.width,height:this.height, overflowX:0, overflowY: 0, image: curse, anchorX:0, anchorY:0, slice:'Skyline'}, this);
+		var patt = new Studio.Pattern({width:this.width,height:this.height, overflowX:8, overflowY: 0, image: curse, anchorX:0, anchorY:0, slice:'Skyline'}, this);
 		this.addChild(patt);
+		var count = 0;
 
-		water = new Studio.Sprite({image: patt.image,
-			y:100,
-			width:this.width+32,
-			height:58, 
-			anchorX:0, anchorY:0,
-			slice: 'Full',
-			alpha: .5
-		})
-		
+		patt.onEnterFrame = function(){
+			this.x-=.2;
+			if(this.x<-8){
+				this.x +=8
+			}
+
+			this.y-=Math.cos(count)/10;
+			count+=.1;
+		}
+
+		var water = new Studio.Pattern({y: 256-16, width:this.width,height:128, overflowX:8, overflowY: 16, image: curse, anchorX:0, anchorY:0, slice:'Water5'}, this);
+		this.addChild(water);
+
 		water.onEnterFrame = function(){
 			this.x-=.2;
 			if(this.x<-8){
 				this.x +=8
 			}
+			this.y+=Math.sin(count)/8;
 		}
 
 		this.addChild(water);
@@ -456,5 +462,4 @@ var GameLogic = function GameLogic(){
 		}
 	}
 }
-
 

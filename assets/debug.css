@@ -9,6 +9,7 @@
 	padding: 10px;
 	border: 2px solid #FF0080;
 	box-sizing: border-box;
+	z-index: 50;
 }
 .debug_controls *{
 	box-sizing: border-box;

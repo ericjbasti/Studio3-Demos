@@ -1,29 +1,27 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
+<html>
+	<head>
+	    <title>Studio3</title>
+		<meta name="viewport" content="width=320, user-scalable=1, maximum-scale=1"/>
+		<script src="studio-compiled.js"></script>
+		<script src="stats.js"></script>
 
-<html xmlns="http://www.w3.org/1999/xhtml" >
-    <title>Studio3</title>
-	<meta name="viewport" content="width=320, user-scalable=1, maximum-scale=1"/>
-	<meta name="apple-mobile-web-app-capable" content="yes" />
-	<meta name="apple-mobile-web-app-status-bar-style" content="black">
-	<link rel="apple-touch-icon" href="icon.png" />
-</head>
-
-<body style="margin:0;background: #333">
-	<canvas id="canvas" height="480" width="320"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
-</body>
-<script src="studio-compiled.js"></script>
-<script src="stats.js"></script>
-<script>
+	<body style="margin:0;background: #333">
+		<div style='position: relative; width: 320px; margin: 0 auto; overflow: hidden'>
+			<canvas id="canvas" height="480" width="320"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #BBFF00;"></canvas>
+			<div id='iamdom' style='background: rgba(255,255,255,.5); padding: 5px;'><h1 style='color: red; margin: 0'>I AM A DOM ELEMENT</h1></div>
+		</div>
+		<script>
 
 var ratio = 1;
 
 var stage = new Studio.Stage('canvas',{
-	webgl : 1, 
+	// webgl : 0, 
+	// resolution: 1,
 	dur : 1000/(60), 
-	fullscreen : 1, 
-	resolution : 1, 
+	// fullscreen : 1, 
 	// interpolate : 0, 
-	_maxCount : 100,
+	_maxCount : 500,
 	// _maxCount : 3000,
 	// _maxCount : 1400,
 	// smoothing: false,
@@ -34,6 +32,11 @@ var stage = new Studio.Stage('canvas',{
 // beep.addListener('ready',function(s){
 // 	alert('Yeah Im Ready : ' + s );
 // })
+
+// var domeelement = new Studio.DOMElement('iamdom', stage);
+
+
+
 
 var MAX = stage._maxCount/1 | 0
 var gravity = .4*ratio
@@ -77,10 +80,10 @@ var ball = new Studio.Image('assets/char.png',{
 // })
 
 
-var globalMessageBox = function(a,type){
-	alert(type);
+// var globalMessageBox = function(a,type){
+// 	alert(type);
 
-}
+// }
 
 var BOXdrop = function(attr){
 	this.image = ball
@@ -104,7 +107,7 @@ BOXdrop.prototype.logic = function(){
 	this.velocityY += gravity
 	this.x += this.velocityX*ratio
 	this.y += this.velocityY*ratio
-	this.rotation+=this.velocityX*3
+	// this.rotation+=this.velocityX*3
 	if(this.x > stage.width || this.x < 0){
 		this.velocityX *= -1
 	}
@@ -137,16 +140,6 @@ for (var i = 0; i!=MAX;i++){
 	});
 	stage.addChild(yy)
 }
-
-
-stage.addEffect( STATS ,{
-	external : true, 
-	height : 50,
-	width : 320,
-	position : 0,
-	clear_mode :'erase'
-})
-
 
 for (var i = 0; i!=MAX;i++){
 	var yy=new BOXdrop({
@@ -237,6 +230,9 @@ tttt.onEnterFrame= function(){
 	this.x+=this.velocityX
 	this.y+=this.velocityY
 
+	// this.velocityX*=.8;
+	// this.velocityY*=.8;
+
 	if(this.x>textbox.width){
 		this.velocityX *= -1
 	}
@@ -250,13 +246,110 @@ tttt.onEnterFrame= function(){
 		this.velocityY *= -1
 	}
 }
-textbox.addChild(tttt);
+
+
+stage.addChild(tttt);
+// domeelement.x = -50;
+// domeelement.y = 10
+// tttt.addChild(domeelement)
+
+stage.gamepadconnected = function(id){
+	tttt.alpha = 1;
+}
+stage.gamepaddisconnected = function(id){
+	tttt.alpha = .25;
+}
+stage.onEnterFrame = function(){
+	if(this.GAMEPAD_1){
+		if(this.GAMEPAD_1.UP){
+			tttt.velocityY=-3;
+		}
+		if(this.GAMEPAD_1.DOWN){
+			tttt.velocityY=3;
+		}
+		if(this.GAMEPAD_1.LEFT){
+			tttt.velocityX=-3;
+		}
+		if(this.GAMEPAD_1.RIGHT){
+			tttt.velocityX=3;
+		}
+		if(this.GAMEPAD_1.RIGHT){
+			tttt.velocityX=3;
+		}
+
+		if(this.GAMEPAD_1.A){
+			stage.camera.track(tttt)
+		}
+		if(this.GAMEPAD_1.B){
+			stage.camera.stopTracking()
+			stage.camera.x = stage.camera.y = 0;
+		}
+
+		if(this.GAMEPAD_1.L2){
+			this.camera.scaleY = this.camera.scaleX+=(this.GAMEPAD_1.L2*.01);
+		}
+		if(this.GAMEPAD_1.R2){
+			this.camera.scaleY = this.camera.scaleX-=(this.GAMEPAD_1.R2*.01);
+		}
+		if(this.GAMEPAD_1.L1 && this.GAMEPAD_1.R1){
+			this.camera.scaleY = this.camera.scaleX = 1
+		}
+		if(this.GAMEPAD_1.AXES1.Y){
+			tttt.velocityY=this.GAMEPAD_1.AXES1.Y*6;
+		}
+		if(this.GAMEPAD_1.AXES1.X){
+			tttt.velocityX=this.GAMEPAD_1.AXES1.X*6;
+		}
+		if(this.GAMEPAD_1.AXES2.Y){
+			tttt.scaleY+=this.GAMEPAD_1.AXES2.Y*.1;
+		}
+		if(this.GAMEPAD_1.AXES2.X){
+			tttt.scaleX+=this.GAMEPAD_1.AXES2.X*.1;
+		}
+	}
+}
+
+
+stage.addInput(GAMEPAD);
+
+var fan = new Studio.Rect({x:100, y:100, width: 50, height: 50, scaleX: .5, scaleY: 1, skews: 0, rotation: 33})
+
+var blade = new Studio.Rect({width: 25, height: 50, scaleX: 1, color: Studio.RED, skews: 1})
+
+// var blade2 = new Studio.Rect({width: 10, height: 50, scaleX: 1, color: Studio.BLUE, skews: 1})
+
+fan.onEnterFrame = function(){
+	this.rotation --
+}
+
+blade.onEnterFrame = function(){
+	this.rotation+=10
+}
+// blade2.onEnterFrame = function(){
+// 	this.rotation += 5
+// }
+fan.addChild(blade)
+// blade.addChild(blade2)
+stage.addChild(fan)
+
+
+// if(STATS){
+// 	stage.addEffect( STATS ,{
+// 		external : true, 
+// 		height : 50,
+// 		width : 320,
+// 		position : 0,
+// 		clear_mode :'erase'
+// 	})
+// }
+
+
 
 Studio.start()
 
+
+
+stage.camera.track(tttt);
+
 </script>
-
-
-</html>
-
 

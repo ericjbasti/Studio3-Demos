@@ -11,8 +11,9 @@ var STATS = new Studio.Plugin({
 	init: function(a) { // lets build out a canvas for the stats
 		this.active = true;
 		this.buffer = document.createElement('canvas');
-		this.buffer.style.position = 'absolute';
+		this.buffer.style.position = 'fixed';
 		this.buffer.style.top = '0';
+		this.buffer.style.left = '0';
 		this.buffer.id = '_stats_buffer'
 		this.buffer.width = this.options.width;
 		this.buffer.height = this.options.height;
@@ -54,17 +55,18 @@ var STATS = new Studio.Plugin({
 		if (Studio.delta > 1000/15) {
 			this._spikes++;
 		}
+		this.displayFPS(this.buffer.ctx);
+		if(window.performance){
+			if(window.performance.memory){
+				this.drawMemory(this.buffer.ctx);
+			}
+		}
 		if(this.options.show_text && this._time>this.options.refresh*1000){
 			this.displayDraws(this.buffer.ctx);
 			this._time = 0;
 			this._tick = 0;
+			Studio.draws = 0;
 		}
-		this.displayFPS(this.buffer.ctx);
-		// if(window.performance){
-		// 	if(window.performance.memory){
-		// 		this.drawMemory(this.buffer.ctx);
-		// 	}
-		// }
 		if (!this.options.external) {
 			a.ctx.drawImage(this.buffer, 0, this.options.position);
 		}
@@ -97,7 +99,6 @@ var STATS = new Studio.Plugin({
 			this.step = 0;
 			this[this.options.clear_mode](ctx);
 		}
-		Studio.draws = 0;
 	},
 	displayDraws: function(ctx) {
 		ctx.fillStyle = 'rgba(0,0,0,.8)';

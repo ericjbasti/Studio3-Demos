@@ -1,0 +1,30 @@
+.sprite {
+    display: inline-block;
+    overflow: hidden;
+    background-repeat: no-repeat;
+    background-image: url(space-0002-default.png);
+}
+.sprite.neptune {
+    width: 600.0px;
+    height: 600.0px;
+    background-position: -2.0px -2.0px;
+    background-size: 600.0px 600.0px;
+}
+.sprite.saturn {
+    width: 600.0px;
+    height: 600.0px;
+    background-position: -2.0px -606.0px;
+    background-size: 600.0px 600.0px;
+}
+.sprite.saturn_rings {
+    width: 600.0px;
+    height: 600.0px;
+    background-position: -606.0px -2.0px;
+    background-size: 600.0px 600.0px;
+}
+.sprite.uranus {
+    width: 600.0px;
+    height: 600.0px;
+    background-position: -606.0px -606.0px;
+    background-size: 600.0px 600.0px;
+}
