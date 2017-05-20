@@ -18,12 +18,12 @@
 
 var stage = new Studio.Stage('canvas',{webgl:1, dur:1000/60, fullscreen:0, color: Studio.BLUE, resolution: 2})
 
-var map = new Studio.TileMap(30*24,14*24,1,{offsetX: 0, offsetY: 0});
+var map = new Studio.TileMap(100*24,25*24,1,{offsetX: 0, offsetY: 0});
 
-map.load('assets/dorm-lobby.json','json');
+map.load('assets/valley-tacotown.json','json');
 
 
-var tt = new Studio.Sprite({width: 720, height: 336, anchorX: 0, anchorY: 0, image: map.cache, x: 0, y:0})
+var tt = new Studio.Sprite({width: 100*24, height: 25*24, anchorX: 0, anchorY: 0, image: map.cache, x: 0, y:0})
 
 stage.addChild(tt);
 
@@ -65,12 +65,12 @@ box.onEnterFrame = function(){
 		this.x = tt.width;
 	}
 
-	if(this.y< 260){
-		this.y = 260
-	}
-	if(this.y> 305){
-		this.y = 305
-	}
+	// if(this.y< 260){
+	// 	this.y = 260
+	// }
+	// if(this.y> 305){
+	// 	this.y = 305
+	// }
 	// if(stage.camera.x>240+96){
 	// 	map.offsetMap(12,0);
 	// 	this.x-=(96)
