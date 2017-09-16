@@ -1,0 +1,1 @@
+var stage=new Studio.Stage("canvas",{webgl:1,fullscreen:3,resolution:1,dur:1e3/15,interpolate:0,snap:!0,color:new Studio.Color(255,255,255,.02)});

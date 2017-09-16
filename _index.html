@@ -249,9 +249,12 @@ tttt.onEnterFrame= function(){
 
 
 stage.addChild(tttt);
-// domeelement.x = -50;
-// domeelement.y = 10
-// tttt.addChild(domeelement)
+if(window.domeelement){
+	domeelement.x = -50
+	domeelement.y = 10
+	tttt.addChild(domeelement)
+}
+
 
 stage.gamepadconnected = function(id){
 	tttt.alpha = 1;

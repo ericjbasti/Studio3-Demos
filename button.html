@@ -19,17 +19,37 @@
 <script>
 	
 
-var stage = new Studio.Stage("canvas",{webgl:1, fullscreen:0, resolution: 1, dur: 1000/1, interpolate: 1});
+var stage = new Studio.Stage("canvas",{webgl:0, fullscreen:0, resolution: 1, dur: 1000/1, interpolate: 1});
 
 var textbox = new Studio.TextBox(512,512,stage);
-textbox.lineHeight = 28
+textbox.columns = 3
+var everyText = textbox.image
+everyText.addSlice({"myBox":{x:64,y:64,width:512-64,height:256}})
+
+textbox.slice = "myBox";
+
+
+textbox.font.lineHeight = 16
 // textbox.setFont('28px Times New Roman')
 textbox.shadow = 1
 textbox.font.color = 'red'
+
+
+var textbox2 = new Studio.TextBox(64,64,stage,everyText);
+everyText.addSlice({"myBox2":{x:0,y:0,width:64,height:64}})
+textbox2.setText("Im a test").finish()
+textbox2.slice = "myBox2";
+
 textbox.setText('Hilo world! Lorem ipsum dolor sit amet, ac amet sit lorem, velit quam. Condimentum vitae maecenas tristique ante leo, dui bibendum nam ut, in laoreet, et dui justo, sed vestibulum. Vel vitae sed ac, pellentesque conubia lorem, faucibus fringilla duis quis justo fringilla mauris, nibh sit augue dui, tortor vestibulum euismod a. Tempor sollicitudin in at fusce. Quam ut, enim dignissim vehicula consectetuer, mauris risus nostra, fermentum vel enim leo posuere sed nulla, erat quis tristique. Volutpat consectetuer suspendisse, nec tincidunt pellentesque. Porttitor magna, sit sed eleifend nam ante elit scelerisque, lorem pede proin eros, commodo nulla at sed quis, in faucibus auctor laoreet. Aliquet sapien orci maecenas pharetra, parturient duis praesent mi et ipsum, ac nulla, adipiscing habitasse nullam nullam viverra, feugiat curabitur. Nec commodo ut pulvinar sollicitudin pellentesque, donec in per vulputate id maecenas, tristique in nunc. Dolor et morbi. Id nunc non diam sollicitudin dictum, morbi urna, et ultricies non blandit imperdiet conubia hendrerit, erat pellentesque, nunc amet aliquet in.').finish()
 textbox.x = 256;
-textbox.y = 256;
+textbox.y = 256/2;
+textbox.width = 512-64
+textbox.height = 256
+
+textbox2.x = 256
+textbox2.y = 256
 stage.addChild(textbox);
+stage.addChild(textbox2);
 
 stage.color.setFromHex('#FFFF00')
 

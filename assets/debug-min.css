@@ -1,0 +1,49 @@
+.debug_controls {
+  position: fixed;
+  top: 0.25em;
+  left: 0.25em;
+  width: 100%;
+  max-width: 300px;
+  background: rgba(90, 0, 30, 0.8);
+  box-shadow: 0.25em 0.25em 0 rgba(0, 0, 0, 0.4);
+  padding: 10px;
+  border: 2px solid #FF0080;
+  box-sizing: border-box;
+  z-index: 50; }
+
+.debug_controls * {
+  box-sizing: border-box; }
+
+.debug_controls label {
+  font-size: 11px;
+  font-family: Courier;
+  color: #fff;
+  width: 100%;
+  display: inline-block; }
+
+.debug_controls input {
+  width: 100%;
+  border: 1px solid #FF0080;
+  background: #400020;
+  padding: .25em;
+  color: #fff;
+  font-family: Courier; }
+
+.debug_controls input[type='checkbox'] {
+  width: auto; }
+
+.debug_controls input:focus, .debug_controls input:hover {
+  color: #FFFF00;
+  border-color: #FFFF00;
+  outline: none; }
+
+canvas {
+  margin: 0 auto; }
+
+@media screen and (max-width: 700px) {
+  canvas {
+    margin-top: 68px; }
+  .debug_controls {
+    top: 0;
+    left: 0;
+    max-width: 100%; } }

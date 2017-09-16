@@ -141,13 +141,23 @@ for (var i = 0; i != 50 ; i++){
 	stage.addChild(b);
 }
 
-stage.addEffect(STATS,{
-	external: true, 
-	height: 50,
-	width: stage.width,
-	position: 0,
-	clear_mode:'cover'}
-);
+var textbox = new Studio.TextBox(512,512,stage)
+textbox.setText('The <b> monarch butterfly </> or simply <b> monarch </> is a milkweed butterfly in the family Nymphalidae. Other common names depending on region include milkweed, common tiger, wanderer, and black veined brown. \n\n\nThe <b> morpho butterflies </> are over 29 accepted species and 147 accepted subspecies of butterflies in the genus Morpho. They are Neotropical butterflies found mostly in South America, Mexico, and Central America.').finish()
+textbox.anchorX = 0
+textbox.anchorY = 0
+textbox.x = 20
+textbox.y = 20
+stage.addChild(textbox)
+
+// stage.addEffect(STATS,{
+// 	external: true, 
+// 	height: 50,
+// 	width: stage.width,
+// 	position: 0,
+// 	clear_mode:'cover'}
+// );
+
+
 
 Studio.start();
 

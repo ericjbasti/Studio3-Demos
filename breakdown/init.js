@@ -1,7 +1,22 @@
 
 var stage = new Studio.Stage("canvas",{fullscreen:0, resolution: 1, dur: 1000/60, interpolate: 1, smoothing: false, webgl: 0});
+Studio.DEBUG = true
 
-var button3 = new Studio.UIButton({x:160,y:230, height: 24, width: 120, text:'Options'},stage);
+
+var textBuffer = new Studio.Cache(512,512,stage)
+var buttonCount = 0;
+var text_slices = {
+	button_1 : {x:0, y:0, width: 120, height: 24},
+	button_2 : {x:0, y:24, width: 120, height: 24},
+	button_3 : {x:0, y:48, width: 120, height: 24}
+}
+
+textBuffer.addSlice(text_slices);
+
+
+
+
+var button3 = new Studio.UIButton({x:160,y:230, height: 24, width: 120, text:'Options'},stage, textBuffer, 'button_3');
 
 button3.hover = button3.focus = function(a){
 	stage.stopTween(this.hoverOut_tween)
@@ -51,7 +66,7 @@ var home = new Studio.Scene({
 
 	build : function(){
 		var back = new Studio.DisplayObject();
-		var patt = new Studio.Pattern({width:stage.width,height:stage.height,overflowX:96, overflowY: 96, image: background, anchorX:0, anchorY:0, slice:'Full'},stage);
+		var patt = new Studio.Pattern({width:stage.width,height:stage.height,overflowX:96, overflowY: 96, image: background, anchorX:0, anchorY:0, slice:'Sparks'},stage);
 		
 		var back_clip = new Studio.Clip({width:this.width, height:this.height, anchorX: 0, anchorY: 0})
 		this.addChild(back_clip);
@@ -77,7 +92,7 @@ var home = new Studio.Scene({
 		this.addChild(new Studio.Sprite({image: _parts, slice: 'break-glass', width: 264, height: 74, x: 0+centerH, y: -60+centerV}));
 		this.addChild(new Studio.Sprite({image: _parts, slice: 'holder', width: 300, height: 122, x: 2+centerH, y: 40+centerV}));
 		
-		var button = new Studio.UIButton({x:0+centerH,y:150+centerV, height: 24, width: 120, text:'Scene 1'},stage);
+		var button = new Studio.UIButton({x:0+centerH,y:150+centerV, height: 24, width: 120, text:'Scene 1'},stage, textBuffer, 'button_1');
 
 		button.hover = button.focus = function(a){
 			stage.stopTween(this.hoverOut_tween)
@@ -101,7 +116,7 @@ var home = new Studio.Scene({
 		this.addButton(button);
 
 
-		var button2 = new Studio.UIButton({x:0+centerH,y:190+centerV, height: 24, width: 120, text:'Scene 2'},stage);
+		var button2 = new Studio.UIButton({x:0+centerH,y:190+centerV, height: 24, width: 120, text:'Scene 2'},stage, textBuffer, 'button_2');
 
 		button2.hover = button2.focus = function(a){
 			stage.stopTween(this.hoverOut_tween)

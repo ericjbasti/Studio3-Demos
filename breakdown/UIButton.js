@@ -1,4 +1,5 @@
-Studio.UIButton = function(attr, stage){
+
+Studio.UIButton = function(attr, stage, img, id){
 	this.hovered = false;
 	this.text = 'Button';
 	if (attr) {
@@ -8,14 +9,15 @@ Studio.UIButton = function(attr, stage){
 	this.back.color.setFromHex("#FF00FF")
 	this.front = new Studio.Rect({height: this.height-4, width: this.width-4});
 	this.front.color.set(0,0,0,.8);
-	this.textBox = new Studio.TextBox(this.width-10, this.height, stage).apply({
+	this.textBox = new Studio.TextBox(this.width-10, this.height, stage, textBuffer).apply({
 		x: 0 , 
 		y: 0 , 
 		font: new Studio.Font('BigBreak', 16),
 		lineHeight: 14 | 0 , 
 		vertical_align: Studio.BOTTOM, 
 		horizontal_align: 0.5,
-		shadowColor: '#FF0080'
+		shadowColor: '#FF0080',
+		slice: id
 	})
 	this.front.color.set(0,0,0,.8);
 	this.textBox.setText(this.text).finish();

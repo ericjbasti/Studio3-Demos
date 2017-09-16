@@ -10,7 +10,7 @@
 		<link rel="stylesheet" href="assets/debug.css" />
 	</head>
 <body style="margin:0;background: #333">
-	<canvas id="canvas" height="320" width="320"  style="cursor:pointer;display: block;outline:1px solid #BBFF00;"></canvas>
+	<canvas id="canvas" height="380" width="320"  style="cursor:pointer;display: block;outline:1px solid #BBFF00;"></canvas>
 	<div class="debug_controls" id="dd" style="width: 50px; color: #fff; font-family: Courier; text-align: center;">
 		<label>Target FPS (fixed step)
 			<input id="targetFrameRate" type="range" value="16.66" max="100" min="1">
@@ -21,12 +21,12 @@
 <script src="studio-compiled.js"></script>
 <script>
 	
-var stage = new Studio.Stage('canvas',{webgl:1, dur:1000/60, fullscreen:0, color: Studio.BLUE})
+var stage = new Studio.Stage('canvas',{webgl:1, dur:1000/59, fullscreen:0, color: Studio.BLUE, _maxCount: 15000})
 
 stage.onReady = function(){
 	var block = function(){
-		this.width = 8;
-		this.height = 10;
+		this.width = 2;
+		this.height = 2;
 	}
 	Studio.inherit(block,Studio.Rect);
 
@@ -39,9 +39,13 @@ stage.onReady = function(){
 		}
 	}
 
-	for (var j = 0; j!=10 ;j++){
-		for (var i = 0; i!=4 ;i++){
-			var yy=new block().apply({x:i*10+5, y: j*12});
+	for (var j = 0; j!=100 ;j++){
+		for (var i = 0; i!=80 ;i++){
+			var yy=new block().apply({x:(i*2), y: (j*3)});
+			yy.color = new Studio.Color();
+			yy.color.r = j/100
+			yy.color.g = i/150
+			yy.color.a = 1
 			this.addChild(yy);
 			yy._snapback();
 		}

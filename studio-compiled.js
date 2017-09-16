@@ -1,3 +1,5 @@
+'use strict';
+
 // These are used to enable compatablity with older browsers.
 // The canvas rendering engine will even work on an original iPhone running iOS 3.1 (13 sprites / 24 fps)
 //
@@ -7,6 +9,12 @@ if (!window.console) {
 		log: function() {},
 		warn: function() {},
 	}
+}
+
+if ('Float32Array' in window ) {
+}else{
+	console.log('no float32')
+	window.Float32Array = window.Array;
 }
 
 // From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
@@ -80,7 +88,7 @@ if (typeof Object.create !== 'function') {
 		console.warn('This browser does not support requestAnimationFrame() . Using setTimeout() instead.')
 		window.requestAnimationFrame = function(callback) {
 			var id = window.setTimeout(function() {
-				callback(performance.now())
+				callback(Date.now())
 			}, 1000 / 60)
 			return id
 		}
@@ -91,7 +99,6 @@ if (typeof Object.create !== 'function') {
 		}
 	}
 }())
-
 
 
 // @codekit-prepend "Studio/Requirements.js"
@@ -134,54 +141,65 @@ if (typeof Object.create !== 'function') {
 // @codekit-append "Studio/Input/Keyboard.js"
 // @codekit-append "Studio/Input/Touch.js"
 
-'use strict'
+// @codekit-append "Studio/Components/Sound.js"
+// @codekit-append "Studio/Input/Gamepad.js"
+// @codekit-append "Studio/DisplayObjects/DOMElement.js"
 
-if (!window.Studio) {
-	window.Studio = {  // alt+S = ß just for those that hate writing things out.
-		stages: [],
-		stage: null,
-		tko: null,
-		assets: {length: 0},
-		queue: 0,
-		progress: 0,
-		sin: Math.sin,
-		cos: Math.cos,
-		random: Math.random,
-		abs: Math.abs,
-		my: {ratio: 1},
-		temp: {},
-		info: {displayObjects: 0},
-		active: true,
-		cap: 1000 / 20, // don't let the true frame rate go below 20fps, prevent huge frame skips
-		draws: 0,
-		loaded: true,
-		version: '0.5.1',
-		now: 0, // to get around Safari not supporting performance.now() you can pull in the timestap with this property.
-		delta: 0,
+var getWebGLContextType = function(){
+	var canvas = document.createElement('canvas');
+	if(canvas.getContext('webgl')){
+		return 'webgl';
 	}
-	Studio.time = 1
-	Studio.interval = null
-	Studio.browser = navigator.userAgent.toLowerCase()
-	Studio.disableRAF = false
-	Studio.RAF
+	if(canvas.getContext('experimental-webgl')){
+		return 'experimental-webgl';
+	}
+	return false;
+
+}
+
+var Studio = Studio || {
+	stages: [],
+	_current_stage: null,
+	assets: {
+		length: 0
+	},
+	asset_count: 0,
+	queue: 0,
+	progress: 0,
+	active: true,
+	cap: 1000 / 20, // don't let the true frame rate go below 20fps, prevent huge frame skips
+	draws: 0,
+	loaded: true,
+	version: '0.5.1',
+	now: 0, // to get around Safari not supporting performance.now() you can pull in the timestap with this property.
+	delta: 0,
+	time: 1,
+	RAF: null,
+	browser_info: {
+		type: navigator.userAgent.toLowerCase(),
+		webGL: getWebGLContextType(),
+		iOS : (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)
+	},
+	_temp: {}
 }
 
 Studio.updateProgress = function() {
 	this.progress = this.queue / this.assets.length
 }
 
-Studio.addAsset = function(path, Who) {
-	if (!this.assets[path]) {
-		this.assets.length += 1
-		this.assets[path] = new Who()
-		this.updateProgress()
-		return true
+Studio._continue = function(time_stamp){
+	if (Studio.stages.length > 1) {
+		Studio.RAF = requestAnimationFrame(Studio.loopAll)
 	} else {
-		console.warn('Already loaded : ', path, Studio.assets[Who])
-		return false
+		Studio._current_stage = Studio.stages[0]
+		Studio.RAF = requestAnimationFrame(Studio.loop)
 	}
 }
 
+
+// this function starts the entire engine. It also checks to see if it will be drawing multiple stages.
+// if stages.length > 1 it will loop through all the stages, otherwise it just renders the one it has.
+// by doing this check we can avoid an aditional for loop, when we don't need it.
 Studio.start = function(time_stamp) {
 	if (Studio.queue === Studio.assets.length) {
 		Studio.progress = 1
@@ -189,81 +207,71 @@ Studio.start = function(time_stamp) {
 	if (time_stamp) {
 		Studio.now = time_stamp
 		Studio.time = time_stamp
-		if (Studio.stages.length > 1) {
-			Studio.RAF = requestAnimationFrame(Studio.loopAll)
-		} else {
-			Studio.RAF = requestAnimationFrame(Studio.loop)
-		}
+		Studio._continue()
 
 	} else {
 		Studio.RAF = requestAnimationFrame(Studio.start)
 	}
 }
 
-Studio._loop = function(i) {
-	Studio.stage = Studio.stages[i]
-	if (Studio.stage.active) {
-		Studio.stage.loop(Studio.delta)
+// this function renders the _current_stage.
+Studio._loop = function() {
+	if (Studio._current_stage.active) {
+		Studio._current_stage.loop(Studio.delta)
 	}
 }
 
 Studio.loop = function(time_stamp) {
 	Studio.tick(time_stamp)
 	Studio.draws = 0
-	Studio._loop(0)
+	Studio._loop();
 	Studio.RAF = requestAnimationFrame(Studio.loop)
 }
 
 Studio.loopAll = function(time_stamp) {
 	Studio.tick(time_stamp)
 	Studio.draws = 0
-
 	for (var m = 0; m !== Studio.stages.length; m++) {
-		Studio._loop(m)
+		Studio._current_stage = Studio.stages[m]
+		Studio._loop()
 	}
 	Studio.RAF = requestAnimationFrame(Studio.loopAll)
 }
-//?? what? Something is up with the time_stamp... seems like the float gets all out of whack eventually (floats suck).
-// So to get the 60fps that you know is possible (check this before hand), setting the tick to be 60fps, we manage to match
-// what the console (in this case Apple TV 4) is actually outputting. Quite amazed by this really.
-Studio.console = function(time_stamp) {
-	this.delta = 16.6666666
-	this.now += this.delta
+
+Studio._tick = {
+	console: function(time_stamp) { // slows down, when the processor can't handle it.
+		this.delta = 16.6666666
+		this.now += this.delta
+	},
+	capped: function(time_stamp) { // never lets us skip too many frames
+		this.delta = time_stamp - this.now
+		this.now = time_stamp
+		this.delta = this.cap > this.delta ? this.delta : this.cap
+	},
+	uncapped: function(time_stamp) {
+		this.delta = time_stamp - this.now
+		this.now = time_stamp
+	}
 }
 
-Studio.capped = function(time_stamp) {
-	this.delta = time_stamp - this.now
-	this.now = time_stamp
-	this.delta = this.cap > this.delta ? this.delta : this.cap
+Studio.tick = Studio._tick.capped
+
+Studio._addingAsset = function() {
+	this.assets.length++
+	this.updateProgress()
 }
-
-Studio.uncapped = function(time_stamp) {
-	this.delta = time_stamp - this.now
-	this.now = time_stamp
+Studio._loadedAsset = function() {
+	this.queue++
+	this.updateProgress()
+	this.asset_count++
 }
-
-Studio.tick = Studio.capped
-
-Studio.stopTime = function() {
-	//this.time = this.now();
-	//this.delta = this.frameRatio = 0;
-	//this.active=false;
-	// console.log('STOP');
-}
-
-Studio.resetTime = function() {
-	//this.active=true;
-	//this.start();
-	// console.log('START');
-}
-
 Studio.handleVisibilityChange = function() {
 	if (document.hidden) {
 		console.log('%cStudio Paused (visibilitychange)', Studio.statStyle)
 		cancelAnimationFrame(Studio.RAF)
 	} else {
 		console.log('%cStudio Play (visibilitychange)', Studio.statStyle)
-		Studio.RAF = requestAnimationFrame(Studio.start)
+		Studio.RAF = requestAnimationFrame(Studio._continue)
 	}
 }
 
@@ -287,35 +295,39 @@ Studio.round = function(x) {
 // this will modify or add the current object to contain the contents of the object (obj) being passed in.
 
 Studio.apply = function(obj) { // Display Object and a few others share this function. All children of displayObject inherit this function.
-	Studio.temp.keys = Object.keys(obj) // we use Studio.temp.keys to avoid creating more garbage.
-	Studio.temp.keys_i = Studio.temp.keys.length
-	while (Studio.temp.keys_i) {
+	Studio._temp.keys = Object.keys(obj) // we use Studio._temp.keys to avoid creating more garbage.
+	Studio._temp.keys_i = Studio._temp.keys.length
+	while (Studio._temp.keys_i) {
 
-		if (Studio.temp.key === 'color_hex') {
-			this['color'].setFromHex(obj[Studio.temp.key])
+		if (Studio._temp.key === 'color_hex' && this['color']) {
+			this['color'].setFromHex(obj[Studio._temp.key])
 		}
-		Studio.temp.key = Studio.temp.keys[Studio.temp.keys_i - 1]
-		this[Studio.temp.key] = obj[Studio.temp.key]
-		Studio.temp.keys_i--
+		Studio._temp.key = Studio._temp.keys[Studio._temp.keys_i - 1]
+		this[Studio._temp.key] = obj[Studio._temp.key]
+		Studio._temp.keys_i--
 	}
 	return this
 }
 
 // addTo()
 
-Studio.addTo = function(a, b) {
-	for (var attr in b) {
-		if (b.hasOwnProperty(attr) && !a.hasOwnProperty(attr)) {
-			a[attr] = b[attr]
+Studio.addTo = function(a) {
+	for (var i = 1; i < arguments.length; i++){
+		var b = arguments[i]
+		for (var attr in b) {
+			if (b.hasOwnProperty(attr) && !a.hasOwnProperty(attr)) {
+				a[attr] = b[attr]
+			}
 		}
 	}
+	return a
 }
 
-// Studio.extend(a,b)
+// Studio.inherit(a,b)
 // A : the New Class
 // B : Class to inherit attributes from.
 
-Studio.extend = function(A, B, properties) {
+Studio.inherit = function(A, B, properties) {
 	if (properties) {
 		A.prototype = new B(properties)
 	} else {
@@ -324,6 +336,15 @@ Studio.extend = function(A, B, properties) {
 	A.prototype.constructor = A
 }
 
+Studio.windowResize = function(){
+	for (var m = 0; m !== Studio.stages.length; m++) {
+		if(Studio.stages[m].resize){
+			Studio.stages[m].resize();
+		}
+	}
+}
+
+window.addEventListener('resize', Studio.windowResize);
 
 Studio.TOP = Studio.LEFT = 0
 Studio.MIDDLE = Studio.CENTER = 0.5
@@ -337,43 +358,123 @@ Studio.engineStyle = 'background-color: #eee; color: #3af; padding: 1px 4px; bor
 
 
 
+Studio.Point = function(x,y){
+	this.x = x || 0
+	this.y = y || 0
+	this.temp = 0
+	return this
+}
+
+Studio.Point.prototype = {
+	constructor: Studio.Point,
+	translate : function(x,y){
+		this.x += x
+		this.y += y
+	},
+	scale : function(x,y){
+		this.x *= x
+		this.y *= y
+	},
+	rotate : function(sin,cos){
+		this.temp = (this.x * cos) - (this.y * sin)
+		this.y = (this.x * sin) + (this.y * cos)
+		this.x = this.temp;
+	},
+	set : function(x,y){
+		this.x = x
+		this.y = y
+	}
+}
+
 Studio.Box = function(left, top, width, height) {
-	this.left = left || 0
-	this.top = top || 0
-	this.right = left + width || 1
-	this.bottom = top + height || 1
+	this.TL = new Studio.Point(left, top)
+	this.TR = new Studio.Point(left + width, top)
+	this.BR = new Studio.Point(left, top + height)
+	this.BL = new Studio.Point(left + width, top + height)
+
+	this.left = 0
+	this.right = 0
+	this.top = 0
+	this.bottom = 0
+	this.sin = 0
+	this.cos = 0
 	return this
 }
 
 Studio.Box.prototype = {
 	constructor: Studio.Box,
 	set: function(left, top, width, height) {
-		this.left = left || this.left
-		this.top = top || this.top
-		this.right = left + width || this.right
-		this.bottom = top + height || this.bottom
+		this.TL.set(left, top)
+		this.TR.set(left + width, top)
+		this.BL.set(left, top + height)
+		this.BR.set(left + width, top)
 	},
 	get_bounds: function(who) {
-		// if(who._rotation){
-		// this.get_rotated_bounds(who);
-		// }else{
-		this.get_straight_bounds(who)
-		// }
+		if (who._world.rotation) {
+			if(who.skews){
+				this.get_rotated_bounds_w_skew(who)
+			}else{
+				this.get_rotated_bounds(who)
+			}
+		} else {
+			this.get_straight_bounds(who)
+		}
 	},
 	get_straight_bounds: function(who) {
-		this.left = who._dx - who._world.width * who.anchorX
-		this.right = this.left + who._world.width
-		this.top = who._dy - who._world.height * who.anchorY
-		this.bottom = this.top + who._world.height
+		this.TL.set(who._dx - who._world.width * who.anchorX, who._dy - who._world.height * who.anchorY)
+		this.TR.set(this.TL.x + who._world.width, this.TL.y)
+		this.BR.set(this.TR.x, this.TR.y + who._world.height)
+		this.BL.set(this.TL.x, this.BR.y)
+
+	},
+	_shift : function(x,y){
+		this.TL.translate(x,y)
+		this.TR.translate(x,y)
+		this.BR.translate(x,y)
+		this.BL.translate(x,y)
+	},
+	_scale : function(x,y){
+		this.TL.scale(x,y)
+		this.TR.scale(x,y)
+		this.BR.scale(x,y)
+		this.BL.scale(x,y)
+	},
+	_set_orbit_xy : function(sin,cos){
+		this.TL.x = ((this.left * cos) - (this.top * sin))
+		this.TL.y = ((this.left * sin) + (this.top * cos))
+		this.TR.x = ((this.right * cos) - (this.top * sin))
+		this.TR.y = ((this.right * sin) + (this.top * cos))
+		this.BR.x = ((this.right * cos) - (this.bottom * sin))
+		this.BR.y = ((this.right * sin) + (this.bottom * cos))
+		this.BL.x = ((this.left * cos) - (this.bottom * sin))
+		this.BL.y = ((this.left * sin) + (this.bottom * cos))
+	},
+	_set_bounds : function( a, b , width, height){
+		this.left 	= -a
+		this.right 	= this.left + width
+		this.top 	= -b
+		this.bottom = this.top + height
+	},
+	get_rotated_bounds_w_skew: function(who) {
+		this.sin = Math.sin(who._dAngle)
+		this.cos = Math.cos(who._dAngle)
+
+		this._set_bounds(who.width * who.anchorX, who.height * who.anchorY, who.width, who.height)
+		this._set_orbit_xy(this.sin,this.cos);
+		this._scale(who._world.scaleX,who._world.scaleY)
+		this._shift(who._dx, who._dy)
 	},
 	get_rotated_bounds: function(who) {
-		this.left = who._world.x - who._world.width * who.anchorX * 2
-		this.right = this.left + who._world.width * 3
-		this.top = who._world.y - who._world.height * who.anchorY * 3
-		this.bottom = this.top + who._world.height * 2
+		this.sin = Math.sin(who._dAngle)
+		this.cos = Math.cos(who._dAngle)
+
+		this._set_bounds(who._world.width * who.anchorX, who._world.height * who.anchorY, who._world.width, who._world.height)
+		this._set_orbit_xy(this.sin,this.cos);
+		this._shift(who._dx, who._dy)
 	},
 }
 
+Studio.RECT_BOX = new Studio.Box(10,0,0,0);
 
 Studio.Color = function(r, g, b, a) {
 	this.r = r / 255 || 0
@@ -432,12 +533,21 @@ Studio.Color.prototype = {
 	},
 	_build_style: function() {
 		this.style = 'rgba(' + parseInt(this.r * 255) + ',' + parseInt(this.g * 255) + ',' + parseInt(this.b * 255) + ',' + this.a + ')'
-	}
+	},
+	dirty: false
 }
 
+
+
 Studio.RED = new Studio.Color(204, 0, 17, 1)
+Studio.ORANGE = new Studio.Color(255, 150, 0)
 Studio.YELLOW = new Studio.Color(255, 221, 34, 1)
+Studio.GREEN = new Studio.Color(0, 200, 0, 1)
 Studio.BLUE = new Studio.Color(51, 170, 255, 1)
+Studio.PURPLE = new Studio.Color(128, 0, 255, 1)
+Studio.WHITE = new Studio.Color(255, 255, 255, 1)
+Studio.BLACK = new Studio.Color(0, 0, 0, 1)
+Studio.TRANSPARENT = Studio.TRANS = new Studio.Color(0, 0, 0, 0)
 
 
 /**
@@ -465,30 +575,42 @@ Studio.DisplayProperty.prototype = {
 
 
 Studio.Messenger = function() {
-	this.listeners = []
-	this.status = 0
+	this.listeners = {}
+	this.message = 0
 }
-
-Studio.Messenger.prototype.addListener = function(callback, who) {
-	this.listeners.push({callback: callback,who: who})
-	// reply back with current status when adding new listener.
-	if (who) {
-		who[callback].call(who,this.status)
-	} else {
-		callback(this.status)
+Studio.Messenger.constructor = Studio.Messenger;
+Studio.Messenger.prototype.addListener = function(type,callback) {
+	if(!this.listeners[type]){
+		this.listeners[type]=[];
 	}
+	this.listeners[type].push({callback: callback})
 }
 
-Studio.Messenger.prototype.setStatus = function(message) {
-	this.status = message
+Studio.Messenger.prototype.addListenerTo = function(type,callback, who) {
+
+	if(!this.listeners[type]){
+		this.listeners[type]=[];
+	}
+	
+	this.listeners[type].push({callback: callback,who: who})
+}
+
+Studio.Messenger.prototype.sendMessage = function(type, message) {
+	this.message = message
 	// now lets tell everyone that listens.
+	
 	var who = null
-	for (var i = 0; i < this.listeners.length; i++) {
-		who = this.listeners[i].who
+
+	if(!this.listeners[type]){
+		return
+	}
+
+	for (var i = 0; i < this.listeners[type].length; i++) {
+		who = this.listeners[type][i].who
 		if (who) {
-			who[this.listeners[i].callback].call(who,this.status)
+			who[this.listeners[type][i].callback].call(who,this.message,type)
 		} else {
-			this.listeners[i].callback(this.status)
+			this.listeners[type][i].callback(this.message,type)
 		}
 	}
 }
@@ -654,13 +776,9 @@ Studio.Plugin.prototype._options = function(a) {
 }
 
 
-/**
- * Image
- */
-
 Studio.Image = function studio_image(path, slices) {
-	this.path = path
-	this.image = null
+	this.path = path + '_'+ parseInt(Math.random()*100000).toString(16)
+	this.bitmap = null
 	this.width = 1
 	this.height = 1
 
@@ -675,7 +793,7 @@ Studio.Image = function studio_image(path, slices) {
 
 	this.sliceGL = {}
 
-	this.status = new Studio.Messenger()
+	// this.status = new Studio.Messenger()
 	if (slices) {
 		this.addSlice(slices)
 	}
@@ -686,40 +804,51 @@ Studio.Image = function studio_image(path, slices) {
 	return this
 }
 
-Studio.Image.prototype.constructor = Studio.Image
+Studio.inherit(Studio.Image,Studio.Messenger)
 
 Studio.Image.prototype.ready = false
 Studio.Image.prototype.height = 1
 Studio.Image.prototype.width = 1
 
+Studio.Image.prototype._onImageLoad = function image_onload(image) { // could have Event passed in
+	Studio.progress = Studio.queue / Studio.assets.length
+	Studio._loadedAsset();
+	this._setWidthHeights(image)
+	return image
+}
+Studio.Image.prototype._setWidthHeights = function(image){
+	this.slice['Full'].height = image.height
+	this.slice['Full'].width = image.width
+	this.width = image.width
+	this.height = image.height
+	this.addSlice(this.slice)
+	this.ready = true
+	this.sendMessage('ready',this.ready)
+}
+
 Studio.Image.prototype.loadImage = function studio_image_loadImage(who) {
+	var image = this;
 	if (Studio.assets[who]) {
 		console.warn('Already loaded : ', who, Studio.assets[who])
-		this.image = Studio.assets[who]
-		this.ready = true
-		this.status.setStatus(this.ready)
+		this.bitmap = Studio.assets[who]
+		if(Studio.assets.width){
+			this.ready = true
+			this.sendMessage('ready',this.ready)
+		}else{
+			Studio.assets[who].addEventListener("load", function(e){
+				image._setWidthHeights(e.target)
+			} )
+		}
 		return this
 	} else {
 		Studio.assets[who] = new Image()
-		Studio.assets.length++
-		var image = this
-		Studio.assets[who].onload = function image_onload() { // could have Event passed in
-			Studio.queue++
-			Studio.progress = Studio.queue / Studio.assets.length
-			image.slice['Full'].height = this.height
-			image.slice['Full'].width = this.width
-			image.width = this.width
-			image.height = this.height
-			if (Studio.queue === Studio.assets.length) {
-				Studio.loaded = true
-			}
-			image.addSlice(image.slice)
-			image.ready = true
-			image.status.setStatus(image.ready)
-			return image
-		}
+		Studio._addingAsset();
+		Studio.assets[who].addEventListener("load", function(e){
+			image._onImageLoad(e.target)
+		} )
+		
 		Studio.assets[who].src = who
-		this.image = Studio.assets[who]
+		this.bitmap = Studio.assets[who]
 	}
 }
 Studio.Image.prototype.buildSliceForGL = function studio_buildSliceForGL(slice) {
@@ -740,23 +869,38 @@ Studio.Image.prototype.addSlice = function studio_image_addSlice(slices) {
 	}
 }
 
+Studio.Image.prototype._rebuildGLSlices = function(){
+	for (var i in this.slice) {
+		this.sliceGL[i] = this.buildSliceForGL(this.slice[i])
+	}
+}
+
 
 Studio.Cache = function(width, height, resolution) {
-	var resolution = resolution || 1
-
-	this.image = document.createElement('canvas')
-	this.image.width = width * resolution || 512
-	this.image.height = height * resolution || 512
+	this.resolution = resolution || 1
+	this.path = 'cache_' + parseInt(Math.random()*100000).toString(16)
+	this.bitmap = document.createElement('canvas')
+	this.bitmap.width = width * this.resolution || 512
+	this.bitmap.height = height * this.resolution || 512
 	this.width = width
 	this.height = height
 	this.ready = false
-	this.ctx = this.image.getContext('2d')
+	this.ctx = this.bitmap.getContext('2d')
 	this.ctx.scale(resolution, resolution)
-	this.slice.Full = {x: 0,y: 0,width: this.image.width,height: this.image.height}
+	this.slice.Full = {x: 0,y: 0,width: this.bitmap.width,height: this.bitmap.height}
+	this.sliceGL.Full = {x:0,y:0,width:1, height: 1}
+
+	if(Studio.DEBUG){
+		document.body.appendChild(this.bitmap)
+	}
 }
 
-Studio.extend(Studio.Cache, Studio.Image)
+Studio.inherit(Studio.Cache, Studio.Image)
 
+
+Studio.Cache.prototype.applyEffect = function(effect){
+	effect.action(this)
+}
 
 Studio.Ease = {}
 
@@ -917,7 +1061,7 @@ Studio.DisplayObject = function(attr) {
 	this.anchorX  = 0.5
 	this.anchorY  = 0.5
 	this.rotation = 0
-
+	this.skews 	  = 0
 	// Display Settings:
 	this.alpha   = 1 // sets the opacity/alpha of an object
 	this.visible = 1 // invisible items are ignored when rendering
@@ -930,6 +1074,7 @@ Studio.DisplayObject = function(attr) {
 	this.orbits = true
 	this.orbit = 0
 	this.inheritRotation = true
+	this.inheritScale = true
 	this.orbitSpeed = 1
 
 	// set attributes if provided.
@@ -943,7 +1088,8 @@ Studio.DisplayObject = function(attr) {
 	// to save memory we don't include a default child container. This will be
 	// created if one is need.
 	this._parent = null
-	this._hasChildren = 0 // we use this as a quick flag to let us know if we
+	this._hasChildren = 0 
+	// we use this as a quick flag to let us know if we
 	// should even think about looking for children
 	// objects. It also stores our length.
 
@@ -973,7 +1119,6 @@ Studio.DisplayObject.prototype = {
 	__update_ROTATION: true,
 	addChild: function(child) {
 		// Adds a child to this object
-
 		if (!this.hasOwnProperty('children')) {
 			this.children = [] // if we didn't use 'hasOwnProperty', we would learn that JS treats [] like pointers and in this particular case will cause a crash.
 		}
@@ -986,13 +1131,22 @@ Studio.DisplayObject.prototype = {
 			child._world = new Studio.DisplayProperty()
 		}
 		child._parent = this._world
+		child._parent_box = this._boundingBox
 		this.children[this._hasChildren] = child
 		this._hasChildren++
+		// child.z = child._world.z = -this._hasChildren*.000001;
 		child.force_update()
 		child._dset()
+		// if(this.constructor == Studio.Stage){
+
+		// }else{
+		// 	child._world.z = (this.z*.000001)-(child.z*.000001)
+		// }
+		
 		if (child._hasChildren) {
 			child.force_update_children()
 		}
+
 		return this
 	},
 	removeChildAtIndex: function(child_index) {
@@ -1101,11 +1255,21 @@ Studio.DisplayObject.prototype = {
 	},
 	vertex_children: function(stage, ratio, interpolate) {
 		if (this._hasChildren) {
-			for (var i = 0; i !== this._hasChildren; i++) {
-				this.children[i].buildElement(stage, ratio, interpolate)
-				// this.children[i].buildTriangles(stage,ratio);
+			for (var i = 0; i < this._hasChildren; i++) {
+				if(!this.children[i].buildElement){
+					console.log('no build', this.children[i])
+					return
+				}else{
+					this.children[i].buildElement(stage, ratio, interpolate)
+					if(this.children[i]) {
+						this.children[i].vertex_children(stage, ratio, interpolate)
+					}
+				}
 			}
 		}
+	},
+	buildElement : function(stage, ratio, interpolate) {
+		
 	},
 	render_children: function(stage, ratio, interpolate) {
 		if (this._hasChildren) {
@@ -1156,8 +1320,13 @@ Studio.DisplayObject.prototype = {
 		}
 	},
 	update_scale: function() {
-		this._world.scaleX  = this._parent.scaleX * this.scaleX
-		this._world.scaleY  = this._parent.scaleY * this.scaleY
+		if (this.inheritScale) {
+			this._world.scaleX  = this._parent.scaleX * this.scaleX
+			this._world.scaleY  = this._parent.scaleY * this.scaleY
+		}else{
+			this._world.scaleX  = this.scaleX
+			this._world.scaleY  = this.scaleY
+		}
 	},
 	update_dimensions: function() {
 		this._world.width = this.width * this._world.scaleX
@@ -1172,8 +1341,8 @@ Studio.DisplayObject.prototype = {
 	orbitXY: function() {
 		var x = this.x * this._world.scaleX
 		var y = this.y * this._world.scaleY
-		var sin = Studio.sin((this._parent.angle + this.orbit) * this.orbitSpeed)
-		var cos = Studio.cos((this._parent.angle + this.orbit) * this.orbitSpeed)
+		var sin = Math.sin((this._parent.angle + this.orbit) * this.orbitSpeed)
+		var cos = Math.cos((this._parent.angle + this.orbit) * this.orbitSpeed)
 		this._orbitX = (x * cos) - (y * sin)
 		this._orbitY = (x * sin) + (y * cos)
 	},
@@ -1250,7 +1419,9 @@ Studio.DisplayObject.prototype = {
 	},
 	__dsetRotation: function() {
 		if (this._world.rotation) {
-			this._dAngle = this._parent.angle + this.angle
+			// this._dAngle = this._parent.angle + this.angle
+			this._dAngle = this._world.angle + this.angle
+			// console.log(this._parent.angle )
 		}
 	},
 	_dset: function() {
@@ -1346,7 +1517,8 @@ Studio.DisplayList = function(attr) {
 	}
 };
 
-Studio.extend(Studio.DisplayList,Studio.DisplayObject);
+Studio.inherit(Studio.DisplayList, Studio.DisplayObject);
+
 
 Studio.DisplayList.prototype.cacheAsBitmap = function(stage) {
 	this.cache = document.createElement('canvas');
@@ -1360,12 +1532,12 @@ Studio.DisplayList.prototype.cacheAsBitmap = function(stage) {
 Studio.DisplayList.prototype.updateCache = function() {
 	this.cached = false;
 	this.ctx.clearRect(0, 0, this.width, this.height);
-	this.render(this,1);
+	this.render(this, 1);
 	this.cached = true;
 };
 Studio.DisplayList.prototype._cacheIt = function() {
 	this.ctx.clearRect(0, 0, this.width, this.height);
-	this.render(this,1);
+	this.render(this, 1);
 };
 Studio.DisplayList.prototype.updateElement = function(who) {
 	who.render(this);
@@ -1464,40 +1636,126 @@ Studio.addTo(Studio.DisplayList.prototype, LinkedList.prototype);
  */
 
 Studio.Rect = function(attr) {
-	this.color = new Studio.Color(1, 0, 0, 0)
-	this.bounds = new Studio.Box(10, 0, 0, 0)
-
+	this.color = new Studio.Color(255, 255, 255, 1)
+	// this.subBuffer = new Float32Array(8)
+	this.dirty = 0;
 	if (attr) {
 		this.apply(attr)
 	}
 }
 
-Studio.extend(Studio.Rect, Studio.DisplayObject)
+Studio.inherit(Studio.Rect, Studio.DisplayObject)
 
-Studio.Rect.prototype.addVert = function(gl, x, y, z, tx, ty) {
-	gl._batch[gl._count++] = x
-	gl._batch[gl._count++] = y
-	// gl._batch[gl._count+2] = 1;
-	gl._batch[gl._count++] = this.color.r
-	gl._batch[gl._count++] = this.color.g
-	gl._batch[gl._count++] = this.color.b
-	gl._batch[gl._count++] = this.color.a
-	gl._batch[gl._count++] = tx
-	gl._batch[gl._count++] = ty
-	// gl._count +=8;
+
+Studio.DefaultImage = new Studio.Cache(1,1,1)
+Studio.DefaultImage.ctx.fillStyle = '#fff';
+Studio.DefaultImage.ctx.fillRect(0,0,1,1)
+
+Studio.BufferGL = function(image,size,stage){
+	this.bytes = 36;
+	this.size = size || stage._maxCount;
+	this.data = new Float32Array(this.size * this.bytes)
+	this.count = 0
+	this.texture = image || Studio.DefaultImage;
+}
+Studio.BufferGL.prototype.constructor = Studio.BufferGL
+
+Studio.BufferGL.prototype.draw = function(gl){
+	if(!this.count){
+		return;
+	}
+	if(!this._texture && this.texture){
+		this.setTexture(gl, 1)
+	}
+	if(this.texture){
+		gl.bindTexture(gl.TEXTURE_2D, this._texture)
+		if(this.texture.dirty){
+			gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.texture.bitmap);
+			this.texture.dirty = false
+		}
+	}
+	gl.bufferData(gl.ARRAY_BUFFER, this.data, gl.DYNAMIC_DRAW)
+	gl.drawElements(gl.TRIANGLES, this.count/6, gl.UNSIGNED_SHORT, 0)
+	this.count = 0
 }
 
-Studio.Rect.prototype.buildElement = function(gl, ratio, interpolate) {
+Studio.BufferGL.prototype.prepTexture = function GL_prepTexture(gl) {
+	this._texture = gl.createTexture()
+	gl.bindTexture(gl.TEXTURE_2D, this._texture)
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+
+
+	this.buffer = gl.createBuffer()
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
+	gl.vertexAttribPointer(gl.positionLocation, 3, gl.FLOAT, gl.FALSE, this.bytes, 0)
+	gl.vertexAttribPointer(gl.colorLocation, 4, gl.FLOAT, gl.FALSE, this.bytes, (3)*4)
+	gl.vertexAttribPointer(gl.textureLocation, 2, gl.FLOAT, gl.FALSE, this.bytes, (3+4)*4)
+	gl.bufferData(gl.ARRAY_BUFFER, this.data, gl.DYNAMIC_DRAW)
+}
+
+Studio.BufferGL.prototype.setTexture = function GL_setTexture(gl, mipmap) {
+	if (!this._texture) {
+		this.prepTexture(gl)
+	}
+	if(this.texture){
+		if(this.texture.updateGlTexture){
+			this.texture.updateGlTexture(gl)
+		}
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.texture.bitmap)
+		if (mipmap) {
+			gl.generateMipmap(gl.TEXTURE_2D)
+		}
+	}
+}
+
+
+
+Studio.Rect.prototype.addXYZ = function(buffer,point,stage){
+	buffer.data[buffer.count++] = point.x
+	buffer.data[buffer.count++] = point.y
+	buffer.data[buffer.count++] = stage.draws*-.000001
+}
+
+Studio.Rect.prototype.addRGBA = function(buffer,color){
+	buffer.data[buffer.count++] = color.r
+	buffer.data[buffer.count++] = color.g
+	buffer.data[buffer.count++] = color.b
+	buffer.data[buffer.count++] = color.a*this._world.alpha
+}
+Studio.Rect.prototype.addTX = function(buffer,x,y){
+	buffer.data[buffer.count++] = x
+	buffer.data[buffer.count++] = y
+}
+
+Studio.Rect.prototype.addVert = function(buffer, point, tx,ty,stage) {
+	this.addXYZ(buffer,point,stage)
+	this.addRGBA(buffer,this.color)
+	this.addTX(buffer,tx,ty)
+}
+
+Studio.Rect.prototype.verts = function(box, stage){
+	var buffer = stage.rect_buffer;
+	this.addVert(buffer,box.TL,0,0,stage)
+	this.addVert(buffer,box.TR,0,0,stage)
+	this.addVert(buffer,box.BL,0,0,stage)
+	this.addVert(buffer,box.BR,0,0,stage)
+}
+
+
+Studio.Rect.prototype.buildElement = function(stage, ratio, interpolate) {
+	stage.draws++
 	if (interpolate) {
 		this._delta(ratio)
 	} else {
 		this._dset()
 	}
 	this._boundingBox.get_bounds(this)
-	this.addVert(gl, this._boundingBox.left, this._boundingBox.top, this._world.z, this.bounds.left, this.bounds.top)
-	this.addVert(gl, this._boundingBox.right, this._boundingBox.top, this._world.z, this.bounds.right, this.bounds.top)
-	this.addVert(gl, this._boundingBox.left, this._boundingBox.bottom, this._world.z, this.bounds.left, this.bounds.bottom)
-	this.addVert(gl, this._boundingBox.right, this._boundingBox.bottom, this._world.z, this.bounds.right, this.bounds.bottom)
+	
+	this.verts(this._boundingBox, stage)
 }
 
 Studio.Rect.prototype.buildTriangles = function(gl, ratio) {
@@ -1512,6 +1770,9 @@ Studio.Rect.prototype.buildTriangles = function(gl, ratio) {
 }
 
 Studio.Rect.prototype.setStyle = function(ctx) {
+	if (this.color.dirty){
+		this.color._build_style();
+	}
 	if (this.color !== ctx.fillStyle) {
 		ctx.fillStyle = this.color.style
 	}
@@ -1521,9 +1782,14 @@ Studio.Rect.prototype.prepAngled = function(ctx) {
 	if (this._dx || this._dy) {
 		ctx.translate(this._dx, this._dy)
 	}
-	ctx.rotate(this._dAngle || 0)
+	if(!this.skews){
+		ctx.rotate(this._dAngle || 0)
+	}
 	if (this._world.scaleX !== 1 || this._world.scaleY !== 1) {
 		ctx.scale(this._world.scaleX, this._world.scaleY)
+	}
+	if(this.skews){
+		ctx.rotate(this._dAngle || 0)
 	}
 }
 
@@ -1554,7 +1820,7 @@ Studio.Clip = function(attr) {
 	}
 }
 
-Studio.extend(Studio.Clip, Studio.Rect)
+Studio.inherit(Studio.Clip, Studio.Rect)
 
 Studio.Clip.prototype.draw = function(ctx) {
 	ctx.save()
@@ -1579,12 +1845,12 @@ Studio.CircleClip = function(attr) {
 	}
 }
 
-Studio.extend(Studio.CircleClip, Studio.Rect)
+Studio.inherit(Studio.CircleClip, Studio.Rect)
 
 Studio.CircleClip.prototype.draw = function(ctx) {
 	ctx.save()
 	ctx.beginPath()
-	ctx.arc(this._dx, this._dy ,this._world.width / 2, 0,2 * Math.PI)
+	ctx.arc(this._dx, this._dy , this._world.width / 2, 0, 2 * Math.PI)
 	ctx.clip()
 }
 
@@ -1605,15 +1871,17 @@ Studio.Circle = function(attr) {
 	if (attr) {
 		this.apply(attr)
 	}
+	this.height = this.width;
 }
 
-Studio.extend(Studio.Circle, Studio.Rect)
+Studio.inherit(Studio.Circle, Studio.Rect)
 
 Studio.Circle.prototype.draw = function(ctx) {
 	this.setStyle(ctx)
 	this.setAlpha(ctx)
 	ctx.beginPath()
-	ctx.arc(this._world.x, this._world.y, this._world.width, 0, 2 * Math.PI)
+
+	ctx.arc(this._world.x, this._world.y, this._world.width/2, 0, 2 * Math.PI)
 	ctx.fill()
 }
 
@@ -1625,19 +1893,19 @@ Studio.Circle.prototype.draw = function(ctx) {
 Studio.Sprite = function(attr) {
 	this.image = null
 	this.slice = 'Full'
-	this.color = new Studio.Color(1, 1, 1, 1)
+	this.color = Studio.WHITE
 
 	if (attr) {
 		this.apply(attr)
 	}
 }
 
-Studio.extend(Studio.Sprite, Studio.Rect)
+Studio.inherit(Studio.Sprite, Studio.Rect)
 
 Studio.Sprite.prototype.drawAngled = function(ctx) {
 	ctx.save()
 	this.prepAngled(ctx)
-	ctx.drawImage(this.image.image,
+	ctx.drawImage(this.image.bitmap,
 		this.image.slice[this.slice].x,
 		this.image.slice[this.slice].y,
 		this.image.slice[this.slice].width,
@@ -1650,17 +1918,46 @@ Studio.Sprite.prototype.drawAngled = function(ctx) {
 	ctx.restore()
 }
 
-Studio.Sprite.prototype.buildElement = function(gl, ratio, interpolate) {
+Studio.Sprite.prototype.verts = function(box, buffer, texture, stage) {
+	this.addVert(buffer, box.TL, texture.x, texture.y, stage)
+	this.addVert(buffer, box.TR, texture.width, texture.y, stage)
+	this.addVert(buffer, box.BL, texture.x, texture.height, stage)
+	this.addVert(buffer, box.BR, texture.width, texture.height, stage)
+
+	if (this.borderlap && this.border) {
+		if (this._dx -  (this._dwidth * this.anchorX) < this.border.x) {
+			this._boundingBox.TL.x += this.border.width
+			this._boundingBox.TR.x += this.border.width
+			this._boundingBox.BR.x += this.border.width
+			this._boundingBox.BL.x += this.border.width
+		}
+		if ((this._dx + this._world.width) > this.border.width) {
+			this._boundingBox.TL.x -= this.border.width
+			this._boundingBox.TR.x -= this.border.width
+			this._boundingBox.BR.x -= this.border.width
+			this._boundingBox.BL.x -= this.border.width
+		}
+		this.addVert(buffer, box.TL, texture.x, texture.y, stage)
+		this.addVert(buffer, box.TR, texture.width, texture.y, stage)
+		this.addVert(buffer, box.BL, texture.x, texture.height, stage)
+		this.addVert(buffer, box.BR, texture.width, texture.height, stage)
+	}
+}
+
+Studio.Sprite.prototype.buildElement = function(stage, ratio, interpolate) {
+	if (!stage.buffers[this.image.path]) {
+		stage.buffers[this.image.path] = new Studio.BufferGL(this.image,0,stage)
+	}
+	stage.draws++
+
 	if (interpolate) {
 		this._delta(ratio)
 	} else {
 		this._dset()
 	}
 	this._boundingBox.get_bounds(this)
-	this.addVert(gl, this._boundingBox.left, this._boundingBox.top, this._world.z, this.image.sliceGL[this.slice].x, this.image.sliceGL[this.slice].y)
-	this.addVert(gl, this._boundingBox.right, this._boundingBox.top, this._world.z, this.image.sliceGL[this.slice].width, this.image.sliceGL[this.slice].y)
-	this.addVert(gl, this._boundingBox.left, this._boundingBox.bottom, this._world.z, this.image.sliceGL[this.slice].x, this.image.sliceGL[this.slice].height)
-	this.addVert(gl, this._boundingBox.right, this._boundingBox.bottom, this._world.z, this.image.sliceGL[this.slice].width, this.image.sliceGL[this.slice].height)
+
+	this.verts(this._boundingBox, stage.buffers[this.image.path], this.image.sliceGL[this.slice], stage)
 }
 
 Studio.Sprite.prototype.draw = function Studio_Sprite_draw(ctx) {
@@ -1675,7 +1972,7 @@ Studio.Sprite.prototype.draw = function Studio_Sprite_draw(ctx) {
 		this.drawAngled(ctx)
 	} else {
 		ctx.drawImage(
-			this.image.image,
+			this.image.bitmap,
 			this.image.slice[this.slice].x,
 			this.image.slice[this.slice].y,
 			this.image.slice[this.slice].width,
@@ -1688,7 +1985,7 @@ Studio.Sprite.prototype.draw = function Studio_Sprite_draw(ctx) {
 		if (this.borderlap && this.border) {
 			if (this._dx -  (this._dwidth * this.anchorX) < this.border.x) {
 				ctx.drawImage(
-					this.image.image,
+					this.image.bitmap,
 					this.image.slice[this.slice].x,
 					this.image.slice[this.slice].y,
 					this.image.slice[this.slice].width,
@@ -1701,7 +1998,7 @@ Studio.Sprite.prototype.draw = function Studio_Sprite_draw(ctx) {
 			}
 			if ((this._dx + this._world.width) > this.border.width) {
 				ctx.drawImage(
-					this.image.image,
+					this.image.bitmap,
 					this.image.slice[this.slice].x,
 					this.image.slice[this.slice].y,
 					this.image.slice[this.slice].width,
@@ -1721,7 +2018,7 @@ Studio.Sprite.prototype.draw = function Studio_Sprite_draw(ctx) {
  */ 
 
 Studio.SpriteAnimation = function(attr) {
-	this.sheet = null
+	this.image = null
 	this.loop = [[0, 0]]
 	this.fps = 12
 	this.frame = 0
@@ -1737,7 +2034,7 @@ Studio.SpriteAnimation = function(attr) {
 	this.setStartingFrame(this.frame)
 }
 
-Studio.extend(Studio.SpriteAnimation, Studio.Rect)
+Studio.inherit(Studio.SpriteAnimation, Studio.Sprite)
 
 Studio.SpriteAnimation.prototype.setStartingFrame = function(a) {
 	this.frame = a
@@ -1746,22 +2043,22 @@ Studio.SpriteAnimation.prototype.setStartingFrame = function(a) {
 }
 
 Studio.SpriteAnimation.prototype.draw = function(ctx) {
-	if (!this.sheet) {
+	if (!this.image) {
 		return
 	}
-	if (!this.sheet.ready) {
+	if (!this.image.ready) {
 		return
 	}
 	this.setAlpha(ctx)
 
-	ctx.drawImage(this.sheet.image, this.rect.width * this.sliceX, this.rect.height * this.sliceY, this.rect.width, this.rect.height, this._dx - (this._dwidth * this.anchorX), this._dy - (this._dheight * this.anchorX), this._dwidth, this._dheight)
+	ctx.drawImage(this.image.bitmap, this.rect.width * this.sliceX, this.rect.height * this.sliceY, this.rect.width, this.rect.height, this._dx - (this._dwidth * this.anchorX), this._dy - (this._dheight * this.anchorX), this._dwidth, this._dheight)
 
 	if (this.borderlap && this.border) {
 		if (this._dx -  (this._dwidth * this.anchorX) < this.border.x) {
-			ctx.drawImage(this.sheet.image, this.rect.width * this.sliceX, this.rect.height * this.sliceY, this.rect.width, this.rect.height, this.border.width + this._dx - (this._dwidth * this.anchorX), this._dy - (this._dheight * this.anchorY), this._dwidth, this._dheight)
+			ctx.drawImage(this.image.bitmap, this.rect.width * this.sliceX, this.rect.height * this.sliceY, this.rect.width, this.rect.height, this.border.width + this._dx - (this._dwidth * this.anchorX), this._dy - (this._dheight * this.anchorY), this._dwidth, this._dheight)
 		}
 		if ((this._dx + this._world.width) > this.border.width) {
-			ctx.drawImage(this.sheet.image, this.rect.width * this.sliceX, this.rect.height * this.sliceY, this.rect.width, this.rect.height, this._dx - (this._dwidth * this.anchorX) - this.border.width, this._dy - (this._dheight * this.anchorY), this._dwidth, this._dheight)
+			ctx.drawImage(this.image.bitmap, this.rect.width * this.sliceX, this.rect.height * this.sliceY, this.rect.width, this.rect.height, this._dx - (this._dwidth * this.anchorX) - this.border.width, this._dy - (this._dheight * this.anchorY), this._dwidth, this._dheight)
 		}
 	}
 	if (this.loop.length) {
@@ -1789,6 +2086,43 @@ Studio.SpriteAnimation.prototype.updateFrame = function() {
 	this.setSlice()
 }
 
+Studio.SpriteAnimation.prototype.verts = function(box, buffer, texture, stage) {
+	var width = (this.rect.width / this.image.width)
+	var height = (this.rect.height / this.image.height)
+
+	var left = this.sliceX * width
+	var top  = this.sliceY * height
+
+	this.addVert(buffer, box.TL, left, top, stage)
+	this.addVert(buffer, box.TR, left + width, top, stage)
+	this.addVert(buffer, box.BL, left, top + height, stage)
+	this.addVert(buffer, box.BR, left + width, top + height, stage)
+
+	if (this.borderlap && this.border) {
+		if (this._dx -  (this._dwidth * this.anchorX) < this.border.x) {
+			this._boundingBox.TL.x += this.border.width
+			this._boundingBox.TR.x += this.border.width
+			this._boundingBox.BR.x += this.border.width
+			this._boundingBox.BL.x += this.border.width
+		}
+		if ((this._dx + this._world.width) > this.border.width) {
+			this._boundingBox.TL.x -= this.border.width
+			this._boundingBox.TR.x -= this.border.width
+			this._boundingBox.BR.x -= this.border.width
+			this._boundingBox.BL.x -= this.border.width
+		}
+		this.addVert(buffer, box.TL, left, top, stage)
+		this.addVert(buffer, box.TR, left + width, top, stage)
+		this.addVert(buffer, box.BL, left, top + height, stage)
+		this.addVert(buffer, box.BR, left + width, top + height, stage)
+	}
+
+	if (this.loop.length) {
+		this.updateFrame()
+	}
+}
+
+
 
 /**
 * Camera
@@ -1798,26 +2132,38 @@ Studio.SpriteAnimation.prototype.updateFrame = function() {
 Studio.Camera = function(stage) {
 	this.stage 		= {width: stage.width, height: stage.height}
 	this.tracking 	= null
-
+	this.focus		= {x: 0, y: 0}
 	this.bound 		= null
 	this.active		= true
+	// this.visibleArea = new Studio.Rect({x: 0, y: 0, width: stage.width, height: stage.height, color: new Studio.Color(200, 0, 255, .4)})
+	// stage.addChild(this.visibleArea);
+	this.matrix 	= 	new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1]);
 }
 
-Studio.extend(Studio.Camera,Studio.DisplayObject)
+Studio.inherit(Studio.Camera, Studio.DisplayObject)
 
 Studio.Camera.prototype.updateRect = function() {
-	this.left	= -this.bound._world.x * this.scaleX
-	this.top	= -this.bound._world.y * this.scaleY
-	this.right	= this.left + (this.bound._world.width * this.scaleX - this.stage.width)
-	this.bottom	= this.top + (this.bound._world.height * this.scaleY - this.stage.height)
+	this.left	= (this.bound._dx * this.scaleX) + this.focus.x
+	this.top	= (this.bound._dy * this.scaleY) + this.focus.y
+	this.right	= (this.bound._dwidth * this.scaleX) - this.focus.x
+	this.bottom	= (this.bound._dheight * this.scaleY) - this.focus.y
 }
-
-Studio.Camera.prototype.update = function(stage, ratio) {
+Studio.Camera.prototype.update_visbile_area = function() {
+	if (this.tracking) {
+		this.visibleArea.x = this.x
+		this.visibleArea.y = this.y
+	} else {
+		this.visibleArea.x = this.x + stage.width / 2
+		this.visibleArea.y = this.y + stage.height / 2
+	}
+	this.visibleArea.width = (this.stage.width / this.scaleX) - 10
+	this.visibleArea.height = (this.stage.height / this.scaleY) - 10
+}
+Studio.Camera.prototype.update = function(stage, ratio, webgl) {
 	if (this.tracking) { // are we following a DisplayObject?
-		this.tracking._delta(ratio)
-		this.x = (this.tracking._dx * this.scaleX) - this.stage.width / 2
-		this.y = (this.tracking._dy * this.scaleY) - this.stage.height / 2
-		// this.angle = this.tracking.angle || 0 ;
+		if (!webgl) this.tracking._delta(ratio)
+		this.x = (this.tracking._dx)
+		this.y = (this.tracking._dy)
 	}
 	if (this.bound) { // are we bound to a DisplayObject? this can be the main stage if you want.
 		this.updateRect()
@@ -1832,17 +2178,29 @@ Studio.Camera.prototype.update = function(stage, ratio) {
 			this.y = this.bottom
 		}
 	}
+	if(this.visibleArea) this.update_visbile_area();
 }
 
-Studio.Camera.prototype.render = function(stage, ratio) {
-	this.update(stage,ratio)
-	if (this.x || this.y || this.scaleX !== 1 || this.scaleY !== 1) {
-		stage.ctx.setTransform(stage.resolution * this.scaleX, 0, 0, stage.resolution * this.scaleY, -this.x * stage.resolution, -this.y * stage.resolution)
+Studio.Camera.prototype.render = function(stage, ratio, webgl) {
+	this.update(stage, ratio, webgl)
+	// if (this.x || this.y || this.scaleX !== this.matrix[0] || this.scaleY !== this.matrix[4]) { // we only need to update this if its different
+	this.matrix[0] = this.scaleX
+	this.matrix[4] = this.scaleY
+	this.matrix[6] = this.focus.x - (this.x * this.scaleX)
+	this.matrix[7] = this.focus.y - (this.y * this.scaleY)
+	if (!webgl) {
+		stage.ctx.setTransform(this.matrix[0] * stage.resolution, 0, 0, this.matrix[4] * stage.resolution, this.matrix[6] * stage.resolution, this.matrix[7] * stage.resolution)
+	}
+	// }
+	if (webgl) { // webgl needs up to send this information.
+		stage.ctx.uniformMatrix3fv(stage.ctx.matrixLocation, false, this.matrix)
 	}
 }
 
 Studio.Camera.prototype.track = function(who) {
 	this.tracking = who
+	this.focus.x = stage.width / 2
+	this.focus.y = stage.height / 2
 }
 
 Studio.Camera.prototype.bindTo = function(who) {
@@ -1855,6 +2213,10 @@ Studio.Camera.prototype.unBind = function() {
 
 Studio.Camera.prototype.stopTracking = function() {
 	this.track(null)
+	this.focus.x = 0
+	this.focus.y = 0
+	this.matrix[6] = this.x * this.scaleX
+	this.matrix[7] = this.y * this.scaleY
 }
 
 
@@ -1863,7 +2225,7 @@ Studio.Camera.prototype.stopTracking = function() {
  */
 
 Studio.Scene = function(attr) {
-	this.color = new Studio.Color(0,0,0,0)
+	this.color = new Studio.Color(0,1,0,.5)
 	this.active = false
 	this.image = null
 	this.loader = null
@@ -1872,6 +2234,9 @@ Studio.Scene = function(attr) {
 	this.buttons = []
 	this.tweens = Object.create(null)
 	this.tween_length = 0
+	this.trails = true
+	this.anchorX = 0
+	this.anchorY = 0
 	if (attr) {
 		this.apply(attr)
 	}
@@ -1883,7 +2248,7 @@ Studio.Scene = function(attr) {
 	}
 }
 
-Studio.extend(Studio.Scene, Studio.DisplayObject)
+Studio.inherit(Studio.Scene, Studio.Rect)
 
 Studio.Scene.prototype.loadAssets = function() {
 	for (var i = 0; i !== arguments.length; i++) {
@@ -1924,6 +2289,9 @@ Studio.Scene.prototype.draw = function(ctx) {
 			ctx.clearRect(this._dx, this._dy, this.width, this.height)
 			return
 		}
+		if (this.color.a < 1 && !this.trails) {
+			ctx.clearRect(this._dx, this._dy, this.width, this.height)
+		}
 		this.setStyle(ctx)
 		ctx.fillRect(this._dx, this._dy,  this.width, this.height)
 		return
@@ -1936,186 +2304,183 @@ Studio.Scene.prototype.draw = function(ctx) {
  * Where everything plays out.
  */
 
-Studio.canWebGL = function(){
-	return document.createElement("canvas").getContext('webgl')!== null;
-}
 Studio.Stage = function(domID, attr) {
 
 	// a very basic check for webgl support.
 	// this will probably change later.
-	this.webgl = false; //!!window.WebGLRenderingContext;
-	this.fullscreen = false;
-	this.color = new Studio.Color(0, 0, 0, 1); // defaults to black
-	this.snap = false;
+	this.webgl = !!window.WebGLRenderingContext;
+	this.fullscreen = 0
+	this.color = new Studio.Color(0, 0, 0, 1) // defaults to black
+	this.snap = false
 	// Before we do anything we should apply any attached attributes.
 	// to disable webgl even if the browser supports it:
 	// you would send an object like this { webgl : false }
 	// That will force the 2d context.
 	if (attr) {
-		this.apply(attr);
+		this.apply(attr)
 	}
-
-	this._getCanvasElement(domID);
-	this._count = 0;
-	this._maxCount = 16333;
-	this.dur = 1000 / 60;
-	this._d = this.dur/2;
-	this.resolution = window.devicePixelRatio; // defaults to device setting.
-	this.interpolate = true;
-	this.smoothing = true;
+	this.tweens = Object.create(null)
+	this._getCanvasElement(domID)
+	this._count = 0
+	this._maxCount = 16383
+	this.dur = 1000 / 60
+	this._d = this.dur / 2
+	this.resolution = window.devicePixelRatio // defaults to device setting.
+	this.interpolate = true
+	this.smoothing = true
 
 	if (attr) {
-		this.apply(attr);
+		this.apply(attr)
 	}
 
-	this._sizeCanvas(this.fullscreen);
-	this.setPixelRatio();
-	if (this.webgl && Studio.canWebGL()) {
-		this.engine = Studio.Stage.prototype.WEBGL;
-	}else{
-		this.webgl = false;
+	this._sizeCanvas(this.fullscreen)
+	this.setPixelRatio()
+	if (this.webgl && Studio.browser_info.webGL) {
+		this.engine = Studio.Stage.prototype.WEBGL
+	} else {
+		this.webgl = false
 	}
-	this.allowPlugins();
+	this.allowPlugins()
 
 	// We need to prepare the canvas element for use.
 	// First we need to grab the appropriate context based on the engine type
-	this.engine.getContext.call(this);
+	this.engine.getContext.call(this)
 
 	// Once the context is obtained we need to fire some actions on it
 	// this is mainly for webgl, since it needs shaders and programs created
-	this.engine.init.call(this, this.ctx);
+	this.engine.init.call(this, this.ctx)
 
 	// One the basic are competed by the init we can apply more changes through
 	// a prep call. Again mainly used by webgl to create holders for buffers and such.
-	this.engine.prep.call(this, this.ctx);
-	Studio.stages.push(this);
-	this.render = this.engine.render;
+	this.engine.prep.call(this, this.ctx)
+	Studio.stages.push(this)
+	this.render = this.engine.render
 	// This is a universal init. These are items that need to be attached to the stage
 	// regardless of engine type. These include items like buttons, cameras, scenes etc...
-	this._init();
-	console.log('%cStudio3 v' + Studio.version + '%c' + this.engine.type, Studio.infoStyle, Studio.engineStyle);
-	this.verts = 0;
-	return this;
-};
+	this._init()
+	console.log('%cStudio3 v' + Studio.version + '%c' + this.engine.type, Studio.infoStyle, Studio.engineStyle)
+	this.verts = 0
+	return this
+}
 
-Studio.extend(Studio.Stage, Studio.Scene);
+Studio.inherit(Studio.Stage, Studio.Scene)
 
 Studio.Stage.prototype._getCanvasElement = function(domElementID) {
-	if(domElementID){
-		if (domElementID.toLowerCase() === 'build'){
-			this.canvas = document.createElement('canvas');
-			document.body.appendChild(this.canvas);
-			return;
+	if (domElementID) {
+		if (domElementID.toLowerCase() === 'build') {
+			this.bitmap = document.createElement('canvas')
+			document.body.appendChild(this.bitmap)
+			return
 		}
-		this.canvas = document.getElementById(domElementID);
+		this.bitmap = document.getElementById(domElementID)
 	} else {
 		// If an ID is not passed to us.
 		// We will find the first Canvas element and use that.
-		var temp = document.body.getElementsByTagName('canvas');
+		var temp = document.body.getElementsByTagName('canvas')
 		if (!temp[0]) {
 			// If we can't find a Canvas element on the page, we create one.
-			this.canvas = document.createElement('canvas');
-			document.body.appendChild(this.canvas);
+			this.bitmap = document.createElement('canvas')
+			document.body.appendChild(this.bitmap)
 		} else {
 			// Otherwise we use the first one we see.
-			this.canvas = temp[0];
+			this.bitmap = temp[0]
 		}
 	}
-};
+}
 
 Studio.Stage.prototype.setColor = function(r, g, b, a) {
-	this.color.set(r, g, b, a);
+	this.color.set(r, g, b, a)
 	if (this.ctx.clearColor) {
-		this.ctx.clearColor(this.color.r, this.color.g, this.color.b, this.color.a);
+		this.ctx.clearColor(this.color.r, this.color.g, this.color.b, this.color.a)
 	}
-};
+}
 
 Studio.Stage.prototype._init = function() {
-	this.ready = false;
-	this.autoPause = false;
-	this._watching = false;
-	this.children = [];
-	this.buttons = [];
-	this.activeScene = null;
-	this.previousScene = null;
-	this.camera = new Studio.Camera(this);
-	this.nextID = 0;
-	this.anchorX = 0 ;
-	this.anchorY = 0 ;
-	this.active = true;
-	this._pause_buttons = false;
+	this.ready = false
+	this.autoPause = false
+	this._watching = false
+	this.children = []
+	this.buttons = []
+	this.activeScene = null
+	this.previousScene = null
+	this.camera = new Studio.Camera(this)
+	this.nextID = 0
+	this.anchorX = 0
+	this.anchorY = 0
+	this.active = true
+	this._pause_buttons = false
 
 	// Studio.stages.push(this);
-	Studio.stage = this;
-	return this;
-};
+	Studio.stage = this
+	return this
+}
 
 Studio.Scene.prototype.allowPlugins = function() {
-	this.plugins = Object.create(null);
-	this.plugins.input = [];
-	this.plugins.effect = [];
-	this._effects = 0;
-	this._inputs = 0;
-};
+	this.plugins = Object.create(null)
+	this.plugins.input = []
+	this.plugins.effect = []
+	this._effects = 0
+	this._inputs = 0
+}
 
 Studio.Stage.prototype._sizeCanvas = function(fullscreen) {
-	this.height = this.canvas.height || this.height;
-	this.width = this.canvas.width || this.width;
-	this.canvas.style.height = this.height + 'px';
-	this.canvas.style.width = this.width + 'px';
-	this._scaleRatio = 1;
+	this.height = this.bitmap.height || this.height
+	this.width = this.bitmap.width || this.width
+	this.bitmap.style.height = this.height + 'px'
+	this.bitmap.style.width = this.width + 'px'
+	this._scaleRatio = 1
 	if (fullscreen == 1) {
-		this.width = window.innerWidth;
-		this.height = window.innerHeight;
-		this.canvas.style.height = '100%';
-		this.canvas.style.width = '100%';
+		this.width = window.innerWidth
+		this.height = window.innerHeight
+		this.bitmap.style.height = '100%'
+		this.bitmap.style.width = '100%'
 	}
 	if (fullscreen >= 2) {
-		var innerWidth = window.innerWidth;
-		if(this.maxwidth && innerWidth>this.maxwidth){
-			innerWidth = this.maxwidth;
+		var innerWidth = window.innerWidth
+		if (this.maxwidth && innerWidth > this.maxwidth) {
+			innerWidth = this.maxwidth
 		}
- 		this.canvas.style.width = innerWidth + 'px';
-		this.canvas.style.height = 'auto';
-		this._scaleRatio = innerWidth/this.width;
-		if(fullscreen == 3){
-			this.canvas.style.height = window.innerHeight + 'px';
+		this.bitmap.style.width = innerWidth + 'px'
+		this.bitmap.style.height = 'auto'
+		this._scaleRatio = innerWidth / this.width
+		if (fullscreen == 3) {
+			this.bitmap.style.height = window.innerHeight + 'px'
 		}
- 	}
+	}
 
-};
+}
 
 Studio.Stage.prototype.pauseButtons = function(a) {
-	this._pause_buttons = a;
-};
+	this._pause_buttons = a
+}
 
 Studio.Stage.prototype.setPixelRatio = function() {
-	this.canvas.width = this.width * this.resolution;
-	this.canvas.height = this.height * this.resolution;
-};
+	this.bitmap.width = this.width * this.resolution
+	this.bitmap.height = this.height * this.resolution
+}
 Studio.Stage.prototype.fillScreen = function() {
 	// this._scaleRatio = window.innerHeight/this.height;
 	// this.canvas.style.height = (this.height*this._scaleRatio) +'px';
 	// this.canvas.style.width = (this.width*this._scaleRatio) +'px';
 
-};
+}
 Studio.Stage.prototype.addInput = function(fn, options) {
 	if (options) {
-		fn._options(options);
+		fn._options(options)
 	}
-	fn.init(this);
-	this.plugins.input.push(fn);
-	this._inputs++;
-};
+	fn.init(this)
+	this.plugins.input.push(fn)
+	this._inputs++
+}
 
 Studio.Stage.prototype.addEffect = function(fn, options) {
 	if (options) {
-		fn._options(options);
+		fn._options(options)
 	}
-	fn.init(this);
-	this.plugins.effect.push(fn);
-	this._effects++;
-};
+	fn.init(this)
+	this.plugins.effect.push(fn)
+	this._effects++
+}
 
 Studio.Stage.prototype.checkDataAttributes = function() {
 	// if(this.canvas.getAttribute('data-auto-pause')){
@@ -2125,54 +2490,52 @@ Studio.Stage.prototype.checkDataAttributes = function() {
 	// if(this.canvas.getAttribute('data-watch')){
 	// 	this.watch=(this.canvas.getAttribute('data-watch')).toLowerCase()==='true';
 	// }
-};
+}
 
 Studio.Stage.prototype.setScene = function(who) {
-	who._parent = this;
+	who._parent = this
 	if (this.activeScene && Studio.progress === 2) {
 		if (this.activeScene.onDeactivate) {
-			this.activeScene.onDeactivate(this);
+			this.activeScene.onDeactivate(this)
 		}
 	}
-	this.previousScene = this.activeScene;
-	this.activeScene = who;
-	this.activeScene.active = true;
+	this.previousScene = this.activeScene
+	this.activeScene = who
+	this.activeScene.active = true
 	if (who.onActivate) {
-		who.onActivate(this);
+		who.onActivate(this)
 	}
-};
+}
 
 Studio.Stage.prototype.clearScene = function() {
 	if (this.activeScene) {
-		this.previousScene = this.activeScene;
-		this.activeScene = null;
+		this.previousScene = this.activeScene
+		this.activeScene = null
 		if (this.previousScene.onDeactivate) {
-			this.previousScene.onDeactivate(this);
-		}else{
-			this.previousScene.active = false;
+			this.previousScene.onDeactivate(this)
+		} else {
+			this.previousScene.active = false
 		}
 	}
-};
+}
 
 Studio.Stage.prototype.watch = function(who) {
-	this._watching = who;
-	this.children = who.children;
-	this._hasChildren = who._hasChildren;
-};
+	this._watching = who
+	// this.children = who.children
+	// this._hasChildren = who._hasChildren
+}
 
-
-Studio.Stage.prototype.update_children = function(ratio, delta, interpolate) {
-	for (this.i = 0; this.i !== this._hasChildren; this.i++) {
-		if (this.children[this.i].active) {
-			this.children[this.i].update(ratio, delta, interpolate);
-		}
-	}
-};
-
+// Studio.Stage.prototype.update_children = function(ratio, delta, interpolate) {
+// 	for (this.i = 0; this.i < this._hasChildren; this.i++) {
+// 		if (this.children[this.i].active) {
+// 			this.children[this.i].update(ratio, delta, interpolate)
+// 		}
+// 	}
+// }
 
 Studio.Stage.prototype.update_visibility = function() {
-	this._alpha = this.alpha;
-};
+	this._alpha = this.alpha
+}
 
 /**
  * stage.update
@@ -2180,94 +2543,87 @@ Studio.Stage.prototype.update_visibility = function() {
  * Yet it should still update its private variables.
  */
 Studio.Stage.prototype._timebased_updates = function(delta) {
-	if (this.activeScene){
-		this.activeScene.update_tweens(delta);
+	if (this.activeScene) {
+		this.activeScene.update_tweens(delta)
 	}
-	this.update_tweens(delta);
-};
+	this.update_tweens(delta)
+}
 
 Studio.Stage.prototype.update = function(ratio, delta) {
 	if (this.onEnterFrame) {
-		this.onEnterFrame();
+		this.onEnterFrame()
 	}
-	this._width = this.width;
-	this._height = this.height;
-	this._scaleX  = this.scaleX;
-	this._scaleY  = this.scaleY;
-	this._speed = this.camera.speed;
-	this.update_visibility();
+	this._width = this.width
+	this._height = this.height
+	this._scaleX  = this.scaleX
+	this._scaleY  = this.scaleY
+	this._speed = this.camera.speed
+	this.update_visibility()
 
 	if (Studio.progress === 2) {
 
 		if (this._inputs) {
-			this.runInputs(delta);
+			this.runInputs(delta)
 		}
-		this.updateScenes();
+		this.updateScenes()
 
 		if (this.beforeDraw) {
-			this.beforeDraw();
+			this.beforeDraw()
 		}
 	}
 	// if (this.logic) {
 	// 	this.logic();
 	// }
-	this._logic();
-};
+	this._logic()
+}
 
-
-Studio.Stage.prototype._update_scene = function(scene){
-	if (!scene) return;
+Studio.Stage.prototype._update_scene = function(scene) {
+	if (!scene) return
 	if (scene.active) {
-		scene.update(this.interpolate);
+		scene.update(this.interpolate)
 	}
 }
 
-Studio.Stage.prototype.updateScenes = function(){
-	this._update_scene(this.activeScene);
-	this._update_scene(this.previousScene);
-	if (this._hasChildren || this._watching) {
-		this.update_children(this.interpolate);
+Studio.Stage.prototype.updateScenes = function() {
+	this._update_scene(this.activeScene)
+	this._update_scene(this.previousScene)
+	if (this._hasChildren) {
+		this.update_children(this.interpolate)
 	}
-};
+}
 
 Studio.Stage.prototype.runEffects = function() {
 	// this.setAlpha(this.ctx);
 	// this.ctx.setTransform(this.resolution, 0, 0,this.resolution,0,0);
 	for (this.i = 0; this.i !== this._effects; this.i++) {
-		if(this.plugins.effect[this.i].active){
-			this.plugins.effect[this.i].action(this);
+		if (this.plugins.effect[this.i].active) {
+			this.plugins.effect[this.i].action(this)
 		}
 	}
-};
+}
 
 Studio.Stage.prototype.runInputs = function() {
 	// this.setAlpha(this.ctx);
 	// this.ctx.setTransform(this.resolution, 0, 0,this.resolution,0,0);
 	for (this.i = 0; this.i !== this._inputs; this.i++) {
-		if(this.plugins.input[this.i].active){
-			this.plugins.input[this.i].action(this);
-		}	
+		if (this.plugins.input[this.i].active) {
+			this.plugins.input[this.i].action(this)
+		}
 	}
-};
+}
 
 Studio.Stage.prototype.loading = function(delta) {
 
 	if (Studio.loaded === true) { // BAD DESIGN! This should be based on each stage.
 		// as it stands loading an image for one canvas will cause all to pause. oops.
-		if (this.onReady) {
-			this.onReady(delta);
-		}
-		this.loop = this.activeloop;
+		this.loop = this.activeloop
 	}
-};
+}
 
 Studio.Stage.prototype.activeloop = function(delta) {
 	if (Studio.progress === 2) {
-		this.timeStep(delta);
-		if (this._effects) {
-			this.runEffects(delta);
-		}
-		return;
+		this.timeStep(delta)
+		return
 	} else {
 		// if(this.overlay_progress){
 		// 	this.update_children();
@@ -2275,63 +2631,126 @@ Studio.Stage.prototype.activeloop = function(delta) {
 		// 	this.timeStep(delta);
 		// }
 
-		if(!this.webgl) this.drawProgress(this.ctx, delta);
+		if (!this.webgl) this.drawProgress(this.ctx, delta)
 
 		if (Studio.progress === 1) {
 			if (this.onReady) {
-				this.onReady(delta);
+				this.onReady(delta)
 			}
-			Studio.progress = 2; // we set this to 2 so we can fire this event once.
+			
+			Studio.progress = 2 // we set this to 2 so we can fire this event once.
 			if (!this.activeScene) {
-				return; // lets check to see if we have a scene to draw. otherwise lets just draw the stage.
+				return // lets check to see if we have a scene to draw. otherwise lets just draw the stage.
 			}
 			if (this.activeScene.onActivate) {
-				this.activeScene.onActivate(this);
+				this.activeScene.onActivate(this)
 			}
 		}
 	}
-};;
+}
 
-Studio.Stage.prototype.loop = Studio.Stage.prototype.loading;
+Studio.Stage.prototype.loop = Studio.Stage.prototype.loading
 
-Studio.Stage.prototype.drawProgress = function(ctx) {
-	this.progressBar(ctx, Studio.progress);
-	ctx.restore();
-};
+Studio.Scene.prototype.drawProgress = function(ctx) {
+	this.progressBar(ctx, Studio.progress)
+	ctx.restore()
+}
 
 // default progress bar. overwire this to create your own.
-Studio.Stage.prototype.progressBar = function(ctx, progress) {
-	ctx.fillStyle = 'rgba(255,255,255,.8)';
-	ctx.fillRect((this.width - 202) / 2, (this.height - 22) / 2, 202, 22);
-	ctx.fillStyle = 'rgba(0,0,0,1)';
-	ctx.fillRect(2 + (this.width - 202) / 2, 2 + (this.height - 22) / 2, progress * 198, 18);
-};
+Studio.Scene.prototype.progressBar = function(ctx, progress) {
+	ctx.fillStyle = 'rgba(255,255,255,.8)'
+	ctx.fillRect((this.width - 202) / 2, (this.height - 22) / 2, 202, 22)
+	ctx.fillStyle = 'rgba(0,0,0,1)'
+	ctx.fillRect(2 + (this.width - 202) / 2, 2 + (this.height - 22) / 2, progress * 198, 18)
+}
 
 
 
-Studio.TextBox = function(width, height, stage) {
-	this.font = '12px Arial'
-	this.lineHeight = 10
+Studio.Font = function(family,size,weight,style,varient){
+	this.size = size || 16
+	this.family = family || 'Arial'
+	this.weight = weight || ''
+	this.style = style || ''
+	this.varient = varient || ''
+	this.lineHeight = 20
+	this.color = '#fff'
+	this.shadow = 0
+}
+
+Studio.Font.prototype = {
+	constructor : Studio.Font,
+	build: function(){
+		return (this.varient +' '+ this.style +' '+ this.weight +' '+ this.size +'px '+ this.family)
+	},
+	set: Studio.apply,
+	modify: function(attr){
+		if(!attr){
+			return this.build()
+		}
+		var varient = attr.varient || this.varient
+		var style = attr.style || this.style
+		var weight = attr.weight || this.weight
+		var size = attr.size || this.size
+		var family = attr.family || this.family
+		return (varient +' '+ style +' '+ weight +' '+ size +'px '+ family)
+	}
+}
+
+
+
+
+Studio.TextBox = function(width, height, stage, image) {
 	this.height = height
 	this.width = width
+
+	this.font = new Studio.Font()
+	this._lastfont = this.font.build()
 	this.shadow = 1
+	this.offsetY = 0
+	this._offsetY = this.offsetY;
 	this.shadowColor = 'rgba(0,0,0,0.5)'
-	this.cache = new Studio.Cache(width,height, stage.resolution)
-
-	this.cache.ctx.textBaseline = 'top'
-	this.cache.ctx.font = this.font
-
+	if(!image){
+		this.image = new Studio.Cache(width,height, stage.resolution)
+	}else{
+		this.image = image;
+	}
+	this.image.ctx.textBaseline = 'top'
 	this.text = ''
-	this.color = '#fff'
 	this._wrap_height = this.lineHeight
 	this.horizontal_align = Studio.LEFT
+	this.justify = false
 	this.vertical_align = Studio.TOP
 	this._vertical_align = 0
+	this.columns = 1
+	this.gutter = 20
+	this.live = false
 
+	this.styles = {
+		'b': {
+			color: "#FFD000",
+			weight: 'bold',
+		},
+		'i':{
+			style: 'italic',
+			color: 'green'
+		},
+		'h1': {
+			height: 'bold',
+			size: 32,
+			lineHeight: 40,
+		},
+		'h2': {
+			height: 'bold',
+			size: 24,
+			lineHeight: 30,
+		},
+	}
+	// document.body.appendChild(this.image.bitmap)
 	return this
 }
 
-Studio.extend(Studio.TextBox, Studio.Rect)
+Studio.inherit(Studio.TextBox, Studio.Sprite)
+
 
 Studio.TextBox.prototype.setFont = function(font) {
 	this.font = font
@@ -2344,59 +2763,155 @@ Studio.TextBox.prototype.setText = function(text) {
 }
 
 Studio.TextBox.prototype.setColor = function(color) {
-	this.color = color
+	// this.color = color
 	return this
 }
 
 Studio.TextBox.prototype.setFont = function(font) {
-	this.cache.ctx.font = this.font = font
+	this.image.ctx.font = this.font = font
 	return this
 }
 
 Studio.TextBox.prototype.finish = function() {
 	this.reset()
 	this.wrapText()
+	this.image.ready = true
+	this.image.dirty = true
 }
 
 Studio.TextBox.prototype.reset = function() {
-	this.cache.ctx.clearRect(0, 0, this.width, this.height)
-	this.cache.ctx.font = this.font
+	var slice = this.image.slice[this.slice];
+	this.image.ctx.clearRect(slice.x, slice.y, slice.width, slice.height)
+	this.image.ctx.font = this.font
 }
 
-Studio.TextBox.prototype.writeLine = function(text, x, y) {
-	if (this.shadow) {
-		this.cache.ctx.fillStyle = this.shadowColor
-		this.cache.ctx.fillText(text, x + 1 + this.shadow, y + this.shadow)
+Studio.TextBox.prototype.writeLine = function(styles, x, y, vx) {
+	var style = styles.split(' ')
+	var nx = 0 
+	var vx = vx || 0
+	this.image.ctx.font = this._lastfont
+
+	for(var i = 0; i!= style.length ; i++){
+		var word = style[i]
+		if(word[0]==='<' && word[word.length-1]==='>'){
+			if(word=='</>'){
+				this._lastfont = this.font.build()
+				this.image.ctx.font = this._lastfont
+				this.image.ctx.fillStyle = this.font.color;
+				this._offsetY = this.offsetY
+			}else{
+				var tag = this.styles[word.slice(1,word.length-1)];
+				if(tag){
+					this._lastfont = this.font.modify(tag)
+					this.image.ctx.font = this._lastfont
+					this.image.ctx.fillStyle = tag.color
+					if(tag.offsetY){
+						this._offsetY = tag.offsetY
+					}
+				}
+			}
+			
+		}else{
+			if(this.shadow){
+				var front_color = this.image.ctx.fillStyle;
+				this.image.ctx.fillStyle = this.shadowColor
+			 	for(var s = 1; s<= this.shadow; s+=.5){
+			 		this.image.ctx.globalAlpha = this.shadow/s
+			 		this.image.ctx.fillText(word, nx + x + 1 + s + (vx* i), y + s + this._offsetY)
+			 	}
+			 	this.image.ctx.fillStyle=front_color
+			}
+			this.image.ctx.fillText(word, nx + x + (vx* i), y + this._offsetY)
+			nx += this.image.ctx.measureText(word+' ').width
+		}
 	}
-	this.cache.ctx.fillStyle = this.color
-	this.cache.ctx.fillText(text, x + 1, y)
+
+	// if (this.shadow) {
+	// 	this.image.ctx.fillStyle = this.shadowColor
+	// 	for(var i = 1; i<= this.shadow; i+=.5){
+	// 		this.image.ctx.globalAlpha = this.shadow/i
+	// 		this.image.ctx.fillText(text, x + 1 + i, y + i)
+	// 	}
+	// }
+	// this.image.ctx.fillStyle = this.color
+	// this.image.ctx.fillText(text, x + 1, y)
 }
 
 Studio.TextBox.prototype.wrapText = function() {
+	this.image.ctx.fillStyle = this.font.color;
+	this._lastfont = this.font.build();
+	this.image.ctx.font = this._lastfont
+	var slice = this.image.slice[this.slice];
+
+	var width = ((this.width)-(this.gutter*(this.columns-1)))/this.columns
+	var start = slice.x+1
 	var paragraphs = this.text.split('\n')
-	var y = 0
+	var y = slice.y
 	for (var i = 0; i !== paragraphs.length; i++) {
 		var words = paragraphs[i].split(' ')
 		var line = ''
+		var styleline = ''
+		var testWidth = 0
+		var metrics = 0
+		var lineHeight = this.font.lineHeight
+		var just = slice.x
 		for (var n = 0; n < words.length; n++) {
-			var testLine = line + words[n] + ' '
-			var metrics = this.cache.ctx.measureText(testLine)
-			var testWidth = metrics.width
-			if (testWidth > this.width && n > 0) {
-				testWidth = this.cache.ctx.measureText(line).width
+			var word = words[n];
+			if(word[0]==='<' && word[word.length-1]==='>'){
+				if(word=='</>'){
+					this.image.ctx.font = this.font.build()
+				}else{
+					var tag = this.styles[word.slice(1,word.length-1)];
+					if(tag){
+						this.image.ctx.font = this.font.modify(tag)
+						if(tag.lineHeight){
+							lineHeight = tag.lineHeight
+						}
+					}
+				}
+				
+				metrics = 0
+			}else{
+				metrics = this.image.ctx.measureText(word +' ').width
+			}
+
+			testWidth += metrics
+			if (testWidth > width && n > 0) {
+				testWidth -= metrics
+				// testWidth = this.image.ctx.measureText(line).width
 				// We want to avoid any off pixel font rendering so we use | 0 to prevent floats
-				// also offset everything by 2px because it helps with the centering of text
-				this.writeLine(line, 2 + (this.width - testWidth) * this.horizontal_align | 0 , y)
-				line = words[n] + ' '
-				y += this.lineHeight
+				// also offset everything by 1px because it helps with the centering of text
+				if(y+lineHeight>=slice.height/this.image.resolution){
+					y = slice.y
+					start += width+this.gutter
+					if(start>=slice.width) return
+				}
+				if(this.justify==true){
+					this.writeLine( styleline, start, y , (width - testWidth)/(just))
+				}else{
+					this.writeLine( styleline, start + ((width - testWidth) * this.horizontal_align) | 0 , y, 0)
+				}
+				just = slice.x
+				styleline = word +' '
+				y += lineHeight
+				testWidth = metrics
 			} else {
-				line = testLine
+				styleline = styleline + word + ' '
+				just++
 			}
 		}
-		this.writeLine(line, 2 + (this.width - this.cache.ctx.measureText(line).width) * this.horizontal_align | 0, y)
-		this._wrap_height = y + this.lineHeight
+		if(y+lineHeight>=slice.height/this.image.resolution){
+			y = slice.y
+			start += width+this.gutter
+			console.log('move me over outside')
+		}
+
+		this.writeLine( styleline, start + ((width - testWidth) * this.horizontal_align) | 0, y , .25)
+		
+		
+		this._wrap_height = y + lineHeight
 		if (i !== paragraphs.length - 1) {
-			y += this.lineHeight
+			y += lineHeight
 		}
 	}
 	// this._wrap_height += (this.shadow * 2) + 1;
@@ -2407,30 +2922,21 @@ Studio.TextBox.prototype.wrapText = function() {
 }
 
 Studio.TextBox.prototype.fit = function() {
-	this.cache.height = this._wrap_height
+	this.image.height = this._wrap_height
 	this.wrapText()
 }
-
-Studio.TextBox.prototype.debugDraw = function(ctx) {
-	ctx.strokeRect(this._dx - (this._world.width * this.anchorX), this._dy - (this._world.height * this.anchorY) - this._vertical_align, this._world.width, this._wrap_height)
-}
-
-Studio.TextBox.prototype.drawAngled = function(ctx) {
-	ctx.save()
-	this.prepAngled(ctx)
-	ctx.drawImage(this.cache.image, 0, 0, this.cache.image.width, this.cache.image.height, -(this.width * this.anchorX), -(this.height * this.anchorY) - this._vertical_align, this.width, this.height)
-	ctx.restore()
-}
-
-Studio.TextBox.prototype.draw = function(ctx) {
-	this.setAlpha(ctx)
-	// since we don't resize the ctx, we need to compensate based on the differences of the ctx height and text height
-	if (this.angle) {
-		this.drawAngled(ctx)
+Studio.TextBox.prototype.update_xy= function() {
+	if (this.orbits && this._parent.angle) {
+		this.update_orbit_xy()
 	} else {
-		ctx.drawImage(this.cache.image, 0, 0, this.cache.image.width, this.cache.image.height, this._dx - (this._dwidth * this.anchorX), this._dy - (this._dheight * this.anchorY) - this._vertical_align, this._dwidth, this._dheight)
+		this._world.x  = ((this.x * this._parent.scaleX) + this._parent.x)
+		this._world.y  = ((this.y * this._parent.scaleY) + this._parent.y) - this._vertical_align 
+	}
+	if(this.live){
+		this.finish()
 	}
 }
+
 
 
 Studio.Scene.prototype.update_tweens = function(global_delta) {
@@ -2485,11 +2991,11 @@ Studio.Scene.prototype.update_tweens = function(global_delta) {
 					if (tween.reset) {
 						tween.actor.apply(tween.original)
 					} else {
-						tween.actor.apply(tween.to)
-						// for(j=0;j!==tween.keys.length;j++){
-						// 	key = tween.keys[j];
-						// 	tween.actor[key] = tween.to[key];
-						// }
+						// tween.actor.apply(tween.to)
+						for(j=0;j!==tween.keys.length;j++){
+							key = tween.keys[j];
+							tween.actor[key] = tween.to[key];
+						}
 					}
 					if (tween.onEnd) {
 						tween.onEnd.call(tween.actor)
@@ -2591,6 +3097,7 @@ Studio._tween_object.prototype.completeLoop = function(who) {
 	return this.next
 }
 
+
 Studio.Scene.prototype.createLoop = function(who, ease, to, duration, callback) {
 	this.tweens[this.nextID] = this.createTween(who,ease,to,duration,callback)
 	this.tweens[this.nextID - 1].loop = true
@@ -2654,43 +3161,65 @@ Studio.Pattern = function(attr) {
 	this.overflowY = 0
 	this.resolution = 1
 	this.image = null
-	this.slice = 'Full'
 	this.offsetX = 0
 	this.offsetY = 0
+	this.stretchY = false
 	// this.pattern = [{0,0,96,96}]
 	if (attr) {
 		this.apply(attr)
 	}
+	this.base_image = this.image;
+	this.base_image.addListenerTo('ready','onImageReady', this)
 	this.width = this.width + this.overflowX
 	this.height = this.height + this.overflowY
-	this.cache = new Studio.Cache(this.width, this.height, this.resolution)
-	this._cached = false
-	this.image.status.addListener('onImageReady', this)
+	this.image = new Studio.Cache(this.width, this.height, this.resolution)
+	this._imaged = false
 	return this
 }
 
-Studio.extend(Studio.Pattern, Studio.Rect)
+Studio.inherit(Studio.Pattern, Studio.Sprite)
 
 /*
 	setPattern
 */
 
 Studio.Pattern.prototype.setPattern = function() {
-	var slice = this.image.slice[this.slice]
+	var slice = this.base_image.slice[this.slice]
 
 	var width = slice.width * this.scaleX || 0
 	var height = slice.height * this.scaleY  || 0
-	for (var x = 0; x < this.width; x += width) {
-		for (var y = 0; y < this.height; y += height) {
-			if (this.offsetX + width > width) {
-				this.offsetX -= width
+	var x = 0;
+	var y = 0;
+	if(!this.stretchX && !this.stretchY){
+		for ( x = 0; x < this.width; x += width ) {
+			for ( y = 0; y < this.height; y += height ) {
+				if (this.offsetX + width > width) {
+					this.offsetX -= width
+				}
+				if (this.offsetY + height > height) {
+					this.offsetY -= height
+				}
+				this.image.ctx.drawImage(this.base_image.bitmap, slice.x, slice.y, slice.width, slice.height, x + this.offsetX,y + this.offsetY, width, height)
 			}
-			if (this.offsetY + height > height) {
-				this.offsetY -= height
+		}
+	}else{
+		if(this.stretchY){
+			for ( x = 0; x < this.width; x += width ) {
+				if (this.offsetX + width > width) {
+					this.offsetX -= width
+				}
+				this.image.ctx.drawImage(this.base_image.bitmap, slice.x, slice.y, slice.width, slice.height, x + this.offsetX,y + this.offsetY, width, this.height)
 			}
-			this.cache.ctx.drawImage(this.image.image, slice.x, slice.y, slice.width, slice.height, x + this.offsetX,y + this.offsetY, width, height)
+		}else{
+			for ( y = 0; y < this.height; y += height ) {
+				if (this.offsetY + height > height) {
+					this.offsetY -= height
+				}
+				this.image.ctx.drawImage(this.base_image.bitmap, slice.x, slice.y, slice.width, slice.height, x + this.offsetX,y + this.offsetY, this.width, height)
+			}
 		}
 	}
+	
 	return this
 }
 
@@ -2714,7 +3243,7 @@ Studio.Pattern.prototype.checkOverflow = function() {
 	)
 
 	Once the image for this pattern is loaded we can create the pattern.
-	Otherwise the cache is never auto populated.
+	Otherwise the image is never auto populated.
 */
 
 Studio.Pattern.prototype.onImageReady = function(ready) {
@@ -2730,7 +3259,7 @@ Studio.Pattern.prototype.debugDraw = function(ctx) {
 Studio.Pattern.prototype.drawAngled = function(ctx) {
 	ctx.save()
 	this.prepAngled(ctx)
-	ctx.drawImage(this.cache.image, 0, 0, this.cache.image.width, this.cache.image.height, -(this._dwidth * this.anchorX), -(this._dheight * this.anchorY), this._dwidth, this._dheight)
+	ctx.drawImage(this.image.bitmap, 0, 0, this.image.bitmap.width, this.image.bitmap.height, -(this._dwidth * this.anchorX), -(this._dheight * this.anchorY), this._dwidth, this._dheight)
 	ctx.restore()
 }
 
@@ -2740,8 +3269,24 @@ Studio.Pattern.prototype.draw = function(ctx) {
 	if (this.angle) {
 		this.drawAngled(ctx)
 	} else {
-		ctx.drawImage(this.cache.image, 0, 0, this.cache.image.width, this.cache.image.height, this._dx - (this._dwidth * this.anchorX), this._dy - (this._dheight * this.anchorY), this._dwidth, this._dheight)
+		ctx.drawImage(this.image.bitmap, 0, 0, this.image.bitmap.width, this.image.bitmap.height, this._dx - (this._dwidth * this.anchorX), this._dy - (this._dheight * this.anchorY), this._dwidth, this._dheight)
 	}
+}
+
+Studio.Pattern.prototype.buildElement = function(stage, ratio, interpolate) {
+	if (!stage.buffers[this.image.path]) {
+		stage.buffers[this.image.path] = new Studio.BufferGL(this.image,0,stage)
+	}
+	stage.draws++
+
+	if (interpolate) {
+		this._delta(ratio)
+	} else {
+		this._dset()
+	}
+	this._boundingBox.get_bounds(this)
+
+	this.verts(this._boundingBox, stage.buffers[this.image.path], this.base_image.sliceGL['Full'], stage)
 }
 
 
@@ -2759,7 +3304,6 @@ Studio.load = function(path, type, callback, who) {
 			}
 			if (callback) {
 				if (who) {
-					console.log(callback, who)
 					callback.call(who,data)
 				} else {
 					callback(data)
@@ -2784,6 +3328,7 @@ Studio.TileMap = function(width, height, resolution, attr) {
 	this.offsetY = 0
 	this.maxWidth = 0
 	this.resolution = resolution || 1
+	this.repeat =
 	this.data = null
 	if (attr) {
 		this.apply(attr)
@@ -2803,19 +3348,57 @@ Studio.TileMap.prototype = {
 		var sy = sy || 0
 		var mX = mx || this.maxWidth
 		var mY = my || map.height - sy
+		if(map.data){
+			for (var y = 0; y != mY; y++) {
+				for (var x = 0; x != mX; x++) {
+					var flip_X = 0
+					var flip_Y = 0
 
-		for (var y = 0; y != mY; y++) {
-			for (var x = 0; x != mX; x++) {
-				var i = (map.data[((y + sy) * map.width) + (x + sx)]) - set.firstgid
-				var _y = i / set.across | 0
-				var _x = i - (_y * set.across)
-				buffer.drawImage(set.set.image, _x * set.tileWidth, _y * set.tileHeight, set.tileWidth, set.tileHeight, x * set.tileWidth, y * set.tileHeight, set.tileWidth, set.tileHeight)
+					var i = (map.data[parseInt((y + sy) * map.width) + (x + sx)]) - set.firstgid
+					var width = set.tileWidth
+					var height = set.tileHeight
+
+					if(i> 0x80000000){
+						i-=0x80000000;
+						flip_X = -1
+						// width *=-1
+					}
+					if(i>0x40000000){
+						i-=0x40000000
+						flip_Y = -1
+						// height *=-1
+					}
+					if(i>0x20000000){
+						i-=0x20000000
+						// flip_X = 1
+					}
+
+					var _y = parseInt(i / set.across)
+					var _x = i - (_y * set.across)
+
+					
+					// if(flip_X || flip_Y){
+						buffer.drawImage(
+							set.set.bitmap, 
+							_x * set.tileWidth + (set.tileWidth * flip_X), 
+							_y * set.tileHeight + (set.tileHeight * flip_Y), 
+							width, 
+							height, 
+							x * set.tileWidth, 
+							y * set.tileHeight, 
+							set.tileWidth , 
+							set.tileHeight
+						)
+					// }else{
+					// 	buffer.drawImage(set.set.bitmap, _x * set.tileWidth, _y * set.tileHeight, set.tileWidth, set.tileHeight, x * set.tileWidth, y * set.tileHeight, set.tileWidth, set.tileHeight)
+					// }
+					
+				}
 			}
 		}
 
 		this.buffer.ctx.clearRect(0,0,this.cache.width,this.cache.height)
-		this.buffer.ctx.drawImage(this.cache.image,0,0)
-		document.body.appendChild(this.buffer.image)
+		this.buffer.ctx.drawImage(this.cache.bitmap,0,0)
 		this.cache.ready = true
 	},
 	offsetMap: function(x, y) {
@@ -2835,6 +3418,7 @@ Studio.TileMap.prototype = {
 
 	},
 	_onLoad: function test(result) {
+		console.log(result)
 		if (!result) {
 			console.log('The image isn\'t ready so we need to wait.')
 			return
@@ -2851,7 +3435,7 @@ Studio.TileMap.prototype = {
 		var setimage = new Studio.Image('assets/' + this.set.image)
 		this.tileset =  new Studio.TileSet(setimage, this.set.tilewidth, this.set.tileheight, this.set.imagewidth)
 		// change to addListenerFunction( function ) ... this explains what the variable needs to be.
-		setimage.status.addListener('_onLoad', this)
+		setimage.addListenerTo('ready','_onLoad', this)
 	},
 	load: function(asset, type) {
 		Studio.load(asset, type, this.onMapLoad, this)
@@ -2884,11 +3468,12 @@ Studio.Effect.BillAtkinsonDither_BW = new Studio.Plugin({
 		this.oldpixel = 1;
 		this.newpixel = 1;
 		this.qerror = 1;
+		this.active = true;
 	},
 	action: function(a) {
-		var pixels = a.ctx.getImageData(0,0,a.canvas.width,a.canvas.height);
+		var pixels = a.ctx.getImageData(0,0,a.bitmap.width,a.bitmap.height);
 		var pixeldata = pixels.data;
-		var width = parseInt(a.canvas.width*4)
+		var width = parseInt(a.bitmap.width*4)
 		var length = pixeldata.length;
 
 		for (var i=0; i < length; i+=4) {
@@ -2898,6 +3483,11 @@ Studio.Effect.BillAtkinsonDither_BW = new Studio.Plugin({
 			this.newpixel *= 255;
 
 			pixeldata[i] = pixeldata[i+1] = pixeldata[i+2] = this.newpixel;
+			if(pixeldata[i+3]>20){
+				pixeldata[i+3] = 255;
+			}else{
+				pixeldata[i+3] = 0
+			}
 
 			this.qerror = (this.oldpixel - this.newpixel) * .15;
 
@@ -2916,7 +3506,6 @@ Studio.Effect.BillAtkinsonDither_BW = new Studio.Plugin({
 	}
 })
 
-
 Studio.Effect.Posterize = new Studio.Plugin({
 	options: {
 
@@ -2926,11 +3515,12 @@ Studio.Effect.Posterize = new Studio.Plugin({
 		this.oldpixel = 1;
 		this.newpixel = 1;
 		this.qerror = 1;
+		this.active = true
 	},
 	action: function(a) {
-		var pixels = a.ctx.getImageData(0,0,a.canvas.width,a.canvas.height);
+		var pixels = a.ctx.getImageData(0,0,a.bitmap.width,a.bitmap.height);
 		var pixeldata = pixels.data;
-		var width = a.canvas.width*4;
+		var width = a.bitmap.width*4;
 		var length = pixeldata.length;
 
 		for (var i=0; i < length; i++) {
@@ -2940,8 +3530,6 @@ Studio.Effect.Posterize = new Studio.Plugin({
 			this.newpixel *= 255;
 
 			pixeldata[i] = this.newpixel;
-
-
 		}
 		a.ctx.putImageData(pixels,0,0);
 	}
@@ -2970,29 +3558,24 @@ Studio.Effect.Replicator = new Studio.Plugin({
 	}
 })
 
-Studio.Effect.Bloom = new Studio.Plugin({
+
+Studio.Effect.Blur = new Studio.Plugin({
 	options: {
+		x: 3,
+		y: 3,
 	},
 	init: function(a) {
-		this.height = (a.canvas.height/2)*a.resolution;
-		this.width = (a.canvas.width/2)*a.resolution;
-		this.cache = new Studio.Cache(this.width,this.height);
-		// this.cache.buffer.strokeStyle = '#fff';
-		// this.cache.buffer.strokeRect( 10, 10, this.width-20, this.height-20);
-		// this.cache.buffer.strokeRect( 15, 15, this.width-30, this.height-30);
-		// this.cache.buffer.fillStyle = "rgba(200,0,0,.5)";
-		// this.cache.buffer.fillRect( 25, this.height-25-this.height/4, this.width/4, this.height/4);
-		this.cache.buffer.globalAlpha = .25
+		this.cache = new Studio.Cache();
+		this.active = true
 	},
 	action: function(a) {
-		this.cache.buffer.globalCompositeOperation = "source-over"
-		this.cache.buffer.fillStyle="rgba(0,0,0,.35)";
-		this.cache.buffer.fillRect( 0,0,this.width, this.height);
-		this.cache.buffer.globalCompositeOperation = "lighten"
-		this.cache.buffer.drawImage(a.canvas,0,0, a.width, a.height)
-		a.ctx.globalCompositeOperation = 'lighten';
-		a.ctx.drawImage(this.cache.image, 0, 0, a.canvas.width, a.canvas.height)
-		a.ctx.globalCompositeOperation = 'source-over';
+		var width = a.bitmap.width/2;
+		var height = a.bitmap.height/2;
+		console.log(this.cache)
+		this.cache.bitmap.width = width;
+		this.cache.bitmap.height = height;
+		this.cache.ctx.drawImage(a.bitmap,0,0, width, height);
+		a.ctx.drawImage(this.cache.bitmap, 0 , 0, a.width ,a.height)
 	}
 })
 
@@ -3001,7 +3584,7 @@ Studio.Effect.Cursor = new Studio.Plugin({
 	},
 	init: function(a) {
 		this.cursor = new Studio.Image('assets/cursor.png');
-		a.canvas.style.cursor = 'none';
+		a.bitmap.style.cursor = 'none';
 	},
 	action: function(a) {
 		a.ctx.drawImage(this.cursor.image, a.mouse.x-8, a.mouse.y-8, 48, 48)
@@ -3013,10 +3596,10 @@ Studio.Effect.Red = new Studio.Plugin({
 	options: {
 	},
 	init: function(a) {
-		
+		this.active = true
 	},
 	action: function(a) {
-		var myGetImageData = a.ctx.getImageData(0,0,a.canvas.width, a.canvas.height);
+		var myGetImageData = a.ctx.getImageData(0,0,a.bitmap.width, a.bitmap.height);
 		var buffer = myGetImageData.data.buffer;
 		var sourceBuffer8 = new Uint8Array(buffer);
 		var sourceBuffer32 = new Uint32Array(buffer);
@@ -3032,46 +3615,6 @@ Studio.Effect.Red = new Studio.Plugin({
 		a.ctx.putImageData(myGetImageData, 0, 0);
 	}
 })
-
-
-Studio.Effect.Wave = new Studio.Plugin({
-	action: function(a) {
-		this.cache.buffer.drawImage(a.canvas, 0, 0, a.width, a.height);
-		var max = this.w.length;
-		for (var j = 0; j != max; j+=1) {
-			a.ctx.drawImage(this.cache.image, j*this.width, 0, this.width, a.height, j*this.width, this.w[j], this.width, a.height);
-			this.w[j] += (Math.cos(this.count))*2;
-			this.count+=.02;
-		}
-	},
-	init: function(a) {
-		this.width = 1;
-		this.w = [];
-		var max = Math.ceil(a.width/this.width); 
-		for (var i = 0; i < max; i+=1) {
-			this.w[i] = 0;
-		}
-		this.cache = new Studio.Cache(a.width,a.height);
-		this.count = 0;
-	}
-})
-
-// var BLOOM = new Studio.Plugin({
-// 	init: function(a) {
-// 		this.buffer = document.createElement('canvas');
-// 		this.buffer.height = a.height / 3 ;
-// 		this.buffer.width = a.width / 3 ;
-
-// 		this.bufferCTX = this.buffer.getContext('2d');
-// 	},
-// 	action: function(a) {
-// 		this.bufferCTX.drawImage(a.canvas, 0, 0, this.buffer.width, this.buffer.height);
-// 		a.ctx.globalAlpha = 1;
-// 		a.ctx.globalCompositeOperation = "lighter";
-// 		a.ctx.drawImage(this.buffer, 0, 0, a.width, a.height);
-// 		a.ctx.globalCompositeOperation = "source-over";
-// 	}
-// })
 
 
 Studio.timeStep = {
@@ -3096,7 +3639,7 @@ Studio.timeStep = {
 		this.step(delta)
 		if (this._d >= this.dur) {
 			this._d -= this.dur
-			this.update(this.interpolate)
+			this.update(false)
 			this._timebased_updates(delta)
 			this.render(1)
 		}
@@ -3135,36 +3678,25 @@ var FRAGMENTSHADER = ['precision lowp float;',
 						'varying vec4 v_color;',
 						'varying vec2 v_texture;',
 						'void main(void) {',
-						'   if(v_texture.x==10.0){',
-						'		gl_FragColor = v_color;',
-						'	}else{',
-						'		gl_FragColor = texture2D(u_image, v_texture) * v_color;',
-						'	}',
+						'	gl_FragColor = texture2D(u_image, v_texture) * v_color;',
 						'}'].join('\n')
 
 var VERTEXSHADER = ['attribute vec3 a_position;',
 						'attribute vec4 a_color;',
 						'attribute vec2 a_texture;',
 						'uniform vec2 u_resolution;',
+						'uniform mat3 u_matrix;',
 						'varying vec4 v_color;',
 						'varying vec2 v_texture;',
 						'void main(void) {',
-						'	vec2 canvas_coords = ((vec2(a_position.x,a_position.y)/ u_resolution)*2.0) - 1.0;',
-						'	gl_Position = vec4(canvas_coords * vec2(1.0,-1.0), a_position.z, 1.0);',
+						'   vec2 canvas_coords = (u_matrix * vec3(a_position.xy,1)).xy;',
+						'   vec2 clipSpace = ((canvas_coords / u_resolution)*2.0) - 1.0;',
+						'	gl_Position = vec4(clipSpace * vec2(1, -1), a_position.z, 1);',
 						'	v_color = a_color;',
 						'	v_texture = a_texture;',
 						'}'].join('\n')
 
 Studio.Stage.prototype.loadShader = function(who, shader) {
-	//var shaderScript = document.getElementById(shader);
-	//var str = '';
-	// var k = shaderScript.firstChild ;
-	// while (k) {
-	// 	if (k.nodeType == 3) {
-	// 		str += k.textContent;
-	// 	}
-	// 	k = k.nextSibling;
-	// }
 	this.ctx.shaderSource(who, shader)
 }
 
@@ -3177,29 +3709,34 @@ Studio.Stage.prototype.WEBGL = {
 	stencil: true,
 
 	getContext: function() {
-		this.ctx = this.canvas.getContext('webgl', {
+		if (Studio.browser_info.iOS) {
+			this.WEBGL.antialias = true
+		} else {
+			this.WEBGL.antialias = false
+		}
+		this.ctx = this.bitmap.getContext(Studio.browser_info.webGL, {
 			antialias: this.WEBGL.antialias ,
 			premultipliedAlpha: this.WEBGL.premultipliedAlpha ,
 			stencil: this.WEBGL.stencil
 		})
 	},
+	newBatch: function(gl, name) {
+		// gl._rects = new Float32Array(this._maxCount)
+	},
 	init: function(gl) {
-		gl._count = 0
-		gl._batch = new Float32Array(16384 * 32)
-		gl.clearColor(this.color.r, this.color.g, this.color.b, this.color.a)
+		this._max_textures = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
+		this._count = 0
+		this.rect_buffer = new Studio.BufferGL(null,0,this)
+		gl.clearColor(0,0,0,1)
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		this.vertexShader = gl.createShader(gl.VERTEX_SHADER)
 		this.loadShader(this.vertexShader , VERTEXSHADER)
-		// gl.shaderSource(this.vertexShader,Studio.STANDARD_VERT_SHADER)
-		gl.compileShader(this.vertexShader)
 
 		this.fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)
 		this.loadShader(this.fragmentShader , FRAGMENTSHADER)
-		// gl.shaderSource(this.fragmentShader,Studio.STANDARD_FRAG_SHADER)
-		gl.compileShader(this.fragmentShader)
 
-		// gl.enable(gl.DEPTH_TEST);
-		//    gl.depthFunc(gl.LESS);
+		gl.enable(gl.DEPTH_TEST)
+		gl.depthFunc(gl.LESS)
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 		gl.enable(gl.BLEND)
 		// gl.disable(gl.DEPTH_TEST);
@@ -3208,63 +3745,49 @@ Studio.Stage.prototype.WEBGL = {
 		gl.attachShader(this.program, this.vertexShader)
 		gl.attachShader(this.program, this.fragmentShader)
 
+		gl.compileShader(this.vertexShader)
+		gl.compileShader(this.fragmentShader)
+
 		gl.linkProgram(this.program)
 
 		gl.useProgram(this.program)
-
-		this.buffer = gl.createBuffer()
-
-		this.prepTexture = function GL_prepTexture(gl) {
-			this._texture = gl.createTexture()
-			gl.bindTexture(gl.TEXTURE_2D, stage._texture)
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-		}
-		this.setTexture = function GL_setTexture(image, mipmap) {
-			if (!this._texture) {
-				this.prepTexture(this.ctx)
-			}
-			this.ctx.texImage2D(this.ctx.TEXTURE_2D, 0, this.ctx.RGBA, this.ctx.RGBA, this.ctx.UNSIGNED_BYTE, image.image)
-			if (mipmap) {
-				this.ctx.generateMipmap(this.ctx.TEXTURE_2D)
-			}
-		}
 	},
 
 	prep: function(gl) {
-		gl.resolutionLocation = gl.getUniformLocation(this.program, 'u_resolution')
+		this.buffers = {}
 
+		gl.resolutionLocation = gl.getUniformLocation(this.program, 'u_resolution')
+		gl.matrixLocation = gl.getUniformLocation(this.program, 'u_matrix')
+		// gl.scaleLocation = gl.getUniformLocation(this.program, 'u_scale')
 		gl.enableVertexAttribArray(0)
 
 		gl.positionLocation = gl.getAttribLocation(this.program, 'a_position')
+
 		gl.bindAttribLocation(this.program, 0, 'a_position')
 
+
+
 		gl.colorLocation = gl.getAttribLocation(this.program, 'a_color')
-		// gl.bindAttribLocation(this.program, 2, 'a_color');
 
 		gl.textureLocation = gl.getAttribLocation(this.program, 'a_texture')
-		// gl.bindAttribLocation(this.program, 6, 'a_texture');
 
 		gl.uniform2f(gl.resolutionLocation, this.width, this.height)
 
+		this.buffer = gl.createBuffer()
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
 
 		gl.enableVertexAttribArray(gl.positionLocation)
 		gl.enableVertexAttribArray(gl.colorLocation)
 		gl.enableVertexAttribArray(gl.textureLocation)
 
-		gl.vertexAttribPointer(gl.positionLocation, 2, gl.FLOAT, false, 32, 0)
-		gl.vertexAttribPointer(gl.colorLocation, 4, gl.FLOAT, false, 32, 8)
-		gl.vertexAttribPointer(gl.textureLocation, 2, gl.FLOAT, false, 32, 24)
+		gl.vertexAttribPointer(gl.positionLocation, 3, gl.FLOAT, false, 36, 0)
+		gl.vertexAttribPointer(gl.colorLocation, 4, gl.FLOAT, false, 36, (3) * 4)
+		gl.vertexAttribPointer(gl.textureLocation, 2, gl.FLOAT, false, 36, (3 + 4) * 4)
 
 		this._rect_index_buffer = gl.createBuffer()
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this._rect_index_buffer)
-		this._rect_index = new Uint16Array(this._maxCount * 6)
+		this._rect_index = new Uint16Array(this._maxCount*7)
 
-		for (var i = 0, j = 0; i < this._maxCount * 6; i += 6, j += 4) {
+		for (var i = 0, j = 0; i < this._maxCount*7; i += 6, j += 4) {
 			this._rect_index[i + 0] = j + 0
 			this._rect_index[i + 1] = j + 1
 			this._rect_index[i + 2] = j + 2
@@ -3274,16 +3797,29 @@ Studio.Stage.prototype.WEBGL = {
 		}
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this._rect_index_buffer)
 		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this._rect_index, gl.STATIC_DRAW)
-		this._r_count = 0
 	},
 	render:  function(lag) {
-		this.ctx._count = 0
-		this.vertex_children(this.ctx, lag, this.interpolate)
-		this.ctx.bufferData(this.ctx.ARRAY_BUFFER, this.ctx._batch, this.ctx.DYNAMIC_DRAW)
+		this._count = 0
+		this.draws = 0
+		this.ctx.clearColor(this.color.r,this.color.g,this.color.b,this.color.a)
 		this.ctx.clear(this.ctx.COLOR_BUFFER_BIT | this.ctx.DEPTH_BUFFER_BIT)
-		// gl.drawArrays(gl.TRIANGLES, 0, this.children.length*6);
-		this.ctx.drawElements(this.ctx.TRIANGLES, this._hasChildren * 6, this.ctx.UNSIGNED_SHORT, 0)
-
+		if (this.previousScene) {
+			this.previousScene.buildElement(this, lag, this.interpolate)
+			this.previousScene.vertex_children(this, lag, this.interpolate)
+		}
+		if (this.activeScene) {
+			this.activeScene.buildElement(this, lag, this.interpolate)
+			this.activeScene.vertex_children(this, lag, this.interpolate)
+		}
+		this.vertex_children(this, lag, this.interpolate)
+		this.rect_buffer.draw(this.ctx)
+		this.camera.render(this, lag, 1);
+		for (var i in this.buffers) {
+			this.buffers[i].draw(this.ctx)
+		}
+		if (this._effects) {
+			this.runEffects();
+		}
 	}
 }
 
@@ -3291,7 +3827,7 @@ Studio.Stage.prototype.WEBGL = {
 Studio.Stage.prototype.CANVAS = {
 	type: '2dContext',
 	getContext: function() {
-		this.ctx = this.canvas.getContext('2d')
+		this.ctx = this.bitmap.getContext('2d')
 	},
 	init: function() {
 		this.ctx.webkitImageSmoothingEnabled = this.smoothing
@@ -3315,9 +3851,18 @@ Studio.Stage.prototype.CANVAS = {
 		if (this.activeScene) {
 			this._renderScene(this.activeScene , lag)
 		}
-
 		if (this._hasChildren) {
 			this.render_children(this, lag)
+			if (this._effects) {
+				this.runEffects()
+			}
+			return
+		}
+		if(this._watching){
+			this._watching.render_children(this,lag)
+			if (this._effects) {
+				this.runEffects()
+			}
 		}
 	},
 }
@@ -3339,15 +3884,21 @@ Studio.Stage.prototype.enableKeyboardInput = function() {
 	var me = this;
 
 	this.keys = {};
-
+	this.keys.onScreen = {};
 	var keydown = function(e) {
 		e.preventDefault();
 		me.keys[e.keyCode] = 1;
+		if(me.keys.onScreen[e.keyCode]){
+			me.keys.onScreen[e.keyCode].keydown()
+		}
 	};
 
 	var keyup = function(e)  {
 		e.preventDefault();
 		me.keys[e.keyCode] = 0;
+		if(me.keys.onScreen[e.keyCode]){
+			me.keys.onScreen[e.keyCode].keyup()
+		}
 	};
 
 	document.addEventListener('keydown', keydown, false);
@@ -3484,8 +4035,8 @@ Studio.Stage.prototype.enableTouchEvents = function() {
 	var scaledMouse = {clientX: 0, clientY: 0}
 
 	var ratioEvent = function(event) {
-		scaledMouse.clientX = (event.clientX - me.canvas.getBoundingClientRect().left) / me._scaleRatio;
-		scaledMouse.clientY = (event.clientY - me.canvas.getBoundingClientRect().top) / me._scaleRatio;
+		scaledMouse.clientX = (event.clientX - me.bitmap.getBoundingClientRect().left) / me._scaleRatio;
+		scaledMouse.clientY = (event.clientY - me.bitmap.getBoundingClientRect().top) / me._scaleRatio;
 		// return me.scaledMouse;
 	}
 
@@ -3531,10 +4082,10 @@ Studio.Stage.prototype.enableTouchEvents = function() {
 		document.addEventListener("mouseup", mouse_release, false);
 		document.addEventListener("mouseout", mouse_release, false);
 	} else {
-		this.canvas.addEventListener("mousedown", mouse_down, false);
-		this.canvas.addEventListener("mousemove", mouse_move, false);
-		this.canvas.addEventListener("mouseup", mouse_release, false);
-		this.canvas.addEventListener("mouseout", mouse_release, false);
+		this.bitmap.addEventListener("mousedown", mouse_down, false);
+		this.bitmap.addEventListener("mousemove", mouse_move, false);
+		this.bitmap.addEventListener("mouseup", mouse_release, false);
+		this.bitmap.addEventListener("mouseout", mouse_release, false);
 	}
 
 	/* touch events*/
@@ -3602,15 +4153,15 @@ Studio.Stage.prototype.enableTouchEvents = function() {
 
 
 	if (!window.ejecta) {
-		this.canvas.addEventListener("touchstart", finger_press, false);
-		this.canvas.addEventListener("touchmove", finger_move, false);
-		this.canvas.addEventListener("touchend", finger_release, false);
-		this.canvas.addEventListener("touchcancel", finger_release, false);
-		this.canvas.addEventListener("pointerdown", mouse_down, false);
-		this.canvas.addEventListener("pointermove", mouse_move, false);
-		this.canvas.addEventListener("pointerup", mouse_release, false);
-		this.canvas.setAttribute('tabindex', '0');
-		this.canvas.focus();
+		this.bitmap.addEventListener("touchstart", finger_press, false);
+		this.bitmap.addEventListener("touchmove", finger_move, false);
+		this.bitmap.addEventListener("touchend", finger_release, false);
+		this.bitmap.addEventListener("touchcancel", finger_release, false);
+		this.bitmap.addEventListener("pointerdown", mouse_down, false);
+		this.bitmap.addEventListener("pointermove", mouse_move, false);
+		this.bitmap.addEventListener("pointerup", mouse_release, false);
+		this.bitmap.setAttribute('tabindex', '0');
+		this.bitmap.focus();
 	} else {
 		document.addEventListener("touchstart", finger_press, false);
 		document.addEventListener("touchmove", finger_move, false);
@@ -3619,6 +4170,313 @@ Studio.Stage.prototype.enableTouchEvents = function() {
 	}
 }
 
+
+
+Studio.getAudioContext = function() {
+	if (typeof AudioContext !== 'undefined') {
+		return new AudioContext()
+	} else if (typeof webkitAudioContext !== 'undefined') {
+		return new webkitAudioContext()
+	} else {
+		return false
+	}
+}
+
+Studio.Sounds = {
+	source: null,
+	context: Studio.getAudioContext(),
+	soundGraph: function soundGraph(snd) {
+		if (snd._time == Studio.now) {
+			// playing the same soundbuffer at the exact same time causes errors and horrible distortion
+			// we make sure not to let that happen.
+			return
+		} else {
+			snd._time = Studio.now
+			this.source = this.context.createBufferSource()
+			this.source.loop = snd.loop
+			this.source.buffer = snd.data
+			this.source.connect(snd._volume)
+			snd._volume.connect(this._volume)
+			this._volume.connect(this.context.destination)
+			this.source.start(0)
+		}
+	},
+	init: function() {
+		if (this.context) {
+			this._volume = this.context.createGain()
+			this.volume = this._volume.gain
+			this.setVolume = function(vol) {
+				this.volume.value = vol
+			}
+			this._filter = this.context.createBiquadFilter()
+
+		} else {
+			this.setVolume = function(vol) {
+				if (vol > 1) vol = 1
+				if (vol < 0) vol = 0
+				for (var i in this.assets) {
+					this.assets[i].volume = vol
+				}
+			}
+		}
+		var mute = document.createElement('div')
+		mute.innerHTML = 'Enable Sound'
+		mute.ontouchend = function() {
+			song.play()
+		}
+		// document.body.appendChild(mute)
+	}
+}
+
+Studio.Sounds.init()
+
+Studio.Sound = function(path) {
+	this.snd = {_time: 0, data: null, loop: false, volume: 1}
+	this.ready = false
+	if (path) {
+		this.load(path)
+	}
+}
+
+Studio.inherit(Studio.Sound, Studio.Messenger)
+
+Studio.Sound.prototype.load = function(path) {
+	var me = this
+
+	if (!Studio.assets[path]) {
+		if (Studio.Sounds.context) {
+			var request = new XMLHttpRequest()
+			request.open('GET', path, true)
+			request.responseType = 'arraybuffer'
+			request.onload = function() {
+				Studio.assets[path] = request.response
+				me.snd._data = Studio.assets[path]
+				me.snd._volume = Studio.Sounds.context.createGain()
+				me.snd.volume = me.snd._volume.gain
+				me.snd.volume.value = 1
+				Studio.Sounds.context.decodeAudioData(me.snd._data, function(soundBuffer) {
+					me.snd.data = soundBuffer
+					Studio._loadedAsset()
+					me.ready = true
+					me.sendMessage('ready', me.ready)
+				})
+			}
+			Studio._addingAsset()
+			request.send()
+		} else {
+			var temp = document.createElement('audio')
+			temp.src = path
+			temp.load()
+			Studio.assets[path] = temp
+			me.snd.data = Studio.assets[path]
+		}
+	} else {
+		me.snd.data = Studio.assets[path]
+	}
+}
+
+Studio.Sound.prototype.play = function() {
+	if (this.snd.data) {
+		if (Studio.Sounds.context) {
+			Studio.Sounds.soundGraph(this.snd)
+		} else {
+			this.snd.data.play()
+			this.snd.data.loop = this.snd.loop
+		}
+	} else {
+		console.log('Sound file not ready.')
+	}
+}
+
+Studio.Sound.prototype.volume = function(val) {
+
+}
+Studio.Sound.prototype.loop = function(set) {
+	this.snd.loop = set
+}
+
+// Studio.SoundManager = function(){
+// 	this.source = null
+// 	this.context = Studio.getAudioContext();
+// 	this.init();
+// }
+// Studio.SoundManager.prototype = {
+// 	constructor: Studio.SoundManager,
+// 	soundGraph: function soundGraph(snd) {
+// 		if (snd._time == Studio.now ) {
+// 			// playing the same soundbuffer at the exact same time causes errors and horrible distortion
+// 			// we make sure not to let that happen.
+// 			return;
+// 		} else {
+// 			snd._time = Studio.now;
+// 			this.source = this.context.createBufferSource();
+// 			this.source.buffer = snd.data;
+// 			this.source.connect(this._volume);
+// 			this._volume.connect(this.context.destination);
+// 			this.source.start(0);
+// 		}
+// 	},
+// 	init: function(){
+// 		if(this.context){
+// 			this._volume = this.context.createGain();
+// 			this.volume = this._volume.gain;
+// 			this.setVolume = function(vol){
+// 				this.volume.value = vol;
+// 			}
+// 		}else{
+// 			this.setVolume = function(vol){
+// 				if(vol>1) vol = 1
+// 				if(vol<0) vol = 0
+// 				for( var i in this.assets){
+// 					this.assets[i].volume = vol;
+// 				}
+// 			}
+// 		}
+// 	},
+// 	createSound: function(path){
+// 		var sound;
+// 		if (Studio.assets[path]) {
+// 			console.warn('Already loaded : ', path, Studio.assets[path])
+// 			sound = Studio.assets[path]
+// 			sound.ready = true
+// 			sound.status.setStatus(this.ready)
+// 			return sound
+// 		} else {
+// 			Studio.assets.length++
+// 			if (this.context) {
+// 				var request = new XMLHttpRequest();
+// 				request.open("GET", path, true);
+// 				request.responseType = "arraybuffer";
+// 				request.onload = function() {
+// 					Studio.assets[path] = request.response;
+// 					me.snd._data = Studio.Sounds.assets[path];
+// 					Studio.Sounds.context.decodeAudioData(me.snd._data,function(soundBuffer){
+// 						me.snd.data = soundBuffer;
+// 					})
+// 				};
+// 				request.send();
+// 			} else {
+// 				var temp = document.createElement('audio');
+// 				temp.src = path;
+// 				temp.load();
+// 				Studio.Sounds.assets[path] = temp;
+// 				me.snd.data = Studio.Sounds.assets[path];
+// 			}
+// 			Studio.queue++
+// 		}
+// 	}
+// }
+
+// var SS = new Studio.SoundManager();
+
+
+
+var GAMEPAD = new Studio.Plugin({
+	options: {
+	},
+	init: function GamePad_init(a) {
+		this.gamepad = null;
+		for(var i = 0; i<= 3; i++){ // we create the objects for gamepads even if we can't use them.
+			a['GAMEPAD_'+i] = {active:false, AXES1:{X:0,Y:0}, AXES2:{X:0,Y:0}};
+		}
+		if(navigator.getGamepads){ // if we can use the Gamepads api, lets activate the plugin.
+			this.gamepads = navigator.getGamepads();
+			this.active = true;
+		}
+	},
+	action: function(stage) {
+		this.gamepads = navigator.getGamepads();
+		var pad = null;
+	    for(var i = 0; i != this.gamepads.length; i ++){
+	        // If we actually have a gamepad connected at this index lets use it.
+	        // its very possible to not have one at some point in the index.
+
+	        if(this.gamepads[i]){ 
+	        	if(!stage['GAMEPAD_'+i].active){
+		    		stage['GAMEPAD_'+i].active = true;
+		    		stage['GAMEPAD_'+i].id = this.gamepads[i].id;
+		    		if(stage.gamepadconnected){
+		    			stage.gamepadconnected(i,this.gamepads[i])
+		    		}
+		    	}
+	        	// console.log(this.gamepads[i])
+	            this.gamepad = this.gamepads[i];
+	            pad = stage['GAMEPAD_'+(i+1)];
+
+	            pad['A'] = this.gamepad.buttons[0].value; // A
+	            pad['B'] = this.gamepad.buttons[1].value; // B
+	            pad['X'] = this.gamepad.buttons[2].value; // X
+	            pad['Y'] = this.gamepad.buttons[3].value; // Y
+
+	            pad['L1'] = this.gamepad.buttons[4].value; // L1
+	            pad['R1'] = this.gamepad.buttons[5].value; // R1
+	            pad['L2'] = this.gamepad.buttons[6].value; // L2
+	            pad['R2'] = this.gamepad.buttons[7].value; // R2
+
+	            pad['UP'] = this.gamepad.buttons[12].value; // Up
+	            pad['DOWN'] = this.gamepad.buttons[13].value; // Down
+	            pad['LEFT'] = this.gamepad.buttons[14].value; // Left
+	            pad['RIGHT'] = this.gamepad.buttons[15].value; // Right
+
+	            pad['MENU'] = this.gamepad.buttons[9].value; // Menu
+
+	            if(this.gamepad.axes){
+	            	 pad['AXES1'].X = this.gamepad.axes[0];
+	            	 pad['AXES1'].Y = this.gamepad.axes[1];
+	            	 pad['AXES2'].X = this.gamepad.axes[2];
+	            	 pad['AXES2'].Y = this.gamepad.axes[3];
+	            }
+	   		}else if(stage['GAMEPAD_'+i].active){
+		    	stage['GAMEPAD_'+i].active = false;
+		    	if(stage.gamepaddisconnected){
+	    			stage.gamepaddisconnected(i,this.gamepads[i])
+	    		}
+		    }
+	    }
+	    // if(this.gamepads[0]){
+	    // 	stage.keys['DOWN'] = this.gamepads[0].buttons[13].value;
+	    // 	stage.keys['UP'] = this.gamepads[0].buttons[12].value;
+	    // 	stage.keys['A'] = this.gamepads[0].buttons[0].value;
+	    // 	stage.keys['B'] = this.gamepads[0].buttons[1].value;
+	    // 	stage.keys['LEFT'] = this.gamepads[0].buttons[14].value;
+	    // 	stage.keys['RIGHT'] = this.gamepads[0].buttons[15].value;
+	    // }
+	}
+})
+
+
+
+Studio.DOMElement = function(id, stage) {
+	this.element = document.getElementById(id)
+	this.id = id
+	var style = this.element.style
+	style.position = 'absolute'
+	this.width = this._width = 0
+	this.height = this._height = 0
+	style.top = this.y = parseFloat(style.top) || 0
+	style.top = this.x = parseFloat(style.left) || 0
+	style.transformOrigin = '0 0 0'
+	this.alpha = style.opacity || 1
+	this.stage = stage
+}
+
+Studio.inherit(Studio.DOMElement, Studio.DisplayObject)
+
+Studio.DOMElement.prototype.hide = function() {
+	this.element.style.display = 'none'
+}
+Studio.DOMElement.prototype.show = function() {
+	this.element.style.display = 'block'
+}
+Studio.DOMElement.prototype.draw = Studio.DOMElement.prototype.vertex_children = function() {
+	if (!this.active) return
+	if (this.__alpha) this.element.style.opacity = this.alpha
+	if (this.__x) {
+		this.element.style.left = '0'
+		this.element.style.transform = 'translate(' + (((this.__x-this.stage.camera.x) * this.stage.camera.scaleX)+this.stage.camera.focus.x) + 'px, ' + (((this.__y-this.stage.camera.y) * this.stage.camera.scaleY)+this.stage.camera.focus.y) + 'px) rotate('+ this._world.rotation+'deg) scale(' + this.scaleX*this.stage.camera.scaleX + ')'
+	}
+	if (this.__z) this.element.style.z_index = this.__z
+}
 
 
 // @codekit-prepend "studio"

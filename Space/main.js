@@ -260,6 +260,26 @@ stage.camera.scaleX= stage.camera.scaleY = 1.5;
 // 	clear_mode:'cover'}
 // );
 
+stage.enableTouchEvents()
+stage.draggable = true
+stage.addButton(stage)
+stage.onTap = function(e){
+	// if(this.camera.tracking){
+	// 	var x = this.camera.tracking._dx
+	// 	var y = this.camera.tracking._dy
+	// 	this.camera.stopTracking();
+	// 	this.camera.focus.x = x;
+	// 	this.camera.focus.y = y;
+	// 	console.log(x,y)
+	// }
+	
+}
+stage.onDrag = function(e){
+	// this.camera.x+=e.dx/stage.camera.scaleX
+	// this.camera.y+=e.dy/stage.camera.scaleX
+	
+	console.log(e.dx, e.dy)
+}
 
 Studio.start();
 

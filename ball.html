@@ -1,0 +1,78 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+    <title>Studio3</title>
+	<meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1"/>
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<link rel="apple-touch-icon" href="icon.png" />
+</head>
+
+<body style="margin:0;background: #333">
+	<canvas id="canvas" height="600" width="800"  style="cursor:pointer;margin: 0 auto;display: block;outline:1px solid #111;"></canvas>
+</body>
+<script src="studio-compiled.js"></script>
+<script src="stats.js"></script>
+<script>
+	
+var stage = new Studio.Stage("canvas", {fullscreen: 0, _maxCount: 1000});
+stage.color.setFromHex('#601')
+
+var ball_img = new Studio.Image('assets/ball.png')
+
+var Ball = function(x,y,radius){
+	this.x = x
+	this.y = y
+	this.width = this.height = radius
+	this.hw = this.hh = radius/2
+	this.velocityX = (Math.random()*10) - 5
+	this.velocityY = (Math.random()*-5) -5
+
+}
+
+Studio.inherit(Ball , Studio.Sprite, {x:50, y:50, width: 64, height: 64, image: ball_img})
+
+Ball.prototype.logic = function(){
+	this.velocityY += .92
+	this.velocityX *= .99
+	this.x += this.velocityX
+	this.y += this.velocityY
+
+	if(this.x >= stage.width-this.width || this.x < this.hw){
+		this.velocityX *= -1
+	}
+	if(this.y >= stage.height-this.height || this.y < this.hh){
+		this.velocityY *= -.9
+	}
+	if(this.y>=stage.height-this.hh) this.y = stage.height-this.hh
+	if(this.x>=stage.width-this.hw) this.x = stage.width-this.hw
+	if(this.x<=this.hw) this.x = this.hw
+
+	if(this.velocityY <.05 && this.velocityY > -.05){
+		this.y = 100
+		this.x = stage.width/2
+		this.velocityX = (Math.random()*10) - 5
+		this.velocityY = (Math.random()*-5) -5
+	}
+}
+
+
+
+for (var i = 0; i!= stage._maxCount; i++){
+	var t = new Ball(stage.width/2,48,Math.random()*10 + 10);
+	t.color = new Studio.Color((Math.random()*100) + 155, (Math.random()*100) + 155, (Math.random()*100) + 155)
+	stage.addChild(t)
+}
+
+stage.addEffect(STATS,{
+	external: true, 
+	height: 50,
+	width: stage.width,
+	position: 0,
+	clear_mode:'cover'}
+);
+
+Studio.start();
+</script>
+</html>
+

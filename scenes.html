@@ -196,29 +196,29 @@ _parts.addSlice({
 });
 
 
-var buildImageEditor = function(image){
-	var editor = document.createElement('div')
-	editor.className = 'image-editor'
-	editor.style.width = image.width +'px'
-	editor.style.height = image.height +'px'
-	editor.style.background = 'url('+image.path+')'
-	for (var i in image.slice){
-		var slice = document.createElement('div')
-		slice.className = 'image-slice'
-		slice.style.border = '1px solid green'
-		slice.style.width = image.slice[i].width+'px'
-		slice.style.height = image.slice[i].height+'px'
-		slice.style.top = image.slice[i].y +'px'
-		slice.style.left = image.slice[i].x +'px'
-		slice.style.position = 'absolute'
-		var name = document.createElement('div')
-		name.className = 'image-slice-name'
-		name.innerHTML = i
-		slice.appendChild(name)
-		editor.appendChild(slice)
-	}	
-	document.body.appendChild(editor);
-}
+// var buildImageEditor = function(image){
+// 	var editor = document.createElement('div')
+// 	editor.className = 'image-editor'
+// 	editor.style.width = image.width +'px'
+// 	editor.style.height = image.height +'px'
+// 	editor.style.background = 'url('+image.path+')'
+// 	for (var i in image.slice){
+// 		var slice = document.createElement('div')
+// 		slice.className = 'image-slice'
+// 		slice.style.border = '1px solid green'
+// 		slice.style.width = image.slice[i].width+'px'
+// 		slice.style.height = image.slice[i].height+'px'
+// 		slice.style.top = image.slice[i].y +'px'
+// 		slice.style.left = image.slice[i].x +'px'
+// 		slice.style.position = 'absolute'
+// 		var name = document.createElement('div')
+// 		name.className = 'image-slice-name'
+// 		name.innerHTML = i
+// 		slice.appendChild(name)
+// 		editor.appendChild(slice)
+// 	}	
+// 	document.body.appendChild(editor);
+// }
 
 
 
@@ -272,7 +272,7 @@ Studio.UIButton.prototype.onRelease = function(a){
 }
 
 
-var stage = new Studio.Stage("canvas",{fullscreen:0, resolution: 2, dur: 1000/60, interpolate: 1, smoothing: false});
+var stage = new Studio.Stage("canvas",{fullscreen:1, resolution: 2, dur: 1000/60, interpolate: 1, smoothing: false});
 
 var button3 = new Studio.UIButton({x:160,y:230, height: 24, width: 120, text:'Stage'},stage);
 

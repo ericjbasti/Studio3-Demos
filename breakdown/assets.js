@@ -1,5 +1,5 @@
 var background = new Studio.Image('../assets/classic_blue.png');
-background.addSlice({'Pyramid':{x:13,y:13,width:22,height:22}})
+background.addSlice({'Pyramid':{x:0,y:0,width:96,height:96}, 'Sparks':{x:96,y:0,width:96,height:96}})
 
 var _parts = new Studio.Image('_parts.png');
 _parts.addSlice({

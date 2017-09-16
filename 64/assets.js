@@ -8,6 +8,7 @@ var sheet_motion = {
 	stand: [[0,1]],
 	cloud: [[1,0],[2,0],[3,0]],
 	splode: [[4,0],[5,0],[4,1],[5,1]],
+	splodeME: [[6,0],[7,0],[6,1],[7,1]],
 }
 
 var actionables = [];
